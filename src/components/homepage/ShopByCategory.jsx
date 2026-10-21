@@ -66,15 +66,15 @@ export default function ShopByCategory() {
             </p>
           </div>
 
-          <Button
-            as={Link}
-            href="/categories"
-            variant="outline"
-            className="hidden shrink-0 rounded-full border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-blue-600 sm:inline-flex"
-          >
-            View All
-            <ArrowRight size={16} className="ml-2" />
-          </Button>
+          <Link href="/categories">
+            <Button
+              variant="outline"
+              className="hidden shrink-0 rounded-full border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-blue-600 sm:inline-flex"
+            >
+              View All
+              <ArrowRight size={16} className="ml-2" />
+            </Button>
+          </Link>
         </div>
 
         {/* Category Grid */}
@@ -116,15 +116,15 @@ export default function ShopByCategory() {
 
         {/* Mobile View All */}
         <div className="mt-7 flex justify-center sm:hidden">
+          <Link href="/categories">
           <Button
-            as={Link}
-            href="/categories"
             variant="outline"
             className="rounded-full border-slate-200 bg-white px-6 text-sm font-medium text-slate-700"
           >
             View All Categories
             <ArrowRight size={16} className="ml-2" />
           </Button>
+          </Link>
         </div>
       </div>
     </section>
