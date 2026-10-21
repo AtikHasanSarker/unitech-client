@@ -48,7 +48,7 @@ export default function WhyChooseUs() {
         <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-12">
           <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
             <ShieldCheck size={14} />
-            THE UNITЕCH DIFFERENCE
+            THE UNITECH DIFFERENCE
           </span>
 
           <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
@@ -97,9 +97,8 @@ export default function WhyChooseUs() {
             </p>
           </div>
 
+          <Link href="/products">
           <Button
-            as={Link}
-            href="/products"
             className="group h-11 shrink-0 rounded-full bg-blue-600 px-6 font-semibold text-white hover:bg-blue-500"
           >
             Explore Products
@@ -108,6 +107,7 @@ export default function WhyChooseUs() {
               className="ml-2 transition-transform group-hover:translate-x-1"
             />
           </Button>
+          </Link>
         </div>
       </div>
     </section>

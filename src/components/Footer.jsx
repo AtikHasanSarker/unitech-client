@@ -1,15 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Facebook,
-  Instagram,
-  Youtube,
   MapPin,
   Mail,
   Phone,
   ArrowUpRight,
   ArrowRight,
 } from "lucide-react";
+import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 
 const footerLinks = {
   Shop: [
@@ -34,17 +32,17 @@ const footerLinks = {
 
 const socialLinks = [
   {
-    icon: Facebook,
+    icon: FaFacebook,
     href: "#",
     label: "Facebook",
   },
   {
-    icon: Instagram,
+    icon: FaInstagram,
     href: "#",
     label: "Instagram",
   },
   {
-    icon: Youtube,
+    icon: FaYoutube,
     href: "#",
     label: "YouTube",
   },
@@ -169,7 +167,7 @@ export default function Footer() {
         {/* Bottom Footer */}
         <div className="flex flex-col gap-5 border-t border-white/[0.08] py-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-center text-xs text-slate-500 sm:text-left">
-            © {new Date().getFullYear()} UniTech. All rights reserved.
+            ©2026 UniTech. All rights reserved.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-slate-500 sm:justify-end">
