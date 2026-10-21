@@ -1,7 +1,9 @@
 import HeroBanner from '@/components/homepage/Banner';
 import NewArrivals from '@/components/homepage/NewArrivals';
+import Newsletter from '@/components/homepage/Newsletter';
 import ShopByCategory from '@/components/homepage/ShopByCategory';
 import SpecialDeals from '@/components/homepage/SpecialDeals';
+import WhyChooseUs from '@/components/homepage/WhyChooseUs';
 import React from 'react';
 
 const page = () => {
@@ -11,6 +13,8 @@ const page = () => {
       <ShopByCategory/>
       <SpecialDeals/>
       <NewArrivals/>
+      <WhyChooseUs/>
+      <Newsletter/>
     </div>
   );
 };
