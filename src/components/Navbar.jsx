@@ -99,61 +99,61 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#07111e]/95 text-white shadow-xl shadow-black/10 backdrop-blur-xl">
-        {/* Top Information Bar */}
-        <div className="hidden border-b border-white/[0.06] bg-[#0a1523] lg:block">
-          <div className="mx-auto flex h-10 max-w-[1440px] items-center justify-between px-6 xl:px-10">
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <MapPin size={14} className="text-blue-500" />
+      {/* Top Information Bar */}
+      <div className="hidden border-b border-white/[0.06] bg-[#0a1523] lg:block">
+        <div className="mx-auto flex h-10 max-w-[1440px] items-center justify-between px-6 xl:px-10">
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <MapPin size={14} className="text-blue-500" />
 
-              <span>
-                Noakhali Science and Technology University (NSTU) Campus
-              </span>
-            </div>
+            <span>
+              Noakhali Science and Technology University (NSTU) Campus
+            </span>
+          </div>
 
-            <div className="flex items-center gap-6">
-              {utilityLinks.map(({ name, href, icon: Icon }) => (
-                <Link
-                  key={name}
-                  href={href}
-                  className="flex items-center gap-2 text-xs text-slate-300 transition-colors hover:text-blue-400"
-                >
-                  <Icon size={14} className="text-blue-500" />
-                  {name}
-                </Link>
-              ))}
+          <div className="flex items-center gap-6">
+            {utilityLinks.map(({ name, href, icon: Icon }) => (
+              <Link
+                key={name}
+                href={href}
+                className="flex items-center gap-2 text-xs text-slate-300 transition-colors hover:text-blue-400"
+              >
+                <Icon size={14} className="text-blue-500" />
+                {name}
+              </Link>
+            ))}
 
-              <div className="flex items-center gap-3 border-l border-white/10 pl-5">
-                <a
-                  href="#"
-                  aria-label="Facebook"
-                  className="text-slate-400 transition-colors hover:text-blue-400"
-                >
-                  <FaFacebook size={16} />
-                </a>
+            <div className="flex items-center gap-3 border-l border-white/10 pl-5">
+              <a
+                href="#"
+                aria-label="Facebook"
+                className="text-slate-400 transition-colors hover:text-blue-400"
+              >
+                <FaFacebook size={16} />
+              </a>
 
-                <a
-                  href="#"
-                  aria-label="Instagram"
-                  className="text-slate-400 transition-colors hover:text-pink-400"
-                >
-                  <BsInstagram size={16} />
-                </a>
+              <a
+                href="#"
+                aria-label="Instagram"
+                className="text-slate-400 transition-colors hover:text-pink-400"
+              >
+                <BsInstagram size={16} />
+              </a>
 
-                <a
-                  href="#"
-                  aria-label="YouTube"
-                  className="text-slate-400 transition-colors hover:text-red-400"
-                >
-                  <FaYoutube size={17} />
-                </a>
-              </div>
+              <a
+                href="#"
+                aria-label="YouTube"
+                className="text-slate-400 transition-colors hover:text-red-400"
+              >
+                <FaYoutube size={17} />
+              </a>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Main Navbar */}
-        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 xl:px-10">
+      {/* Main Navbar */}
+      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#07111e] text-white shadow-xl shadow-black/10">
+        <div className="sticky top-0 z-50 backdrop-blur-xl mx-auto max-w-[1440px] px-4 sm:px-6 xl:px-10">
           <div className="flex h-[76px] items-center justify-between gap-4 lg:gap-6">
             {/* Logo */}
             <Link

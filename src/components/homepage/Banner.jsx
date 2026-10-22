@@ -116,7 +116,7 @@ export default function HeroBanner() {
           {/* Product Showcase */}
           <div className="relative aspect-[5/4] w-full">
             <Image
-              src="/images/hero-accessories.png"
+              src="/images/hero.png"
               alt="Premium mobile accessories including charger, smartphone, cables and wireless earbuds"
               fill
               priority
