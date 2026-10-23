@@ -20,10 +20,10 @@ export default function StudentDiscount() {
           </div>
 
           {/* Overlay for text readability */}
-          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#06101e] via-[#06101e]/90 to-transparent" />
+          <div className="absolute inset-0 -z-10 bg-linear-to-r from-[#06101e] via-[#06101e]/60 to-transparent" />
 
           {/* Additional bottom overlay for mobile */}
-          <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#06101e]/40 via-transparent to-transparent sm:hidden" />
+          <div className="absolute inset-0 -z-10 bg-linear-to-t from-[#06101e]/60 via-transparent to-transparent sm:hidden" />
 
           {/* Main Content */}
           <div className="relative flex min-h-[300px] items-center px-6 py-10 sm:min-h-[320px] sm:px-10 sm:py-12 lg:min-h-[340px] lg:px-12">
