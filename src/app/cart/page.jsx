@@ -21,6 +21,7 @@ import {
   ShoppingBasket,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import OrderPlacementModal from "./OrderPlacementModal";
 
 const initialCart = [
   {
@@ -67,6 +68,7 @@ const DEMO_COUPONS = {
 
 export default function CartPage() {
   const [cart, setCart] = useState(initialCart);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponMessage, setCouponMessage] = useState("");
@@ -162,14 +164,10 @@ export default function CartPage() {
     setNotice("");
   };
 
-  const handleCheckout = () => {
-    setNotice("Checkout will be available after checkout integration.");
-  };
+
 
   return (
     <>
-      <Navbar />
-
       <main className="min-h-screen bg-[#f8fafc] text-slate-900">
         {/* Header */}
         <section className="border-b border-slate-200 bg-white">
@@ -576,11 +574,12 @@ export default function CartPage() {
                     </p>
 
                     <button
-                      onClick={handleCheckout}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-4 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+                      type="button"
+                      onClick={() => setIsOrderModalOpen(true)}
+                      disabled={cartItems.length === 0}
+                      className="w-full rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Proceed to Checkout
-                      <ArrowRight size={17} />
+                      Place Order
                     </button>
 
                     <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400">
@@ -648,6 +647,20 @@ export default function CartPage() {
           </button>
         </div>
       )}
+
+      {/* Order placement modal  */}
+      <OrderPlacementModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        cartItems={cartItems}
+        subtotal={subtotal}
+        onOrderPlaced={(order) => {
+          console.log("Order placed:", order);
+
+          // Backend integration হলে এখানে cart clear করার
+          // এবং order confirmation handle করার logic যোগ করবেন।
+        }}
+      />
     </>
   );
 }
