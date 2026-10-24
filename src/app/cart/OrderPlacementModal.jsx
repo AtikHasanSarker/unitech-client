@@ -131,7 +131,7 @@ export default function OrderPlacementModal({
        * product availability and generate the Order ID.
        */
 
-      const orderId = `UT-${Date.now().toString().slice(-8)}`;
+      const orderId = `UT-${new Date().toString().slice(-8)}`;
 
       const order = {
         orderId,
