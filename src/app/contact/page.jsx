@@ -18,7 +18,6 @@ import {
   Truck,
 } from "lucide-react";
 
-import Navbar from "@/components/Navbar";
 
 const contactMethods = [
   {
@@ -156,7 +155,6 @@ export default function ContactPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-800">
-      <Navbar />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-[#0B1739]">
