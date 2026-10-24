@@ -462,7 +462,7 @@ export default function OrderDetailsPage() {
         <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
           <strong>Demo data:</strong> This order information and tracking
           timeline are sample data. Production order details must be fetched
-          from the backend after verifying the logged-in customer's access.
+          from the backend after verifying the logged-in customer&apos;s access.
         </div>
 
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_360px]">
