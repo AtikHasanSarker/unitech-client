@@ -8,6 +8,7 @@ import WhyChooseUs from '@/components/homepage/WhyChooseUs';
 import React from 'react';
 
 const page = () => {
+  
   return (
     <div>
       <HeroBanner/>
