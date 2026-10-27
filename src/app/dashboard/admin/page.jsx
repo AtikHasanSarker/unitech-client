@@ -10,7 +10,6 @@ import {
   CalendarDays,
   ChevronDown,
   ChevronRight,
-  CircleHelp,
   Clock3,
   DollarSign,
   Download,
@@ -20,10 +19,16 @@ import {
   PackageCheck,
   Plus,
   Search,
+  Settings,
   ShoppingBag,
   TrendingUp,
   Users,
 } from "lucide-react";
+import { signOut, useSession } from "@/lib/auth-client";
+import { Avatar, Button, Dropdown, Label } from "@heroui/react";
+import { MdLogout } from "react-icons/md";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const overviewCards = [
   {
@@ -200,6 +205,22 @@ function StatusBadge({ status }) {
 }
 
 export default function AdminDashboardPage() {
+  const router = useRouter()
+   const { data: session, isPending, error } = useSession();
+  const user = session?.user;
+
+  console.log(user)
+
+  const handleLogout = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast.error("Logout failed!");
+      return;
+    }
+    toast.success("Logout successful!");
+    router.replace("/dashboard/login");
+  };
+
   const [period, setPeriod] = useState("This Year");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
@@ -264,11 +285,59 @@ export default function AdminDashboardPage() {
             <div className="hidden h-9 w-px bg-slate-200 sm:block" />
 
             <div className="flex items-center gap-2.5 rounded-xl p-1.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white">
-                A
-              </div>
+              <Dropdown>
+                <Button aria-label="Menu" className="p-0 w-fit">
+                  <Avatar>
+                    <Avatar.Image
+                      referrerPolicy="no-referrer"
+                      alt={user?.name}
+                      src={user?.image}
+                    />
+                    <Avatar.Fallback>{user?.name[0]}</Avatar.Fallback>
+                  </Avatar>
+                </Button>
+
+                <Dropdown.Popover>
+                  <Dropdown.Menu
+                    onAction={(key) => console.log(`Selected: ${key}`)}
+                  >
+                    <Dropdown.Item id="userName" textValue={user?.name}>
+                      <Label className="font-semibold">
+                        <p className="font-medium mr-3">
+                          Hello, {user?.name.split(" ")[0]}
+                        </p>
+                      </Label>
+                    </Dropdown.Item>
+
+                    <Dropdown.Item
+                      id="settings"
+                      onClick={() => router.push("/dashboard/settings")}
+                      textValue="Settings"
+                    >
+                      <Label className="cursor-pointer flex gap-2 items-center font-semibold">
+                        <Settings />
+                        Settings
+                      </Label>
+                    </Dropdown.Item>
+
+                    <Dropdown.Item
+                      id="logout"
+                      onClick={handleLogout}
+                      textValue="Logout"
+                    >
+                      <Label className="text-red-600 cursor-pointer flex gap-2 items-center font-semibold">
+                        <MdLogout />
+                        Logout
+                      </Label>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown.Popover>
+              </Dropdown>
+
               <div className="hidden text-left sm:block">
-                <p className="text-sm font-semibold text-slate-800">Admin</p>
+                <p className="text-sm font-semibold text-slate-800">
+                  {user?.name}
+                </p>
                 <p className="mt-0.5 text-xs text-slate-400">Administrator</p>
               </div>
             </div>

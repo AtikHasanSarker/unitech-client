@@ -20,7 +20,7 @@ const navigation = [
     items: [
       {
         name: "Dashboard",
-        href: "/admin",
+        href: "/dashboard/admin",
         icon: LayoutDashboard,
       },
     ],
@@ -30,17 +30,17 @@ const navigation = [
     items: [
       {
         name: "Products",
-        href: "/admin/products",
+        href: "/dashboard/admin/products",
         icon: Package,
       },
       {
         name: "Orders",
-        href: "/admin/orders",
+        href: "/dashboard/admin/orders",
         icon: ShoppingCart,
       },
       {
         name: "Customers",
-        href: "/admin/customers",
+        href: "/dashboard/admin/customers",
         icon: Users,
       },
     ],
@@ -50,12 +50,12 @@ const navigation = [
     items: [
       {
         name: "Analytics",
-        href: "/admin/analytics",
+        href: "/dashboard/admin/analytics",
         icon: ChartNoAxesCombined,
       },
       {
         name: "Settings",
-        href: "/admin/settings",
+        href: "/dashboard/admin/settings",
         icon: Settings,
       },
     ],

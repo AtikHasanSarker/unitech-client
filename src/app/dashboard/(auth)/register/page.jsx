@@ -12,50 +12,32 @@ import {
   LoaderCircle,
   ArrowRight,
   ShieldCheck,
-  AlertCircle,
-  CheckCircle2,
 } from "lucide-react";
-import { signUp } from "@/lib/auth-client";
+import { signUp, useSession } from "@/lib/auth-client";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const router = useRouter();
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+    const { data: session, isPending: sessionPending } = useSession();
+   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
-  async function handleSubmit(e) {
+  const handleSubmit = async(e)=> {
     e.preventDefault();
-    setError("");
-    setSuccess("");
      const form = new FormData(e.currentTarget);
      const user = Object.fromEntries(form.entries());
-
-    if (password.length < 8) {
-      setError("Password must contain at least 8 characters.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
 
     setIsSubmitting(true);
 
     try {
-       const { data, error } = await authClient.signUp.email({
+       const { data, error } = await signUp.email({
          name: user.name,
          email: user.email,
          password: user.password,
        });
+
+       console.log("userData:", data)
 
        if (data) {
          toast.success("You have Registered Successfully!");
@@ -67,6 +49,30 @@ export default function RegisterPage() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (session?.user) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-slate-950 px-4 text-center text-white">
+        <div className="max-w-sm">
+          <ShieldCheck className="mx-auto mb-4 h-12 w-12 text-blue-400" />
+          <h1 className="text-xl font-semibold">You are already signed in</h1>
+          <p className="mt-2 text-sm text-slate-400">
+            Your account access will be checked before the admin panel opens.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              router.replace("/dashboard/admin");
+              router.refresh();
+            }}
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold hover:bg-blue-500"
+          >
+            Continue <ArrowRight size={17} />
+          </button>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -97,22 +103,11 @@ export default function RegisterPage() {
             </div>
 
             <p className="text-xs text-slate-500">
-              © {new Date().getFullYear()} UniTech. Authorized access only.
+              © 20206 UniTech. Authorized access only.
             </p>
           </section>
 
           <section className="p-6 sm:p-10">
-            <Link
-              href="/"
-              className="mb-8 flex w-fit items-center gap-3 lg:hidden"
-            >
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-600">
-                <Smartphone size={21} />
-              </span>
-              <span className="text-xl font-bold">
-                Uni<span className="text-blue-400">Tech</span>
-              </span>
-            </Link>
 
             <div className="mb-7">
               <p className="mb-2 text-xs font-semibold tracking-[0.18em] text-blue-400">
@@ -125,26 +120,6 @@ export default function RegisterPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div
-                  role="alert"
-                  className="flex gap-3 rounded-xl border border-red-400/20 bg-red-400/10 p-3 text-sm text-red-300"
-                >
-                  <AlertCircle size={18} className="mt-0.5 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              {success && (
-                <div
-                  role="status"
-                  className="flex gap-3 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-sm text-emerald-300"
-                >
-                  <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
-                  <span>{success}</span>
-                </div>
-              )}
-
               <div>
                 <label
                   htmlFor="name"
@@ -161,10 +136,6 @@ export default function RegisterPage() {
                     id="name"
                     name="name"
                     type="text"
-                    autoComplete="name"
-                    required
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
                     placeholder="Your name"
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-11 pr-4 text-sm outline-none placeholder:text-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                   />
@@ -187,10 +158,6 @@ export default function RegisterPage() {
                     id="email"
                     name="email"
                     type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
                     placeholder="you@example.com"
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-11 pr-4 text-sm outline-none placeholder:text-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                   />
@@ -213,11 +180,8 @@ export default function RegisterPage() {
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    autoComplete="new-password"
                     minLength={8}
                     required
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
                     placeholder="At least 8 characters"
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-11 pr-12 text-sm outline-none placeholder:text-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                   />
@@ -232,26 +196,6 @@ export default function RegisterPage() {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="mb-2 block text-sm font-medium text-slate-200"
-                >
-                  Confirm password
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  required
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  placeholder="Re-enter your password"
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm outline-none placeholder:text-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
-                />
               </div>
 
               <button

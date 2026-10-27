@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Eye,
   EyeOff,
@@ -16,6 +16,7 @@ import {
 import { signIn, useSession } from "@/lib/auth-client";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -69,8 +70,8 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white container mx-auto">
-      <div className="grid min-h-screen lg:grid-cols-2">
+    <main className="min-h-screen bg-slate-950 px-4 py-10 text-white sm:px-6">
+      <div className="grid lg:grid-cols-2 mx-auto min-h-[calc(100vh-5rem)] w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-900 shadow-2xl shadow-black/30">
         <section className="relative hidden flex-col justify-between overflow-hidden border-r border-white/10 bg-slate-900 p-10 lg:flex xl:p-14">
           <div
             aria-hidden="true"
@@ -81,13 +82,19 @@ export default function LoginPage() {
             className="absolute -right-20 bottom-10 h-72 w-72 rounded-full bg-violet-600/20 blur-3xl"
           />
 
-          <Link href="/" className="relative z-10 flex w-fit items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-600">
-              <Smartphone size={23} />
-            </span>
-            <span className="text-2xl font-bold tracking-tight">
-              Uni<span className="text-blue-400">Tech</span>
-            </span>
+          <Link
+            href="/"
+            aria-label="UniTech Home"
+            className="flex shrink-0 items-center"
+          >
+            <Image
+              src="/logo.png"
+              alt="UniTech"
+              width={160}
+              height={60}
+              priority
+              className="h-auto w-45 object-contain"
+            />
           </Link>
 
           <div className="relative z-10 max-w-xl py-12">
@@ -118,28 +125,34 @@ export default function LoginPage() {
             </div>
           </div>
           <p className="relative z-10 text-xs text-slate-500">
-            © {new Date().getFullYear()} UniTech. Authorized access only.
+            © 2026 UniTech. Authorized access only.
           </p>
         </section>
 
         <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8">
           <div className="w-full max-w-md">
-            <Link
-              href="/"
-              className="mb-10 flex w-fit items-center gap-3 lg:hidden"
-            >
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-600">
-                <Smartphone size={21} />
-              </span>
-              <span className="text-xl font-bold">
-                Uni<span className="text-blue-400">Tech</span>
-              </span>
-            </Link>
+            <div className="flex gap-5 items-center mb-8">
+              <Link
+                href="/"
+                aria-label="UniTech Home"
+                className="flex shrink-0 items-center w-fit lg:hidden"
+              >
+                <Image
+                  src="/logo.png"
+                  alt="UniTech"
+                  width={160}
+                  height={60}
+                  priority
+                  className="h-auto w-40 object-contain"
+                />
+              </Link>
 
-            <div className="mb-8">
-              <div className="mb-5 grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-white/5 text-blue-300">
+              <div className="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-white/5 text-blue-300">
                 <LockKeyhole size={23} />
               </div>
+            </div>
+
+            <div className="mb-8">
               <p className="mb-2 text-sm font-medium text-blue-400">
                 ADMINISTRATOR PORTAL
               </p>
@@ -152,16 +165,6 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {error && (
-                <div
-                  role="alert"
-                  className="flex gap-3 rounded-xl border border-red-400/20 bg-red-400/10 p-3.5 text-sm text-red-300"
-                >
-                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-                  <p>{error}</p>
-                </div>
-              )}
-
               <div>
                 <label
                   htmlFor="email"
@@ -178,10 +181,7 @@ export default function LoginPage() {
                     id="email"
                     name="email"
                     type="email"
-                    autoComplete="username"
                     required
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
                     placeholder="admin@example.com"
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                   />
@@ -203,11 +203,8 @@ export default function LoginPage() {
                   <input
                     id="password"
                     name="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
                     required
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3.5 pl-11 pr-12 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                   />
@@ -227,7 +224,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
@@ -246,8 +243,7 @@ export default function LoginPage() {
               <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
               <p className="text-xs leading-5 text-slate-400">
                 Restricted area. Only accounts with the administrator role can
-                access the dashboard. New accounts do not receive admin access
-                automatically.
+                access the dashboard.
               </p>
             </div>
             <p className="mt-8 text-center text-xs text-slate-600">

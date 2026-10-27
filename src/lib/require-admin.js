@@ -8,7 +8,7 @@ export async function requireAdmin() {
   });
 
   if (!session?.user) {
-    redirect("/login?callbackURL=%2Fadmin");
+    redirect("/dashboard/login");
   }
 
   if (session.user.role !== "admin") {
