@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/require-admin";
+import { requireAdmin } from "@/lib/session";
 import AdminLayoutClient from "./AdminLayoutClient";
 
 export default async function AdminLayout({ children }) {

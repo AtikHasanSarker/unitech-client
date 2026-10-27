@@ -7,7 +7,7 @@ export function proxy(request) {
 
   // Fast redirect only. Real authorization happens in the server layout.
   if (pathname.startsWith("/dashboard/admin") && !sessionCookie) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL("/dashboard/login", request.url);
     loginUrl.searchParams.set("callbackURL", pathname);
     return NextResponse.redirect(loginUrl);
   }

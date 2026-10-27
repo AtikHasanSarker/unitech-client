@@ -14,6 +14,7 @@ import {
   DollarSign,
   Download,
   Eye,
+  LogOut,
   MoreHorizontal,
   Package,
   PackageCheck,
@@ -209,8 +210,6 @@ export default function AdminDashboardPage() {
    const { data: session, isPending, error } = useSession();
   const user = session?.user;
 
-  console.log(user)
-
   const handleLogout = async () => {
     const { error } = await signOut();
     if (error) {
@@ -301,7 +300,7 @@ export default function AdminDashboardPage() {
                   <Dropdown.Menu
                     onAction={(key) => console.log(`Selected: ${key}`)}
                   >
-                    <Dropdown.Item id="userName" textValue={user?.name}>
+                    <Dropdown.Item id="userName" className="pointer-events-none" textValue={user?.name}>
                       <Label className="font-semibold">
                         <p className="font-medium mr-3">
                           Hello, {user?.name.split(" ")[0]}
@@ -311,11 +310,11 @@ export default function AdminDashboardPage() {
 
                     <Dropdown.Item
                       id="settings"
-                      onClick={() => router.push("/dashboard/settings")}
+                      onClick={() => router.push("/dashboard/admin/settings")}
                       textValue="Settings"
                     >
                       <Label className="cursor-pointer flex gap-2 items-center font-semibold">
-                        <Settings />
+                        <Settings className="h-5" />
                         Settings
                       </Label>
                     </Dropdown.Item>
@@ -326,7 +325,7 @@ export default function AdminDashboardPage() {
                       textValue="Logout"
                     >
                       <Label className="text-red-600 cursor-pointer flex gap-2 items-center font-semibold">
-                        <MdLogout />
+                        <LogOut className="h-5"/>
                         Logout
                       </Label>
                     </Dropdown.Item>

@@ -17,6 +17,7 @@ import { signIn, useSession } from "@/lib/auth-client";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { Button } from "@heroui/react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-slate-400">
             Your account access will be checked before the admin panel opens.
           </p>
-          <button
+          <Button
             type="button"
             onClick={() => {
               router.replace("/dashboard/admin");
@@ -63,7 +64,7 @@ export default function LoginPage() {
             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold hover:bg-blue-500"
           >
             Continue <ArrowRight size={17} />
-          </button>
+          </Button>
         </div>
       </main>
     );
