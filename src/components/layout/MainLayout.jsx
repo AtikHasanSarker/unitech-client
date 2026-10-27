@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 export default function MainLayout({ children }) {
   const pathname = usePathname();
   const isAdminRoute =
-    pathname === "/dashboard/admin" || pathname.startsWith("/dashboard/admin/");
+    pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 
   if (isAdminRoute) {
     return children;
