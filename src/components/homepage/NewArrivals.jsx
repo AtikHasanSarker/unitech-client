@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -11,74 +11,69 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@heroui/react";
-
-const products = [
-  {
-    id: "new-1",
-    name: "Baseus Bowie Wireless Earbuds",
-    image: "/images/products/baseus-earbuds.png",
-    price: 1890,
-    oldPrice: 2190,
-    rating: 4.8,
-    reviews: 86,
-    slug: "baseus-bowie-wireless-earbuds",
-    badge: "NEW",
-  },
-  {
-    id: "new-2",
-    name: "UGREEN 65W GaN Fast Charger",
-    image: "/images/products/ugreen-65w-charger.png",
-    price: 2490,
-    oldPrice: null,
-    rating: 4.9,
-    reviews: 42,
-    slug: "ugreen-65w-gan-charger",
-    badge: "NEW",
-  },
-  {
-    id: "new-3",
-    name: "Baseus Magnetic Power Bank",
-    image: "/images/products/baseus-magnetic-powerbank.png",
-    price: 2290,
-    oldPrice: 2590,
-    rating: 4.7,
-    reviews: 64,
-    slug: "baseus-magnetic-powerbank",
-    badge: "TRENDING",
-  },
-  {
-    id: "new-4",
-    name: "UGREEN USB-C Hub Adapter",
-    image: "/images/products/ugreen-usb-hub.png",
-    price: 1590,
-    oldPrice: null,
-    rating: 4.8,
-    reviews: 35,
-    slug: "ugreen-usb-c-hub",
-    badge: "NEW",
-  },
-];
+import { addCartItem } from "@/lib/api/cart";
+import { getProducts } from "@/lib/api/product";
+import { addToWishlist, getWishlist, removeFromWishlist } from "@/lib/api/wishlist";
 
 function formatPrice(price) {
   return `৳${price.toLocaleString("en-US")}`;
 }
 
 export default function NewArrivals() {
+  const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [cart, setCart] = useState([]);
+  const [notice, setNotice] = useState("");
 
-  const toggleWishlist = (productId) => {
-    setWishlist((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
-    );
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      getProducts({ page: 1, limit: 4, sort: "newest", status: "Active" }),
+      getWishlist(),
+    ]).then(([productResult, wishlistResult]) => {
+      if (!active) return;
+      if (productResult?.success) {
+        setProducts(productResult.data.map((product) => ({
+          ...product,
+          id: product._id,
+          image: product.images?.[0] || "/favicon.ico",
+          badge: "NEW",
+        })));
+      } else {
+        setNotice(productResult?.message || "Could not load new products.");
+      }
+      if (wishlistResult?.success) {
+        setWishlist(wishlistResult.data.items.map((item) => item.productId));
+      }
+    }).catch(() => {
+      if (active) setNotice("Could not connect to new products.");
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const toggleWishlist = async (productId) => {
+    const result = wishlist.includes(productId)
+      ? await removeFromWishlist(productId)
+      : await addToWishlist(productId);
+    if (!result?.success) {
+      setNotice(result?.message || "Sign in to update your wishlist.");
+      return;
+    }
+    setWishlist((prev) => prev.includes(productId)
+      ? prev.filter((id) => id !== productId)
+      : [...prev, productId]);
   };
 
-  const addToCart = (productId) => {
-    setCart((prev) =>
-      prev.includes(productId) ? prev : [...prev, productId]
-    );
+  const addToCart = async (productId) => {
+    const result = await addCartItem(productId);
+    if (!result?.success) {
+      setNotice(result?.message || "Sign in to add products to your cart.");
+      return;
+    }
+    setCart((prev) => prev.includes(productId) ? prev : [...prev, productId]);
+    setNotice("Product added to your cart.");
   };
 
   return (
@@ -112,6 +107,8 @@ export default function NewArrivals() {
           </Button>
         </div>
 
+        {notice && <p role="status" className="mb-4 text-sm text-slate-600">{notice}</p>}
+
         {/* Product Grid */}
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
           {products.map((product) => {
@@ -126,7 +123,7 @@ export default function NewArrivals() {
                 {/* Product Image */}
                 <div className="relative m-2 aspect-square overflow-hidden rounded-xl bg-slate-50 sm:m-3 sm:rounded-2xl">
                   <Link
-                    href={`/products/${product.slug}`}
+                    href={`/products/${product.id}`}
                     aria-label={`View ${product.name}`}
                     className="absolute inset-0"
                   >
@@ -140,7 +137,7 @@ export default function NewArrivals() {
                   </Link>
 
                   {/* Product Badge */}
-                  <span
+                  {product.badge && <span
                     className={`absolute left-2 top-2 rounded-lg px-2 py-1 text-[10px] font-bold text-white sm:left-3 sm:top-3 sm:text-xs ${
                       product.badge === "TRENDING"
                         ? "bg-violet-600"
@@ -148,7 +145,7 @@ export default function NewArrivals() {
                     }`}
                   >
                     {product.badge}
-                  </span>
+                  </span>}
 
                   {/* Wishlist Button */}
                   <button
@@ -175,14 +172,14 @@ export default function NewArrivals() {
 
                 {/* Product Details */}
                 <div className="px-3 pb-3 pt-1 sm:px-4 sm:pb-4">
-                  <Link href={`/products/${product.slug}`}>
+                  <Link href={`/products/${product.id}`}>
                     <h3 className="line-clamp-2 min-h-10 text-xs font-semibold leading-5 text-slate-800 transition-colors hover:text-blue-600 sm:text-sm">
                       {product.name}
                     </h3>
                   </Link>
 
                   {/* Rating */}
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  {product.rating !== undefined && <div className="mt-2 flex flex-wrap items-center gap-1.5">
                     <div className="flex items-center gap-0.5 text-amber-400">
                       {Array.from({ length: 5 }).map((_, index) => (
                         <Star
@@ -201,7 +198,7 @@ export default function NewArrivals() {
                     <span className="text-[10px] text-slate-400">
                       ({product.reviews})
                     </span>
-                  </div>
+                  </div>}
 
                   {/* Price & Cart */}
                   <div className="mt-3 flex items-end justify-between gap-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Search,
   Plus,
@@ -15,6 +15,13 @@ import {
   Image as ImageIcon,
   ChevronDown,
 } from "lucide-react";
+import { getCategories } from "@/lib/api/category";
+import {
+  addProduct,
+  deleteProduct,
+  getProducts,
+  updateProduct,
+} from "@/lib/api/product";
 
 const INITIAL_PRODUCTS = [
   {
@@ -121,7 +128,12 @@ function getStockClasses(stock) {
 }
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [stockFilter, setStockFilter] = useState("All Stock");
@@ -131,6 +143,40 @@ export default function AdminProductsPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([getProducts({ page: 1, limit: 100 }), getCategories()])
+      .then(([productResult, categoryResult]) => {
+        if (!active) return;
+        if (!productResult?.success) {
+          setLoadError(productResult?.message || "Could not load products.");
+          return;
+        }
+        setProducts(
+          productResult.data.map((product) => ({
+            ...product,
+            id: product._id,
+            sku: product.sku || product._id,
+            status: product.status || "Active",
+            image: product.images?.[0] || "",
+          })),
+        );
+        if (categoryResult?.success) {
+          setCategories(categoryResult.data.map((item) => item.name));
+        }
+      })
+      .catch(() => {
+        if (active) setLoadError("Could not connect to catalog data.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -182,7 +228,7 @@ export default function AdminProductsPage() {
     setForm({
       name: product.name,
       sku: product.sku,
-      category: product.category,
+      category: product.category || categories[0] || "",
       price: String(product.price),
       stock: String(product.stock),
       status: product.status,
@@ -204,7 +250,7 @@ export default function AdminProductsPage() {
     setForm((current) => ({ ...current, [name]: value }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const name = form.name.trim();
@@ -240,31 +286,58 @@ export default function AdminProductsPage() {
     }
 
     const productData = {
-      id: editingProduct?.id ?? Date.now(),
       name,
       sku,
       category: form.category,
       price,
       stock,
       status: form.status,
-      image: form.image.trim(),
+      images: form.image.trim() ? [form.image.trim()] : [],
     };
+
+    setIsSaving(true);
+    const result = editingProduct
+      ? await updateProduct(editingProduct.id, productData)
+      : await addProduct(productData);
+    setIsSaving(false);
+
+    if (!result?.success) {
+      setFormError(result?.message || "Could not save product.");
+      return;
+    }
 
     if (editingProduct) {
       setProducts((current) =>
         current.map((product) =>
-          product.id === editingProduct.id ? productData : product,
+          product.id === editingProduct.id
+            ? { ...product, ...productData, image: productData.images[0] || "" }
+            : product,
         ),
       );
-    } else {
-      setProducts((current) => [productData, ...current]);
+    } else if (result.data) {
+      setProducts((current) => [
+        {
+          ...result.data,
+          id: result.data._id,
+          sku: result.data.sku || result.data._id,
+          image: result.data.images?.[0] || "",
+        },
+        ...current,
+      ]);
     }
 
     closeModal();
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!deleteTarget) return;
+    setIsDeleting(true);
+    const result = await deleteProduct(deleteTarget.id);
+    setIsDeleting(false);
+    if (!result?.success) {
+      setLoadError(result?.message || "Could not delete product.");
+      return;
+    }
     setProducts((current) =>
       current.filter((product) => product.id !== deleteTarget.id),
     );
@@ -274,6 +347,11 @@ export default function AdminProductsPage() {
   return (
     <div className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
+        {(isLoading || loadError) && (
+          <div className={`rounded-xl border px-4 py-3 text-sm ${loadError ? "border-amber-200 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600"}`}>
+            {loadError || "Loading products..."}
+          </div>
+        )}
         {/* Page heading */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -361,7 +439,7 @@ export default function AdminProductsPage() {
                 <SelectFilter
                   value={category}
                   onChange={setCategory}
-                  options={CATEGORIES.map((item) => ({
+                  options={["All Categories", ...categories].map((item) => ({
                     value: item,
                     label: item,
                   }))}
@@ -610,7 +688,7 @@ export default function AdminProductsPage() {
                     onChange={handleFormChange}
                     className={inputClass}
                   >
-                    {CATEGORIES.filter((item) => item !== "All Categories").map(
+                    {categories.map(
                       (item) => (
                         <option key={item} value={item}>
                           {item}
@@ -683,9 +761,10 @@ export default function AdminProductsPage() {
                 </button>
                 <button
                   type="submit"
+                  disabled={isSaving}
                   className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
                 >
-                  {editingProduct ? "Save Changes" : "Create Product"}
+                  {isSaving ? "Saving..." : editingProduct ? "Save Changes" : "Create Product"}
                 </button>
               </div>
             </form>
@@ -734,9 +813,10 @@ export default function AdminProductsPage() {
               <button
                 type="button"
                 onClick={handleDelete}
+                disabled={isDeleting}
                 className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
               >
-                Delete Product
+                {isDeleting ? "Deleting..." : "Delete Product"}
               </button>
             </div>
           </div>

@@ -1,54 +1,57 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { getUserToken } from "../session";
-
 
 const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL;
 
-export const serverFetch = async (api) => {
-  const res = await fetch(`${baseUrl}/api/${api}`);
-  if (!res.ok) {
-    return null;
+const getApiUrl = (api) => {
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_SERVER_URL is not configured.");
   }
-  return res.json();
+
+  return `${baseUrl.replace(/\/+$/, "")}/api/${api}`;
+};
+
+const parseResponse = async (response) => {
+  const payload = await response.json().catch(() => ({
+    success: false,
+    message: "The server returned an invalid response.",
+  }));
+
+  return response.ok ? payload : { ...payload, success: false, status: response.status };
+};
+
+export const serverFetch = async (api) => {
+  const response = await fetch(getApiUrl(api), { cache: "no-store" });
+  return parseResponse(response);
 };
 
 export const authHeader = async () => {
-  const token = await getUserToken();
-  const header = token ? { Authorization: `Bearer ${token}` } : {};
-  return header;
+  try {
+    const token = await getUserToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
 };
 
 export const protectedServerFetch = async (api) => {
-  const res = await fetch(`${baseUrl}/api/${api}`, {
+  const response = await fetch(getApiUrl(api), {
     headers: await authHeader(),
+    cache: "no-store",
   });
-  if (!res.ok) {
-    return null;
-  }
-  return handleStatusCode(res);
+  return parseResponse(response);
 };
 
 export const serverMutation = async (api, data, method = "POST") => {
-  const res = await fetch(`${baseUrl}/api/${api}`, {
-    method: method,
+  const response = await fetch(getApiUrl(api), {
+    method,
     headers: {
       "content-type": "application/json",
       ...(await authHeader()),
     },
-    body: JSON.stringify(data),
+    ...(data === undefined ? {} : { body: JSON.stringify(data) }),
   });
 
-  return handleStatusCode(res);
-};
-
-const handleStatusCode = (res) => {
-  if (res.status === 401) {
-    redirect("/unauthorized");
-  }
-  if (res.status === 403) {
-    redirect("/unauthorized");
-  }
-  return res.json();
+  return parseResponse(response);
 };

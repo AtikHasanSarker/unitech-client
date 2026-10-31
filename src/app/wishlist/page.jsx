@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -16,57 +16,12 @@ import {
   X,
   ArrowUpRight,
 } from "lucide-react";
-
-const initialWishlist = [
-  {
-    id: "p1",
-    name: "Wireless Bluetooth Earbuds",
-    category: "Audio",
-    price: 950,
-    oldPrice: 1250,
-    rating: 4.8,
-    reviews: 124,
-    image: "https://placehold.co/500x500/DBEAFE/1D4ED8?text=Earbuds",
-    stock: "In Stock",
-    badge: "Best Seller",
-  },
-  {
-    id: "p2",
-    name: "20W Fast Charging Adapter",
-    category: "Chargers",
-    price: 750,
-    oldPrice: 950,
-    rating: 4.6,
-    reviews: 86,
-    image: "https://placehold.co/500x500/FEE2E2/B91C1C?text=Charger",
-    stock: "In Stock",
-    badge: "Popular",
-  },
-  {
-    id: "p3",
-    name: "Premium USB-C Charging Cable",
-    category: "Cables",
-    price: 350,
-    oldPrice: 450,
-    rating: 4.5,
-    reviews: 58,
-    image: "https://placehold.co/500x500/EDE9FE/6D28D9?text=Cable",
-    stock: "In Stock",
-    badge: null,
-  },
-  {
-    id: "p4",
-    name: "20000mAh Power Bank",
-    category: "Power Banks",
-    price: 1650,
-    oldPrice: 1950,
-    rating: 4.7,
-    reviews: 102,
-    image: "https://placehold.co/500x500/DCFCE7/15803D?text=Power+Bank",
-    stock: "In Stock",
-    badge: "Great Value",
-  },
-];
+import { addCartItem } from "@/lib/api/cart";
+import { getProductById } from "@/lib/api/product";
+import {
+  getWishlist,
+  removeFromWishlist as removeWishlistItem,
+} from "@/lib/api/wishlist";
 
 function ProductCard({ product, onRemove, onAddToCart, isAdded }) {
   const discount = product.oldPrice
@@ -173,11 +128,63 @@ function ProductCard({ product, onRemove, onAddToCart, isAdded }) {
 }
 
 export default function WishlistPage() {
-  const [wishlist, setWishlist] = useState(initialWishlist);
+  const [wishlist, setWishlist] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [addedItems, setAddedItems] = useState([]);
   const [notification, setNotification] = useState(null);
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+
+  const showToast = (message, type = "success") => {
+    setNotification({ message, type });
+
+    setTimeout(() => {
+      setNotification(null);
+    }, 2500);
+  };
+
+  useEffect(() => {
+    let active = true;
+
+    getWishlist()
+      .then(async (result) => {
+        if (!active) return;
+        if (!result?.success) {
+          showToast(result?.message || "Sign in to load your wishlist.", "error");
+          return;
+        }
+
+        const products = await Promise.all(
+          result.data.items.map(async (savedItem) => {
+            const productResult = await getProductById(savedItem.productId);
+            const product = productResult?.success ? productResult.data : null;
+            return {
+              id: savedItem.productId,
+              name: product?.name || savedItem.name,
+              category: product?.category || "Products",
+              price: product?.price ?? savedItem.price,
+              oldPrice: product?.oldPrice,
+              rating: product?.rating,
+              reviews: product?.reviews,
+              image: product?.images?.[0] || savedItem.image || "/images/product-placeholder.png",
+              stock: product && Number(product.stock) > 0 ? "In Stock" : "Out of Stock",
+            };
+          }),
+        );
+
+        if (active) setWishlist(products);
+      })
+      .catch(() => {
+        if (active) showToast("Could not connect to your wishlist.", "error");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredWishlist = wishlist.filter((product) => {
     const query = searchQuery.trim().toLowerCase();
@@ -195,16 +202,13 @@ export default function WishlistPage() {
     0
   );
 
-  const showToast = (message, type = "success") => {
-    setNotification({ message, type });
-
-    setTimeout(() => {
-      setNotification(null);
-    }, 2500);
-  };
-
-  const removeFromWishlist = (productId) => {
+  const removeFromWishlist = async (productId) => {
     const product = wishlist.find((item) => item.id === productId);
+    const result = await removeWishlistItem(productId);
+    if (!result?.success) {
+      showToast(result?.message || "Could not remove this product.", "error");
+      return;
+    }
 
     setWishlist((previous) =>
       previous.filter((item) => item.id !== productId)
@@ -219,12 +223,12 @@ export default function WishlistPage() {
     }
   };
 
-  const addToCart = (product) => {
-    /*
-     * Demo only:
-     * Replace this with your shared cart context/store or
-     * cart API so the product is added to the actual cart.
-     */
+  const addToCart = async (product) => {
+    const result = await addCartItem(product.id);
+    if (!result?.success) {
+      showToast(result?.message || "Could not add this product to your cart.", "error");
+      return;
+    }
 
     setAddedItems((previous) =>
       previous.includes(product.id) ? previous : [...previous, product.id]
@@ -233,7 +237,14 @@ export default function WishlistPage() {
     showToast(`${product.name} added to cart.`);
   };
 
-  const clearWishlist = () => {
+  const clearWishlist = async () => {
+    const results = await Promise.all(
+      wishlist.map((product) => removeWishlistItem(product.id)),
+    );
+    if (results.some((result) => !result?.success)) {
+      showToast("Some wishlist items could not be removed.", "error");
+      return;
+    }
     setWishlist([]);
     setAddedItems([]);
     setShowClearConfirmation(false);
@@ -326,12 +337,11 @@ export default function WishlistPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        {/* Demo Notice */}
-        <div className="mb-7 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-          <strong>Demo wishlist:</strong> The products shown here are sample
-          data. Persistent wishlist storage and synchronization with the
-          customer&apos;s account can be added through backend integration.
-        </div>
+        {isLoading && (
+          <div className="mb-7 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+            Loading your saved products...
+          </div>
+        )}
 
         {wishlist.length > 0 ? (
           <>

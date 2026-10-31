@@ -16,6 +16,8 @@ import {
   UserRound,
   RotateCcw,
 } from "lucide-react";
+import { getAdminSettings, saveAdminSettings } from "@/lib/api/admin";
+import { authClient } from "@/lib/auth-client";
 
 const DEFAULT_SETTINGS = {
   storeName: "UniTech",
@@ -32,8 +34,6 @@ const DEFAULT_SETTINGS = {
   customerMessages: true,
   promotionalEmails: false,
 };
-
-const STORAGE_KEY = "unitech-admin-settings";
 
 function SettingSection({ icon: Icon, title, description, children }) {
   return (
@@ -102,6 +102,8 @@ function Toggle({ checked, onChange, label }) {
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -111,14 +113,29 @@ export default function AdminSettingsPage() {
     confirm: "",
   });
   const [passwordMessage, setPasswordMessage] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored) setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) });
-    } catch {
-      setSaveError("Could not load saved settings from this browser.");
-    }
+    let active = true;
+    getAdminSettings()
+      .then((result) => {
+        if (!active) return;
+        if (result?.success) {
+          setSettings({ ...DEFAULT_SETTINGS, ...result.data });
+        } else {
+          setSaveError(result?.message || "Could not load admin settings.");
+        }
+      })
+      .catch(() => {
+        if (active) setSaveError("Could not connect to admin settings.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const updateSetting = (key, value) => {
@@ -127,17 +144,17 @@ export default function AdminSettingsPage() {
     setSaveError("");
   };
 
-  const handleSave = (event) => {
+  const handleSave = async (event) => {
     event.preventDefault();
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    setIsSaving(true);
+    const result = await saveAdminSettings(settings);
+    setIsSaving(false);
+    if (result?.success) {
       setSaved(true);
       setSaveError("");
-    } catch {
+    } else {
       setSaved(false);
-      setSaveError(
-        "Settings could not be saved in this browser. Check storage permissions.",
-      );
+      setSaveError(result?.message || "Settings could not be saved.");
     }
   };
 
@@ -147,7 +164,7 @@ export default function AdminSettingsPage() {
     setSaveError("");
   };
 
-  const handlePasswordSubmit = (event) => {
+  const handlePasswordSubmit = async (event) => {
     event.preventDefault();
     if (!passwords.current || !passwords.next || !passwords.confirm) {
       setPasswordMessage("Please fill in all password fields.");
@@ -161,9 +178,18 @@ export default function AdminSettingsPage() {
       setPasswordMessage("New password and confirmation do not match.");
       return;
     }
-    setPasswordMessage(
-      "Password form validated. Connect your authentication API to change the password securely.",
-    );
+    setIsChangingPassword(true);
+    const result = await authClient.changePassword({
+      currentPassword: passwords.current,
+      newPassword: passwords.next,
+    });
+    setIsChangingPassword(false);
+    if (result.error) {
+      setPasswordMessage(result.error.message || "Password could not be changed.");
+      return;
+    }
+    setPasswords({ current: "", next: "", confirm: "" });
+    setPasswordMessage("Password changed successfully.");
   };
 
   const inputClass =
@@ -219,6 +245,12 @@ export default function AdminSettingsPage() {
           className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800"
         >
           {saveError}
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+          Loading settings...
         </div>
       )}
 
@@ -438,10 +470,11 @@ export default function AdminSettingsPage() {
               </button>
               <button
                 type="submit"
+                disabled={isChangingPassword}
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 <LockKeyhole size={16} />
-                Validate Password Form
+                {isChangingPassword ? "Changing Password..." : "Change Password"}
               </button>
             </div>
             {passwordMessage && (
@@ -457,14 +490,14 @@ export default function AdminSettingsPage() {
 
         <div className="flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs leading-5 text-slate-500">
-            Settings are stored locally in this browser only. They are not
-            synced to a server.
+            Settings are saved to the UniTech server.
           </p>
           <button
             type="submit"
+            disabled={isSaving}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
           >
-            <Save size={17} /> Save Settings
+            <Save size={17} /> {isSaving ? "Saving..." : "Save Settings"}
           </button>
         </div>
       </form>

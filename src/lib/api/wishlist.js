@@ -1,10 +1,10 @@
 "use server";
 
-import { serverFetch, serverMutation } from "./server";
+import { protectedServerFetch, serverMutation } from "./server";
 
 // Get user's wishlist
 export const getWishlist = async () => {
-  return serverFetch("wishlist");
+  return protectedServerFetch("wishlist");
 };
 
 // Add product to wishlist

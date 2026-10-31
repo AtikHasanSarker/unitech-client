@@ -1,9 +1,20 @@
 'use server'
 
-import { serverMutation } from "./server";
+import { serverFetch, serverMutation } from "./server";
 
-export const getProducts = async () => {
-    return serverFetch('products');
+export const getProducts = async (filters = {}) => {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) {
+        if (value !== undefined && value !== null && value !== "") {
+            query.set(key, String(value));
+        }
+    }
+    const suffix = query.size ? `?${query.toString()}` : "";
+    return serverFetch(`products${suffix}`);
+};
+
+export const getProductById = async (productId) => {
+    return serverFetch(`products/${productId}`);
 }
 
 export const addProduct = async (productData) => {
@@ -11,7 +22,7 @@ export const addProduct = async (productData) => {
 }
 
 export const updateProduct = async (productId, productData) => {
-    return serverMutation(`products/${productId}`, productData, 'PUT');
+    return serverMutation(`products/${productId}`, productData, 'PATCH');
 }
 
 export const deleteProduct = async (productId) => {

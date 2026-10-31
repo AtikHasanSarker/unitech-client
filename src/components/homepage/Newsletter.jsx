@@ -3,17 +3,35 @@
 import { useState } from "react";
 import { ArrowRight, Mail, Sparkles } from "lucide-react";
 import { Button, Input } from "@heroui/react";
+import { subscribeToNewsletter } from "@/lib/api/site";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!email.trim()) return;
 
-    // TODO: Connect to your newsletter subscription API.
+    setIsSubmitting(true);
+    let result;
+    try {
+      result = await subscribeToNewsletter(email.trim());
+    } catch {
+      result = { success: false, message: "Could not connect to newsletter service." };
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    if (!result?.success) {
+      setError(result?.message || "Subscription could not be created.");
+      return;
+    }
+
+    setError("");
     setSubscribed(true);
     setEmail("");
   };
@@ -57,16 +75,16 @@ export default function Newsletter() {
                 className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-5"
               >
                 <p className="font-semibold text-emerald-300">
-                  Thanks for your interest!
+                  Thanks for subscribing!
                 </p>
 
                 <p className="mt-1 text-sm text-slate-400">
-                  The demo form accepted your submission. Actual subscription
-                  requires backend integration.
+                  You are subscribed to UniTech updates.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit}>
+                {error && <p role="alert" className="mb-3 text-sm text-red-300">{error}</p>}
                 <label
                   htmlFor="newsletter-email"
                   className="mb-3 block text-sm font-medium text-slate-200"
@@ -96,9 +114,10 @@ export default function Newsletter() {
 
                   <Button
                     type="submit"
+                    isDisabled={isSubmitting}
                     className="h-12 shrink-0 rounded-full bg-blue-600 px-6 font-semibold text-white transition-colors hover:bg-blue-500"
                   >
-                    Subscribe
+                    {isSubmitting ? "Subscribing..." : "Subscribe"}
                     <ArrowRight size={17} className="ml-2" />
                   </Button>
                 </div>

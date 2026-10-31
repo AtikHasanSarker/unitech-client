@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   Truck,
 } from "lucide-react";
+import { submitContactMessage } from "@/lib/api/site";
 
 
 const contactMethods = [
@@ -84,6 +85,7 @@ export default function ContactPage() {
 
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
 
   const handleChange = (event) => {
@@ -130,13 +132,25 @@ export default function ContactPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!validateForm()) return;
 
-    // TODO: Connect this form to your backend API.
-    // Example: POST /api/contact
+    setIsSubmitting(true);
+    let result;
+    try {
+      result = await submitContactMessage(formData);
+    } catch {
+      result = { success: false, message: "Could not connect to contact support." };
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    if (!result?.success) {
+      setErrors({ submit: result?.message || "Your message could not be sent." });
+      return;
+    }
 
     setIsSubmitted(true);
 
@@ -347,18 +361,22 @@ export default function ContactPage() {
 
                 <div>
                   <p className="text-sm font-semibold text-emerald-800">
-                    Form validation successful
+                    Message received
                   </p>
 
                   <p className="mt-1 text-sm leading-6 text-emerald-700">
-                    Your message has not been sent yet. Connect the form to a
-                    backend API to receive and store messages.
+                    Your message has been sent to the UniTech support team.
                   </p>
                 </div>
               </div>
             )}
 
             <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+              {errors.submit && (
+                <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {errors.submit}
+                </p>
+              )}
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
                   <label
@@ -460,6 +478,7 @@ export default function ContactPage() {
                   id="message"
                   name="message"
                   rows={6}
+                  maxLength={1000}
                   placeholder="Tell us how we can help..."
                   value={formData.message}
                   onChange={handleChange}
@@ -484,9 +503,10 @@ export default function ContactPage() {
 
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/20 sm:w-auto"
               >
-                Send Message
+                {isSubmitting ? "Sending..." : "Send Message"}
                 <Send size={17} />
               </button>
 

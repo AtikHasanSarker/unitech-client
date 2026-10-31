@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Search,
   SlidersHorizontal,
@@ -19,6 +19,12 @@ import {
   UserRound,
   ShoppingBag,
 } from "lucide-react";
+import {
+  getAllOrders,
+  updateOrderStatus as saveOrderStatus,
+  updatePaymentStatus as savePaymentStatus,
+} from "@/lib/api/order";
+import { getUsers } from "@/lib/api/user";
 
 const INITIAL_ORDERS = [
   {
@@ -118,6 +124,7 @@ const INITIAL_ORDERS = [
 
 const ORDER_STATUSES = [
   "Pending",
+  "Confirmed",
   "Processing",
   "Shipped",
   "Delivered",
@@ -158,13 +165,61 @@ function statusClasses(status) {
 }
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState(INITIAL_ORDERS);
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [paymentFilter, setPaymentFilter] = useState("All Payments");
   const [dateFilter, setDateFilter] = useState("All Dates");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([getAllOrders(), getUsers()])
+      .then(([ordersResult, usersResult]) => {
+        if (!active) return;
+        if (!ordersResult?.success) {
+          setLoadError(ordersResult?.message || "Could not load orders.");
+          return;
+        }
+
+        const usersById = new Map(
+          (usersResult?.data || []).map((user) => [user._id, user]),
+        );
+        setOrders(
+          ordersResult.data.map((order) => {
+            const user = usersById.get(order.userId);
+            return {
+              id: order._id,
+              customer: user?.name || order.userEmail || order.userId,
+              email: order.userEmail || user?.email || "",
+              phone: "",
+              date: order.createdAt,
+              items: order.items,
+              subtotal: order.subtotal,
+              shipping: order.shippingFee,
+              total: order.total,
+              paymentMethod: order.paymentMethod,
+              paymentStatus: order.paymentStatus || "Pending",
+              status: order.status,
+              address: order.deliveryAddress,
+            };
+          }),
+        );
+      })
+      .catch(() => {
+        if (active) setLoadError("Could not connect to admin order data.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredOrders = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -210,7 +265,12 @@ export default function AdminOrdersPage() {
     )
     .reduce((sum, order) => sum + order.total, 0);
 
-  function updateOrderStatus(orderId, nextStatus) {
+  async function updateOrderStatus(orderId, nextStatus) {
+    const result = await saveOrderStatus(orderId, nextStatus);
+    if (!result?.success) {
+      setNotice(result?.message || "Order status could not be saved.");
+      return;
+    }
     setOrders((current) =>
       current.map((order) =>
         order.id === orderId ? { ...order, status: nextStatus } : order,
@@ -223,7 +283,12 @@ export default function AdminOrdersPage() {
     window.setTimeout(() => setNotice(""), 3000);
   }
 
-  function updatePaymentStatus(orderId, nextStatus) {
+  async function updatePaymentStatus(orderId, nextStatus) {
+    const result = await savePaymentStatus(orderId, nextStatus);
+    if (!result?.success) {
+      setNotice(result?.message || "Payment status could not be saved.");
+      return;
+    }
     setOrders((current) =>
       current.map((order) =>
         order.id === orderId ? { ...order, paymentStatus: nextStatus } : order,
@@ -248,6 +313,11 @@ export default function AdminOrdersPage() {
   return (
     <div className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
+        {(isLoading || loadError) && (
+          <div className={`rounded-xl border px-4 py-3 text-sm ${loadError ? "border-amber-200 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600"}`}>
+            {loadError || "Loading orders..."}
+          </div>
+        )}
         {/* Page heading */}
         <div>
           <div className="mb-1 flex items-center gap-2 text-sm text-slate-500">
@@ -511,7 +581,7 @@ export default function AdminOrdersPage() {
           </div>
 
           <div className="border-t border-slate-100 px-5 py-4 text-sm text-slate-500">
-            Order status changes are temporary until you connect your backend.
+            Order and payment status changes are saved to the backend.
           </div>
         </section>
       </div>

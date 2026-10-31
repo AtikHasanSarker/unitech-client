@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
@@ -18,6 +18,7 @@ import {
   RefreshCw,
   ChevronDown,
 } from "lucide-react";
+import { getMyOrders } from "@/lib/api/order";
 
 const demoOrders = [
   {
@@ -271,10 +272,48 @@ function OrderCard({ order }) {
 }
 
 export default function MyOrdersPage() {
-  const [orders] = useState(demoOrders);
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [activeFilter, setActiveFilter] = useState("All Orders");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
+
+  useEffect(() => {
+    let active = true;
+    getMyOrders()
+      .then((result) => {
+        if (!active) return;
+        if (!result?.success) {
+          setLoadError(result?.message || "Sign in to view your orders.");
+          return;
+        }
+        setOrders(
+          result.data.map((order) => ({
+            id: order._id,
+            date: order.createdAt,
+            status: order.status,
+            paymentMethod: order.paymentMethod,
+            deliveryType: order.deliveryAddress,
+            total: order.total,
+            items: order.items.map((item) => ({
+              id: item.productId,
+              ...item,
+            })),
+          })),
+        );
+      })
+      .catch(() => {
+        if (active) setLoadError("Could not connect to your orders.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredOrders = useMemo(() => {
     let result = [...orders];
@@ -354,17 +393,11 @@ export default function MyOrdersPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        {/* Demo Notice */}
-        <div className="mb-6 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          <Package size={20} className="mt-0.5 shrink-0" />
-          <div>
-            <p className="font-bold">Demo Orders</p>
-            <p className="mt-1 leading-6">
-              These are sample orders for UI demonstration. Real customer
-              orders will appear here after backend and database integration.
-            </p>
+        {(isLoading || loadError) && (
+          <div className={`mb-6 rounded-xl border p-4 text-sm ${loadError ? "border-amber-200 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600"}`}>
+            {loadError || "Loading your orders..."}
           </div>
-        </div>
+        )}
 
         {/* Summary Cards */}
         <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">

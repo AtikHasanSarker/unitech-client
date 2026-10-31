@@ -10,10 +10,10 @@ export const getUserSession = async () => {
 };
 
 export const getUserToken = async () => {
-  const session = await auth.api.getSession({
+  const result = await auth.api.getToken({
     headers: await headers(),
   });
-  return session?.session?.token || null;
+  return result?.token || null;
 };
 
 export async function requireAdmin() {

@@ -14,6 +14,8 @@ import {
   ArrowLeft,
   LoaderCircle,
 } from "lucide-react";
+import { clearCart } from "@/lib/api/cart";
+import { createOrder } from "@/lib/api/order";
 
 const DELIVERY_OPTIONS = [
   {
@@ -37,6 +39,7 @@ export default function OrderPlacementModal({
   onClose,
   cartItems = [],
   subtotal = 0,
+  couponCode = "",
   onOrderPlaced,
 }) {
   const [formData, setFormData] = useState({
@@ -57,7 +60,12 @@ export default function OrderPlacementModal({
   );
 
   const deliveryFee = selectedDelivery?.fee ?? 0;
-  const total = subtotal + deliveryFee;
+  const discount = couponCode === "NSTU10"
+    ? Math.round(subtotal * 0.1)
+    : couponCode === "SAVE50"
+      ? Math.min(subtotal, 50)
+      : 0;
+  const total = subtotal - discount + deliveryFee;
 
   const itemCount = useMemo(
     () =>
@@ -122,51 +130,52 @@ export default function OrderPlacementModal({
     setIsSubmitting(true);
 
     try {
-      /*
-       * FRONTEND DEMO:
-       * This creates a temporary order in the browser.
-       *
-       * For production, send the order to your backend API.
-       * The server must calculate the final price, validate
-       * product availability and generate the Order ID.
-       */
+      const result = await createOrder({
+        items: cartItems.map((item) => ({
+          productId: item.id,
+          quantity: Number(item.quantity || 1),
+        })),
+        shippingFee: deliveryFee,
+        paymentMethod: "Cash on Delivery",
+        deliveryAddress: [
+          `Name: ${formData.name.trim()}`,
+          `Phone: ${formData.phone.trim()}`,
+          `Address: ${formData.address.trim()}`,
+          `Delivery: ${selectedDelivery.title}`,
+          formData.note.trim() ? `Note: ${formData.note.trim()}` : "",
+        ].filter(Boolean).join("\n"),
+        couponCode,
+      });
 
-      const orderId = `UT-${new Date().toString().slice(-8)}`;
+      if (!result?.success || !result.data?._id) {
+        throw new Error(result?.message || "Unable to place your order.");
+      }
 
+      await clearCart();
+      const savedOrder = result.data;
       const order = {
-        orderId,
+        orderId: savedOrder._id,
         customer: {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
           address: formData.address.trim(),
         },
-        items: cartItems.map((item) => ({
-          productId: item.id,
-          name: item.name,
-          price: Number(item.price),
-          quantity: Number(item.quantity || 1),
-          image: item.image,
-        })),
+        items: savedOrder.items,
         delivery: {
           option: formData.deliveryOption,
-          fee: deliveryFee,
+          fee: savedOrder.shippingFee,
           estimatedTime: selectedDelivery.estimatedTime,
         },
-        paymentMethod: "Cash on Delivery",
-        subtotal,
-        total: subtotal + deliveryFee,
+        paymentMethod: savedOrder.paymentMethod,
+        subtotal: savedOrder.subtotal,
+        total: savedOrder.total,
         note: formData.note.trim(),
-        status: "Pending",
-        createdAt: new Date().toISOString(),
+        status: savedOrder.status,
+        createdAt: savedOrder.createdAt,
       };
 
-      // Demo delay to show the loading state.
-      await new Promise((resolve) => setTimeout(resolve, 700));
-
       setConfirmedOrder(order);
-
-      // Optional callback for the parent component.
-      onOrderPlaced?.(order);
+      onOrderPlaced?.(savedOrder);
     } catch (error) {
       console.error("Order placement failed:", error);
       setErrors({

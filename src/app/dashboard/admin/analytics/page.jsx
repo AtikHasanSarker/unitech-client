@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   ArrowDownRight,
@@ -13,53 +13,8 @@ import {
   ShoppingBag,
   Users,
 } from "lucide-react";
-
-const monthlyData = [
-  { month: "May", revenue: 42000, orders: 142 },
-  { month: "Jun", revenue: 51000, orders: 168 },
-  { month: "Jul", revenue: 46500, orders: 151 },
-  { month: "Aug", revenue: 62000, orders: 194 },
-  { month: "Sep", revenue: 58500, orders: 183 },
-  { month: "Oct", revenue: 74800, orders: 236 },
-];
-
-const topProducts = [
-  {
-    name: "USB-C Fast Charger 25W",
-    category: "Chargers",
-    sold: 248,
-    revenue: 111600,
-    share: 92,
-  },
-  {
-    name: "Wireless Earbuds Pro",
-    category: "Audio",
-    sold: 186,
-    revenue: 279000,
-    share: 76,
-  },
-  {
-    name: "Braided USB-C Cable",
-    category: "Cables",
-    sold: 174,
-    revenue: 43500,
-    share: 65,
-  },
-  {
-    name: "MagSafe Phone Case",
-    category: "Cases",
-    sold: 132,
-    revenue: 66000,
-    share: 51,
-  },
-];
-
-const orderBreakdown = [
-  { label: "Delivered", value: 68, color: "#10b981" },
-  { label: "Processing", value: 18, color: "#3b82f6" },
-  { label: "Shipped", value: 9, color: "#8b5cf6" },
-  { label: "Cancelled", value: 5, color: "#f43f5e" },
-];
+import { getAllOrders } from "@/lib/api/order";
+import { getProducts } from "@/lib/api/product";
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("en-BD", {
@@ -83,12 +38,14 @@ function MetricCard({ title, value, change, positive, icon: Icon, note }) {
         </span>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold ${positive ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}
-        >
-          {positive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-          {change}
-        </span>
+        {change && (
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold ${positive ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}
+          >
+            {positive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+            {change}
+          </span>
+        )}
         <span className="text-slate-500">{note}</span>
       </div>
     </article>
@@ -195,15 +152,117 @@ function RevenueChart({ data }) {
 export default function AdminAnalyticsPage() {
   const [period, setPeriod] = useState("6 months");
   const [reportNotice, setReportNotice] = useState("");
+  const [orders, setOrders] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([getAllOrders(), getProducts({ page: 1, limit: 100 })])
+      .then(([orderResult, productResult]) => {
+        if (!active) return;
+        if (orderResult?.success) setOrders(orderResult.data);
+        else setLoadError(orderResult?.message || "Could not load analytics orders.");
+        if (productResult?.success) setProducts(productResult.data);
+      })
+      .catch(() => {
+        if (active) setLoadError("Could not connect to analytics data.");
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const monthlyData = useMemo(() => {
+    const now = new Date();
+    const months = Array.from({ length: 12 }, (_, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - 11 + index, 1);
+      return {
+        key: `${date.getFullYear()}-${date.getMonth()}`,
+        month: date.toLocaleString("en", { month: "short" }),
+        revenue: 0,
+        orders: 0,
+      };
+    });
+    const byMonth = new Map(months.map((month) => [month.key, month]));
+    for (const order of orders) {
+      const date = new Date(order.createdAt);
+      const month = byMonth.get(`${date.getFullYear()}-${date.getMonth()}`);
+      if (month) {
+        month.orders += 1;
+        if (order.status !== "Cancelled") {
+          month.revenue += Number(order.total) || 0;
+        }
+      }
+    }
+    return months;
+  }, [orders]);
 
   const visibleData = useMemo(() => {
     if (period === "3 months") return monthlyData.slice(-3);
-    if (period === "12 months") return monthlyData; // Replace with 12 months of API data when connected.
+    if (period === "6 months") return monthlyData.slice(-6);
     return monthlyData;
-  }, [period]);
+  }, [monthlyData, period]);
+
+  const topProducts = useMemo(() => {
+    const sales = new Map();
+    for (const order of orders) {
+      if (order.status === "Cancelled") continue;
+      for (const item of order.items) {
+        const product = products.find((candidate) => candidate._id === item.productId);
+        const entry = sales.get(item.productId) || {
+          name: item.name,
+          category: product?.category || "",
+          sold: 0,
+          revenue: 0,
+          share: 0,
+        };
+        entry.sold += item.quantity;
+        entry.revenue += item.price * item.quantity;
+        sales.set(item.productId, entry);
+      }
+    }
+    const ranked = [...sales.values()].sort((a, b) => b.sold - a.sold).slice(0, 4);
+    const maximum = Math.max(...ranked.map((item) => item.sold), 1);
+    return ranked.map((item) => ({ ...item, share: Math.round((item.sold / maximum) * 100) }));
+  }, [orders, products]);
+
+  const orderBreakdown = useMemo(() => {
+    const colors = {
+      Pending: "#f59e0b",
+      Confirmed: "#06b6d4",
+      Processing: "#3b82f6",
+      Shipped: "#8b5cf6",
+      Delivered: "#10b981",
+      Cancelled: "#f43f5e",
+    };
+    const counts = new Map();
+    for (const order of orders) counts.set(order.status, (counts.get(order.status) || 0) + 1);
+    return [...counts.entries()].map(([label, count]) => ({
+      label,
+      value: orders.length ? (count / orders.length) * 100 : 0,
+      color: colors[label] || "#94a3b8",
+    }));
+  }, [orders]);
 
   const totalRevenue = visibleData.reduce((sum, item) => sum + item.revenue, 0);
   const totalOrders = visibleData.reduce((sum, item) => sum + item.orders, 0);
+  const visibleMonthKeys = new Set(visibleData.map((item) => item.key));
+  const ordersInPeriod = orders.filter((order) => {
+    const date = new Date(order.createdAt);
+    return visibleMonthKeys.has(`${date.getFullYear()}-${date.getMonth()}`);
+  });
+  const productsSold = ordersInPeriod.reduce(
+    (sum, order) => sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
+    0,
+  );
+  const activeCustomers = new Set(ordersInPeriod.map((order) => order.userId)).size;
+  const statusGradient = orderBreakdown.reduce((segments, item, index) => {
+    const start = orderBreakdown.slice(0, index).reduce((sum, previous) => sum + previous.value, 0);
+    return [...segments, `${item.color} ${start}% ${start + item.value}%`];
+  }, []).join(", ");
+  const highestRevenueMonth = [...visibleData].sort((a, b) => b.revenue - a.revenue)[0];
+  const largestStatus = [...orderBreakdown].sort((a, b) => b.value - a.value)[0];
 
   const handleExport = () => {
     const rows = [
@@ -228,7 +287,7 @@ export default function AdminAnalyticsPage() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    setReportNotice("CSV report exported using the current demo data.");
+    setReportNotice("CSV report exported using current order data.");
     window.setTimeout(() => setReportNotice(""), 3500);
   };
 
@@ -280,37 +339,35 @@ export default function AdminAnalyticsPage() {
         </div>
       )}
 
+      {loadError && (
+        <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {loadError}
+        </div>
+      )}
+
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           title="Total Revenue"
           value={formatCurrency(totalRevenue)}
-          change="+18.6%"
-          positive
-          note="vs. previous period"
+          note="in selected period"
           icon={CreditCard}
         />
         <MetricCard
           title="Total Orders"
           value={totalOrders.toLocaleString("en-BD")}
-          change="+12.4%"
-          positive
-          note="vs. previous period"
+          note="in selected period"
           icon={ShoppingBag}
         />
         <MetricCard
           title="Products Sold"
-          value="1,284"
-          change="+8.2%"
-          positive
-          note="vs. previous period"
+          value={productsSold.toLocaleString("en-BD")}
+          note="in selected period"
           icon={Package}
         />
         <MetricCard
           title="Active Customers"
-          value="846"
-          change="+5.7%"
-          positive
-          note="vs. previous period"
+          value={activeCustomers.toLocaleString("en-BD")}
+          note="customers with orders in period"
           icon={Users}
         />
       </section>
@@ -323,7 +380,7 @@ export default function AdminAnalyticsPage() {
                 Revenue Overview
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Monthly revenue trend from the selected demo period.
+                Monthly revenue totals from stored, non-cancelled orders.
               </p>
             </div>
             <div className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700">
@@ -332,7 +389,13 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
           <div className="mt-5">
-            <RevenueChart data={visibleData} />
+            {visibleData.some((item) => item.revenue > 0) ? (
+              <RevenueChart data={visibleData} />
+            ) : (
+              <div className="grid h-[230px] place-items-center text-sm text-slate-500">
+                No order revenue in this period.
+              </div>
+            )}
           </div>
           <div className="mt-2 grid grid-cols-2 gap-3 border-t border-slate-100 pt-4">
             <div>
@@ -367,12 +430,12 @@ export default function AdminAnalyticsPage() {
             <div
               className="relative grid h-44 w-44 place-items-center rounded-full"
               style={{
-                background: `conic-gradient(${orderBreakdown.map((item, index) => `${item.color} ${orderBreakdown.slice(0, index).reduce((sum, previous) => sum + previous.value, 0)}% ${orderBreakdown.slice(0, index + 1).reduce((sum, previous) => sum + previous.value, 0)}%`).join(", ")}`,
+                background: orderBreakdown.length ? `conic-gradient(${statusGradient})` : "#e2e8f0",
               }}
             >
               <div className="grid h-28 w-28 place-items-center rounded-full bg-white text-center">
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">100%</p>
+                  <p className="text-2xl font-bold text-slate-900">{orders.length}</p>
                   <p className="text-xs text-slate-500">All orders</p>
                 </div>
               </div>
@@ -489,7 +552,9 @@ export default function AdminAnalyticsPage() {
                 Revenue trend
               </p>
               <p className="mt-1 text-sm leading-6 text-emerald-900">
-                October has the highest revenue in the displayed period.
+                {highestRevenueMonth?.revenue > 0
+                  ? `${highestRevenueMonth.month} has the highest revenue in the selected period.`
+                  : "No revenue is recorded in the selected period."}
               </p>
             </div>
             <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
@@ -497,7 +562,9 @@ export default function AdminAnalyticsPage() {
                 Best seller
               </p>
               <p className="mt-1 text-sm leading-6 text-blue-900">
-                USB-C Fast Charger 25W leads by units sold.
+                {topProducts[0]
+                  ? `${topProducts[0].name} leads by units sold.`
+                  : "No product sales are recorded yet."}
               </p>
             </div>
             <div className="rounded-xl border border-amber-100 bg-amber-50 p-4">
@@ -505,17 +572,16 @@ export default function AdminAnalyticsPage() {
                 Order health
               </p>
               <p className="mt-1 text-sm leading-6 text-amber-900">
-                Most orders are marked as delivered in this sample.
+                {largestStatus
+                  ? `${largestStatus.label} represents the largest share of all recorded orders.`
+                  : "No orders are recorded yet."}
               </p>
             </div>
           </div>
         </article>
       </section>
 
-      <p className="text-xs text-slate-400">
-        Demo analytics only. Connect your API/database to display live UniTech
-        store metrics.
-      </p>
+      <p className="text-xs text-slate-400">Analytics reflect recorded order data available to your admin account.</p>
     </main>
   );
 }

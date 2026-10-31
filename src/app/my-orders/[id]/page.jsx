@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,6 +21,7 @@ import {
   ShoppingBag,
   ClipboardList,
 } from "lucide-react";
+import { getOrderById } from "@/lib/api/order";
 
 const demoOrders = [
   {
@@ -360,11 +362,93 @@ function OrderTimeline({ order }) {
   );
 }
 
+function parseDeliveryAddress(value = "") {
+  return Object.fromEntries(
+    value.split("\n").map((line) => {
+      const separator = line.indexOf(":");
+      return separator < 0
+        ? ["Address", line]
+        : [line.slice(0, separator).trim(), line.slice(separator + 1).trim()];
+    }),
+  );
+}
+
+function buildTimeline(status, createdAt) {
+  const stages = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"];
+  const currentStage = stages.indexOf(status);
+  const completedStages = status === "Cancelled" ? 1 : Math.max(currentStage + 1, 1);
+  const timeline = stages.map((stage, index) => ({
+    title: stage === "Pending" ? "Order Placed" : stage,
+    description: stage === "Pending" ? "Your order was submitted." : `Order status: ${stage}.`,
+    date: index === 0 ? formatDate(createdAt) : "",
+    completed: index < completedStages,
+  }));
+
+  if (status === "Cancelled") {
+    timeline.push({
+      title: "Cancelled",
+      description: "This order has been cancelled.",
+      date: "",
+      completed: true,
+    });
+  }
+
+  return timeline;
+}
+
 export default function OrderDetailsPage() {
   const params = useParams();
   const orderId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const [order, setOrder] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
-  const order = demoOrders.find((item) => item.id === orderId);
+  useEffect(() => {
+    let active = true;
+    getOrderById(orderId)
+      .then((result) => {
+        if (!active) return;
+        if (!result?.success) {
+          setLoadError(result?.message || "Order not found.");
+          return;
+        }
+
+        const savedOrder = result.data;
+        const address = parseDeliveryAddress(savedOrder.deliveryAddress);
+        setOrder({
+          id: savedOrder._id,
+          date: savedOrder.createdAt,
+          status: savedOrder.status,
+          paymentMethod: savedOrder.paymentMethod,
+          paymentStatus: savedOrder.paymentStatus || "Payment due on delivery",
+          customer: {
+            name: address.Name || savedOrder.userEmail || "Customer",
+            phone: address.Phone || "Not provided",
+            address: address.Address || savedOrder.deliveryAddress || "Not provided",
+          },
+          deliveryType: address.Delivery || "Delivery option not recorded",
+          deliveryFee: savedOrder.shippingFee || 0,
+          subtotal: savedOrder.subtotal,
+          total: savedOrder.total,
+          items: savedOrder.items.map((item) => ({
+            id: item.productId,
+            ...item,
+            image: item.image || "/favicon.ico",
+          })),
+          timeline: buildTimeline(savedOrder.status, savedOrder.createdAt),
+        });
+      })
+      .catch(() => {
+        if (active) setLoadError("Could not connect to your order.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [orderId]);
 
   if (!order) {
     return (
@@ -377,12 +461,11 @@ export default function OrderDetailsPage() {
           </div>
 
           <h1 className="mt-6 text-2xl font-extrabold text-slate-900">
-            Order Not Found
+            {isLoading ? "Loading order..." : "Order Not Found"}
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-slate-500">
-            We could not find an order matching this ID. Check the order ID or
-            return to your orders list.
+            {loadError || "We could not find an order matching this ID. Check the order ID or return to your orders list."}
           </p>
 
           <Link
@@ -458,13 +541,6 @@ export default function OrderDetailsPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        {/* Demo Notice */}
-        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-          <strong>Demo data:</strong> This order information and tracking
-          timeline are sample data. Production order details must be fetched
-          from the backend after verifying the logged-in customer&apos;s access.
-        </div>
-
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_360px]">
           {/* Left Column */}
           <div className="space-y-6">

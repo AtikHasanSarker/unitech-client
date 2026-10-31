@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   ChevronRight,
   ChevronLeft,
@@ -22,6 +22,13 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { addCartItem } from "@/lib/api/cart";
+import { getProductById, getProducts } from "@/lib/api/product";
+import {
+  addToWishlist,
+  getWishlist,
+  removeFromWishlist,
+} from "@/lib/api/wishlist";
 
 const products = [
   {
@@ -197,10 +204,11 @@ const formatPrice = (price) => `৳${price.toLocaleString("en-BD")}`;
 
 export default function ProductDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const productId = Array.isArray(params.id) ? params.id[0] : params.id;
-
-  const product = products.find((item) => item.id === productId);
-
+  const [product, setProduct] = useState(null);
+  const [relatedProductsList, setRelatedProductsList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -208,13 +216,97 @@ export default function ProductDetailsPage() {
   const [cartCount, setCartCount] = useState(0);
   const [notice, setNotice] = useState("");
 
+  useEffect(() => {
+    let active = true;
+
+    getProductById(productId)
+      .then(async (result) => {
+        if (!active) return;
+        if (!result?.success) {
+          setProduct(null);
+          setNotice(result?.message || "Product not found.");
+          return;
+        }
+
+        const currentProduct = result.data;
+        const normalizedProduct = {
+          ...currentProduct,
+          id: currentProduct._id,
+          images: currentProduct.images?.length ? currentProduct.images : ["/favicon.ico"],
+          features: Array.isArray(currentProduct.features) ? currentProduct.features : [],
+          specifications: Object.entries(currentProduct.specifications || {
+            Brand: currentProduct.brand || "Not specified",
+            Category: currentProduct.category || "Not specified",
+            Stock: Number(currentProduct.stock) > 0 ? currentProduct.stock : "Out of stock",
+          }),
+        };
+
+        setProduct(normalizedProduct);
+        setActiveImage(0);
+
+        const [relatedResult, wishlistResult] = await Promise.all([
+          getProducts({ category: currentProduct.category, page: 1, limit: 5 }),
+          getWishlist(),
+        ]);
+
+        if (!active) return;
+        if (relatedResult?.success) {
+          setRelatedProductsList(
+            relatedResult.data
+              .filter((item) => item._id !== currentProduct._id)
+              .map((item) => ({
+                ...item,
+                id: item._id,
+                image: item.images?.[0] || "/favicon.ico",
+              })),
+          );
+        }
+        if (wishlistResult?.success) {
+          setIsWishlisted(
+            wishlistResult.data.items.some((item) => item.productId === currentProduct._id),
+          );
+        }
+      })
+      .catch(() => {
+        if (active) setNotice("Could not connect to the product service.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [productId]);
+
   const showNotice = (message) => {
     setNotice(message);
   };
 
-  const addToCart = () => {
+  const addToCart = async () => {
+    const result = await addCartItem(productId, quantity);
+    if (!result?.success) {
+      showNotice(result?.message || "Sign in to add this product to your cart.");
+      return false;
+    }
     setCartCount((count) => count + quantity);
-    showNotice(`${quantity} item(s) added to your demo cart.`);
+    showNotice(`${quantity} item(s) added to your cart.`);
+    return true;
+  };
+
+  const toggleWishlist = async () => {
+    const result = isWishlisted
+      ? await removeFromWishlist(productId)
+      : await addToWishlist(productId);
+    if (!result?.success) {
+      showNotice(result?.message || "Sign in to update your wishlist.");
+      return;
+    }
+    setIsWishlisted((value) => !value);
+  };
+
+  const buyNow = async () => {
+    if (await addToCart()) router.push("/cart");
   };
 
   if (!product) {
@@ -228,12 +320,11 @@ export default function ProductDetailsPage() {
             </div>
 
             <h1 className="mt-6 text-2xl font-bold text-slate-900">
-              Product not found
+              {isLoading ? "Loading product..." : "Product not found"}
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-slate-500">
-              This product is not available in the current placeholder dataset.
-              Try another product from the listing page.
+              {notice || "This product is not available. Try another product from the listing page."}
             </p>
 
             <Link
@@ -313,7 +404,7 @@ export default function ProductDetailsPage() {
                   )}
 
                   <button
-                    onClick={() => setIsWishlisted((value) => !value)}
+                    onClick={toggleWishlist}
                     aria-label={
                       isWishlisted ? "Remove from wishlist" : "Add to wishlist"
                     }
@@ -365,7 +456,7 @@ export default function ProductDetailsPage() {
 
                 <span className="inline-flex items-center gap-1 text-xs text-emerald-700">
                   <BadgeCheck size={15} />
-                  Product details demo
+                  Product details
                 </span>
               </div>
 
@@ -373,26 +464,24 @@ export default function ProductDetailsPage() {
                 {product.name}
               </h1>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
-                <div className="flex items-center gap-1.5">
-                  <Star size={17} fill="#F59E0B" stroke="#F59E0B" />
-                  <span className="text-sm font-bold text-slate-800">
-                    {product.rating}
-                  </span>
+              {(product.rating !== undefined || product.sku) && (
+                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+                  {product.rating !== undefined && (
+                    <span className="flex items-center gap-1.5 text-sm font-bold text-slate-800">
+                      <Star size={17} fill="#F59E0B" stroke="#F59E0B" />
+                      {product.rating}
+                      {product.reviews !== undefined && (
+                        <span className="font-normal text-slate-500">
+                          ({product.reviews} reviews)
+                        </span>
+                      )}
+                    </span>
+                  )}
+                  {product.sku && (
+                    <span className="text-xs text-slate-500">SKU: {product.sku}</span>
+                  )}
                 </div>
-
-                <span className="text-sm text-slate-300">|</span>
-
-                <span className="text-sm text-slate-500">
-                  {product.reviews} reviews
-                </span>
-
-                <span className="text-sm text-slate-300">|</span>
-
-                <span className="text-xs text-slate-500">
-                  SKU: {product.sku}
-                </span>
-              </div>
+              )}
 
               <div className="my-6 border-t border-slate-200" />
 
@@ -415,8 +504,7 @@ export default function ProductDetailsPage() {
               </div>
 
               <p className="mt-3 text-xs leading-5 text-slate-500">
-                Final price and availability will be confirmed when connected to
-                the live product API.
+                Price and availability are current as provided by the store.
               </p>
 
               {/* Stock */}
@@ -427,7 +515,7 @@ export default function ProductDetailsPage() {
                 </span>
                 <span className="text-sm font-semibold text-emerald-700">
                   {product.stock > 0
-                    ? `In stock — ${product.stock} units (demo)`
+                    ? `In stock — ${product.stock} units`
                     : "Currently unavailable"}
                 </span>
               </div>
@@ -490,9 +578,7 @@ export default function ProductDetailsPage() {
                 </button>
 
                 <button
-                  onClick={() =>
-                    showNotice("Checkout will be available after integration.")
-                  }
+                  onClick={buyNow}
                   disabled={product.stock <= 0}
                   className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-800 transition hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -502,7 +588,7 @@ export default function ProductDetailsPage() {
               </div>
 
               <button
-                onClick={() => setIsWishlisted((value) => !value)}
+                onClick={toggleWishlist}
                 className="mt-4 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium text-slate-500 transition hover:text-red-500"
               >
                 <Heart
@@ -574,7 +660,9 @@ export default function ProductDetailsPage() {
               {[
                 { id: "description", label: "Description" },
                 { id: "specifications", label: "Specifications" },
-                { id: "reviews", label: `Reviews (${product.reviews})` },
+                ...(product.rating !== undefined
+                  ? [{ id: "reviews", label: `Reviews (${product.reviews || 0})` }]
+                  : []),
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -609,7 +697,7 @@ export default function ProductDetailsPage() {
                   </h3>
 
                   <ul className="mt-4 space-y-3">
-                    {product.features.map((feature) => (
+                    {product.features.length > 0 ? product.features.map((feature) => (
                       <li
                         key={feature}
                         className="flex items-start gap-3 text-sm text-slate-600"
@@ -620,7 +708,9 @@ export default function ProductDetailsPage() {
                         />
                         {feature}
                       </li>
-                    ))}
+                    )) : (
+                      <li className="text-sm text-slate-500">No additional features listed.</li>
+                    )}
                   </ul>
                 </div>
               )}
@@ -649,7 +739,7 @@ export default function ProductDetailsPage() {
                 </div>
               )}
 
-              {activeTab === "reviews" && (
+              {activeTab === "reviews" && product.rating !== undefined && (
                 <div className="max-w-3xl">
                   <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                     <div className="rounded-2xl bg-blue-50 p-6 text-center">
@@ -671,7 +761,7 @@ export default function ProductDetailsPage() {
                         ))}
                       </div>
                       <p className="mt-2 text-xs text-slate-500">
-                        {product.reviews} demo reviews
+                        {product.reviews || 0} reviews
                       </p>
                     </div>
 
@@ -680,9 +770,7 @@ export default function ProductDetailsPage() {
                         Customer reviews
                       </h3>
                       <p className="mt-2 max-w-lg text-sm leading-6 text-slate-500">
-                        The rating shown here is placeholder data for the
-                        design. Real customer reviews and review submission will
-                        be connected later.
+                        Review details are not available for this product.
                       </p>
                     </div>
                   </div>
@@ -712,7 +800,7 @@ export default function ProductDetailsPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
-              {relatedProducts
+              {relatedProductsList
                 .filter((item) => item.id !== product.id)
                 .map((item) => (
                   <Link
@@ -739,9 +827,11 @@ export default function ProductDetailsPage() {
                         <span className="font-bold text-slate-900">
                           {formatPrice(item.price)}
                         </span>
-                        <span className="text-xs text-slate-400 line-through">
-                          {formatPrice(item.oldPrice)}
-                        </span>
+                        {item.oldPrice > item.price && (
+                          <span className="text-xs text-slate-400 line-through">
+                            {formatPrice(item.oldPrice)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </Link>

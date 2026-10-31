@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Search,
   Users,
@@ -18,6 +18,8 @@ import {
   ChevronDown,
   SlidersHorizontal,
 } from "lucide-react";
+import { getAllOrders } from "@/lib/api/order";
+import { getUsers, updateUserRole, updateUserStatus } from "@/lib/api/user";
 
 const INITIAL_CUSTOMERS = [
   {
@@ -118,12 +120,62 @@ function formatDate(dateString) {
 }
 
 export default function AdminCustomersPage() {
-  const [customers, setCustomers] = useState(INITIAL_CUSTOMERS);
+  const [customers, setCustomers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [sortBy, setSortBy] = useState("newest");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([getUsers(), getAllOrders()])
+      .then(([usersResult, ordersResult]) => {
+        if (!active) return;
+        if (!usersResult?.success) {
+          setLoadError(usersResult?.message || "Could not load customers.");
+          return;
+        }
+
+        const activityByUser = new Map();
+        for (const order of ordersResult?.data || []) {
+          const activity = activityByUser.get(order.userId) || { orders: 0, spent: 0 };
+          activity.orders += 1;
+          activity.spent += Number(order.total) || 0;
+          activityByUser.set(order.userId, activity);
+        }
+
+        setCustomers(
+          usersResult.data.map((user) => {
+            const activity = activityByUser.get(user._id) || { orders: 0, spent: 0 };
+            return {
+              id: user._id,
+              name: user.name || user.email,
+              email: user.email || "",
+              phone: user.phone || "Not provided",
+              location: user.location || "Not provided",
+              joinedAt: user.createdAt,
+              orders: activity.orders,
+              spent: activity.spent,
+              status: user.status || "Active",
+              role: user.role || "user",
+            };
+          }),
+        );
+      })
+      .catch(() => {
+        if (active) setLoadError("Could not connect to customer data.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredCustomers = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -175,11 +227,16 @@ export default function AdminCustomersPage() {
     0,
   );
 
-  function toggleCustomerStatus(customerId) {
+  async function toggleCustomerStatus(customerId) {
     const customer = customers.find((item) => item.id === customerId);
     if (!customer) return;
 
     const nextStatus = customer.status === "Active" ? "Inactive" : "Active";
+    const result = await updateUserStatus(customerId, nextStatus);
+    if (!result?.success) {
+      setNotice(result?.message || "Customer status could not be saved.");
+      return;
+    }
 
     setCustomers((current) =>
       current.map((item) =>
@@ -195,6 +252,20 @@ export default function AdminCustomersPage() {
     window.setTimeout(() => setNotice(""), 3000);
   }
 
+  async function changeCustomerRole(customerId, role) {
+    const result = await updateUserRole(customerId, role);
+    if (!result?.success) {
+      setNotice(result?.message || "Customer role could not be saved.");
+      return;
+    }
+    setCustomers((current) => current.map((customer) =>
+      customer.id === customerId ? { ...customer, role } : customer,
+    ));
+    setSelectedCustomer((current) => current?.id === customerId ? { ...current, role } : current);
+    setNotice("Customer role updated.");
+    window.setTimeout(() => setNotice(""), 3000);
+  }
+
   function resetFilters() {
     setSearch("");
     setStatusFilter("All Statuses");
@@ -204,6 +275,11 @@ export default function AdminCustomersPage() {
   return (
     <div className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
+        {(isLoading || loadError) && (
+          <div className={`rounded-xl border px-4 py-3 text-sm ${loadError ? "border-amber-200 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600"}`}>
+            {loadError || "Loading customers..."}
+          </div>
+        )}
         {/* Page heading */}
         <div>
           <div className="mb-1 flex items-center gap-2 text-sm text-slate-500">
@@ -457,8 +533,7 @@ export default function AdminCustomersPage() {
           </div>
 
           <div className="border-t border-slate-100 px-5 py-4 text-sm text-slate-500">
-            Customer information shown here is sample data. Connect your
-            customer API to use real records.
+            Account status is informational and does not disable authentication.
           </div>
         </section>
       </div>
@@ -550,6 +625,19 @@ export default function AdminCustomersPage() {
                   </p>
                 </div>
               </div>
+
+              <label className="block space-y-1.5 text-sm font-medium text-slate-700">
+                Account role
+                <select
+                  value={selectedCustomer.role}
+                  onChange={(event) => changeCustomerRole(selectedCustomer.id, event.target.value)}
+                  disabled={selectedCustomer.id === customers.find((customer) => customer.role === "admin")?.id}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none focus:border-blue-500"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </label>
 
               <button
                 type="button"

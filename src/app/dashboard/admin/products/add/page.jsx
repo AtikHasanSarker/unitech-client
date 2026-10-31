@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { addProduct } from "@/lib/api/product";
+import { uploadImage as uploadImageAction } from "@/lib/api/upload";
 
 const initialForm = {
   name: "",
@@ -146,31 +147,9 @@ export default function AddProductPage() {
       reader.readAsDataURL(file);
     });
 
-    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+    const result = await uploadImageAction(base64Image, file.name);
 
-    if (!serverUrl) {
-      throw new Error(
-        "Server URL is not configured. Check NEXT_PUBLIC_SERVER_URL.",
-      );
-    }
-
-    const response = await fetch(
-      `${serverUrl.replace(/\/+$/, "")}/api/upload`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          file: base64Image,
-          name: file.name,
-        }),
-      },
-    );
-
-    const result = await response.json().catch(() => null);
-
-    if (!response.ok || !result?.success || !result?.data?.url) {
+    if (!result?.success || !result?.data?.url) {
       throw new Error(
         result?.message || "Image upload failed. Please try again.",
       );
@@ -240,7 +219,7 @@ export default function AddProductPage() {
         price,
         category: form.category.trim(),
         stock,
-        image: imageUrl,
+        images: imageUrl ? [imageUrl] : [],
       });
 
       if (result?.success === false) {

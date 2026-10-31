@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -17,6 +17,10 @@ import {
   RotateCcw,
   Truck,
 } from "lucide-react";
+import { getCategories } from "@/lib/api/category";
+import { addCartItem } from "@/lib/api/cart";
+import { getProducts } from "@/lib/api/product";
+import { addToWishlist, getWishlist, removeFromWishlist } from "@/lib/api/wishlist";
 
 // Temporary placeholder data.
 // Replace this array with your API data later.
@@ -231,6 +235,7 @@ function SectionTitle({ children }) {
 }
 
 function FilterSidebar({
+  categoryOptions,
   category,
   setCategory,
   maxPrice,
@@ -257,7 +262,7 @@ function FilterSidebar({
         <SectionTitle>Categories</SectionTitle>
 
         <div className="space-y-1">
-          {categories.map((item) => (
+          {categoryOptions.map((item) => (
             <button
               key={item.name}
               onClick={() =>
@@ -320,7 +325,6 @@ function FilterSidebar({
                 onChange={() => setMinRating(rating)}
                 className="accent-blue-600"
               />
-
               {rating === 0 ? (
                 <span>All ratings</span>
               ) : (
@@ -449,15 +453,17 @@ function ProductCard({ product, isWishlisted, onWishlist, onAddToCart }) {
           </h3>
         </Link>
 
-        <div className="mt-2.5 flex items-center gap-1.5">
-          <Star size={13} fill="#F59E0B" stroke="#F59E0B" />
-          <span className="text-xs font-semibold text-slate-700">
-            {product.rating}
-          </span>
-          <span className="text-[10px] text-slate-400 sm:text-xs">
-            ({product.reviews})
-          </span>
-        </div>
+        {Number.isFinite(product.rating) && (
+          <div className="mt-2.5 flex items-center gap-1.5">
+            <Star size={13} fill="#F59E0B" stroke="#F59E0B" />
+            <span className="text-xs font-semibold text-slate-700">
+              {product.rating}
+            </span>
+            <span className="text-[10px] text-slate-400 sm:text-xs">
+              ({product.reviews})
+            </span>
+          </div>
+        )}
 
         <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="text-base font-extrabold tracking-tight text-slate-900 sm:text-lg">
@@ -484,6 +490,11 @@ function ProductCard({ product, isWishlisted, onWishlist, onAddToCart }) {
 }
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState([]);
+  const [pagination, setPagination] = useState({ totalPages: 0 });
+  const [categoryOptions, setCategoryOptions] = useState(
+    categories.slice(0, 1).map((item) => ({ name: item.name, count: 0 })),
+  );
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("featured");
@@ -495,6 +506,73 @@ export default function ProductsPage() {
   const [wishlisted, setWishlisted] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    getProducts({
+      search,
+      category: category === "All" ? undefined : category,
+      maxPrice,
+      sort:
+        sort === "price-low"
+          ? "price_asc"
+          : sort === "price-high"
+            ? "price_desc"
+            : "newest",
+      page: currentPage,
+      limit: 8,
+    })
+      .then((result) => {
+        if (!active) return;
+        if (!result?.success) {
+          setProducts([]);
+          setNotice(result?.message || "Could not load products.");
+          return;
+        }
+        setProducts(
+          result.data.map((product) => ({
+            ...product,
+            id: product._id,
+            image: product.images?.[0] || "/images/product-placeholder.png",
+            color: "bg-slate-50",
+            inStock: Number(product.stock) > 0,
+          })),
+        );
+        setPagination(result.pagination);
+      })
+      .catch(() => {
+        if (active) setNotice("Could not connect to the product service.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [search, category, maxPrice, sort, currentPage]);
+
+  useEffect(() => {
+    let active = true;
+
+    Promise.all([getCategories(), getWishlist()]).then(([categoryResult, wishlistResult]) => {
+      if (!active) return;
+      if (categoryResult?.success) {
+        setCategoryOptions([
+          { name: "All Products", count: 0 },
+          ...categoryResult.data.map((item) => ({
+            name: item.name,
+            count: 0,
+          })),
+        ]);
+      }
+      if (wishlistResult?.success) {
+        setWishlisted(wishlistResult.data.items.map((item) => item.productId));
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const itemsPerPage = 8;
 
@@ -510,8 +588,7 @@ export default function ProductsPage() {
 
       const matchesPrice = product.price <= maxPrice;
       const matchesStock = !inStockOnly || product.inStock;
-      const matchesRating = product.rating >= minRating;
-
+      const matchesRating = minRating === 0 || product.rating >= minRating;
       return (
         matchesSearch &&
         matchesCategory &&
@@ -526,7 +603,7 @@ export default function ProductsPage() {
     } else if (sort === "price-high") {
       result.sort((a, b) => b.price - a.price);
     } else if (sort === "rating") {
-      result.sort((a, b) => b.rating - a.rating);
+      result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     } else if (sort === "newest") {
       result.sort((a, b) => {
         const aNew = a.badge === "NEW" ? 1 : 0;
@@ -536,19 +613,13 @@ export default function ProductsPage() {
     }
 
     return result;
-  }, [search, category, sort, maxPrice, inStockOnly, minRating]);
+  }, [products, search, category, sort, maxPrice, inStockOnly, minRating]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredProducts.length / itemsPerPage),
-  );
+  const totalPages = Math.max(1, pagination.totalPages || 0);
 
   const safePage = Math.min(currentPage, totalPages);
 
-  const visibleProducts = filteredProducts.slice(
-    (safePage - 1) * itemsPerPage,
-    safePage * itemsPerPage,
-  );
+  const visibleProducts = filteredProducts;
 
   const resetFilters = () => {
     setSearch("");
@@ -571,7 +642,16 @@ export default function ProductsPage() {
     setMobileFiltersOpen(false);
   };
 
-  const toggleWishlist = (id) => {
+  const toggleWishlist = async (id) => {
+    const result = wishlisted.includes(id)
+      ? await removeFromWishlist(id)
+      : await addToWishlist(id);
+
+    if (!result?.success) {
+      setNotice(result?.message || "Sign in to update your wishlist.");
+      return;
+    }
+
     setWishlisted((current) =>
       current.includes(id)
         ? current.filter((item) => item !== id)
@@ -579,9 +659,14 @@ export default function ProductsPage() {
     );
   };
 
-  const addToCart = (product) => {
+  const addToCart = async (product) => {
+    const result = await addCartItem(product.id, 1);
+    if (!result?.success) {
+      setNotice(result?.message || "Sign in to add items to your cart.");
+      return;
+    }
     setCartCount((count) => count + 1);
-    setNotice(`${product.name} added to your demo cart.`);
+    setNotice(`${product.name} added to your cart.`);
     window.setTimeout(() => setNotice(""), 2500);
   };
 
@@ -703,6 +788,7 @@ export default function ProductsPage() {
             <aside className="hidden lg:block">
               <div className="sticky top-6 rounded-2xl border border-slate-200 bg-white p-5">
                 <FilterSidebar
+                  categoryOptions={categoryOptions}
                   category={category}
                   setCategory={updateCategory}
                   maxPrice={maxPrice}
@@ -877,6 +963,7 @@ export default function ProductsPage() {
 
               <div className="flex-1 overflow-y-auto p-5">
                 <FilterSidebar
+                  categoryOptions={categoryOptions}
                   category={category}
                   setCategory={updateCategory}
                   maxPrice={maxPrice}
@@ -910,7 +997,7 @@ export default function ProductsPage() {
           </div>
         )}
 
-        {/* Demo cart feedback */}
+        {/* Cart feedback */}
         {notice && (
           <div
             role="status"
@@ -921,7 +1008,7 @@ export default function ProductsPage() {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-slate-900">
-                Added to demo cart
+                Cart updated
               </p>
               <p className="mt-1 text-xs leading-5 text-slate-500">{notice}</p>
               <p className="mt-2 text-xs font-semibold text-blue-600">

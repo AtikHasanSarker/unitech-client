@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -22,42 +22,20 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import OrderPlacementModal from "./OrderPlacementModal";
+import {
+  clearCart as clearCartRequest,
+  getCart,
+  removeCartItem,
+  updateCartItem,
+} from "@/lib/api/cart";
 
-const initialCart = [
-  {
-    id: "p1",
-    name: "Baseus Bowie WM02 Wireless Earbuds",
-    brand: "Baseus",
-    category: "Earphones",
-    price: 1450,
-    oldPrice: 1890,
-    quantity: 1,
-    stock: 18,
-    image: "https://placehold.co/300x300/f5f3ff/7c3aed?text=Wireless+Earbuds",
-  },
-  {
-    id: "p2",
-    name: "UGREEN 20W USB-C Fast Charger",
-    brand: "UGREEN",
-    category: "Chargers",
-    price: 890,
-    oldPrice: 1090,
-    quantity: 2,
-    stock: 12,
-    image: "https://placehold.co/300x300/eff6ff/2563eb?text=Fast+Charger",
-  },
-  {
-    id: "p3",
-    name: "Baseus Cafule USB-C Cable",
-    brand: "Baseus",
-    category: "Cables",
-    price: 390,
-    oldPrice: 490,
-    quantity: 1,
-    stock: 25,
-    image: "https://placehold.co/300x300/f1f5f9/475569?text=USB-C+Cable",
-  },
-];
+const normalizeCartItems = (cart) =>
+  (cart?.items || []).map((item) => ({
+    ...item,
+    id: item.productId,
+    brand: "",
+    category: "",
+  }));
 
 const formatPrice = (price) => `৳${price.toLocaleString("en-BD")}`;
 
@@ -67,12 +45,36 @@ const DEMO_COUPONS = {
 };
 
 export default function CartPage() {
-  const [cart, setCart] = useState(initialCart);
+  const [cart, setCart] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponMessage, setCouponMessage] = useState("");
   const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    getCart()
+      .then((result) => {
+        if (!active) return;
+        if (result?.success) {
+          setCart(normalizeCartItems(result.data));
+        } else {
+          setNotice(result?.message || "Sign in to load your cart.");
+        }
+      })
+      .catch(() => {
+        if (active) setNotice("Could not connect to your cart.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const subtotal = cart.reduce(
     (total, item) => total + item.price * item.quantity,
@@ -99,29 +101,29 @@ export default function CartPage() {
 
   const totalQuantity = cart.reduce((total, item) => total + item.quantity, 0);
 
-  const updateQuantity = (id, amount) => {
-    setCart((current) =>
-      current.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              quantity: Math.min(
-                item.stock,
-                Math.max(1, item.quantity + amount),
-              ),
-            }
-          : item,
-      ),
-    );
+  const updateQuantity = async (id, amount) => {
+    const item = cart.find((product) => product.id === id);
+    if (!item) return;
+
+    const result = await updateCartItem(id, Math.max(1, item.quantity + amount));
+    if (result?.success) {
+      setCart(normalizeCartItems(result.data));
+    } else {
+      setNotice(result?.message || "Could not update item quantity.");
+    }
   };
 
-  const removeItem = (id) => {
+  const removeItem = async (id) => {
     const item = cart.find((product) => product.id === id);
-
-    setCart((current) => current.filter((product) => product.id !== id));
+    const result = await removeCartItem(id);
+    if (!result?.success) {
+      setNotice(result?.message || "Could not remove this item.");
+      return;
+    }
+    setCart(normalizeCartItems(result.data));
 
     if (item) {
-      setNotice(`${item.name} removed from your demo cart.`);
+      setNotice(`${item.name} removed from your cart.`);
     }
 
     setAppliedCoupon(null);
@@ -156,7 +158,12 @@ export default function CartPage() {
     setCouponMessage("");
   };
 
-  const clearCart = () => {
+  const clearCart = async () => {
+    const result = await clearCartRequest();
+    if (!result?.success) {
+      setNotice(result?.message || "Could not clear your cart.");
+      return;
+    }
     setCart([]);
     setAppliedCoupon(null);
     setCouponInput("");
@@ -204,7 +211,11 @@ export default function CartPage() {
         </section>
 
         <section className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-          {cart.length === 0 ? (
+          {isLoading ? (
+            <div className="flex min-h-[420px] items-center justify-center rounded-3xl border border-slate-200 bg-white text-sm font-medium text-slate-500">
+              Loading your cart...
+            </div>
+          ) : cart.length === 0 ? (
             /* Empty Cart */
             <div className="flex min-h-[420px] flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white px-6 py-12 text-center">
               <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
@@ -299,7 +310,7 @@ export default function CartPage() {
 
                           <p className="mt-2 text-xs text-emerald-700">
                             <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            In stock (demo)
+                            Stock is checked when you update or order
                           </p>
 
                           {/* Quantity and remove */}
@@ -654,11 +665,13 @@ export default function CartPage() {
         onClose={() => setIsOrderModalOpen(false)}
         cartItems={cartItems}
         subtotal={subtotal}
+                    couponCode={appliedCoupon?.code}
         onOrderPlaced={(order) => {
-          console.log("Order placed:", order);
-
-          // Backend integration হলে এখানে cart clear করার
-          // এবং order confirmation handle করার logic যোগ করবেন।
+          setCart([]);
+          setAppliedCoupon(null);
+          setCouponInput("");
+          setCouponMessage("");
+          setNotice(`Order ${order._id} placed successfully.`);
         }}
       />
     </>

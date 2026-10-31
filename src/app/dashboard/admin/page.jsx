@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowDownRight,
@@ -30,6 +30,9 @@ import { Avatar, Button, Dropdown, Label } from "@heroui/react";
 import { MdLogout } from "react-icons/md";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { getAdminStats } from "@/lib/api/admin";
+import { getAllOrders } from "@/lib/api/order";
+import { getProducts } from "@/lib/api/product";
 
 const overviewCards = [
   {
@@ -223,11 +226,141 @@ export default function AdminDashboardPage() {
   const [period, setPeriod] = useState("This Year");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
+  const [stats, setStats] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([getAdminStats(), getAllOrders(), getProducts({ page: 1, limit: 100 })])
+      .then(([statsResult, orderResult, productResult]) => {
+        if (!active) return;
+        if (statsResult?.success) setStats(statsResult.data);
+        if (orderResult?.success) setOrders(orderResult.data);
+        if (productResult?.success) setProducts(productResult.data);
+        if (!statsResult?.success || !orderResult?.success || !productResult?.success) {
+          setLoadError("Some dashboard data could not be loaded.");
+        }
+      })
+      .catch(() => {
+        if (active) setLoadError("Could not connect to dashboard data.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const dashboardCards = overviewCards.map((card, index) => ({
+    ...card,
+    value: [
+      formatCurrency(stats?.totalRevenue || 0),
+      (stats?.totalOrders || 0).toLocaleString("en-BD"),
+      (stats?.totalProducts || 0).toLocaleString("en-BD"),
+      (stats?.totalUsers || 0).toLocaleString("en-BD"),
+    ][index],
+    change: "",
+    description: "Current total",
+  }));
+
+  const salesData = useMemo(() => {
+    const now = new Date();
+    const months = Array.from({ length: 12 }, (_, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - 11 + index, 1);
+      return {
+        key: `${date.getFullYear()}-${date.getMonth()}`,
+        month: date.toLocaleString("en", { month: "short" }),
+        revenueAmount: 0,
+        orderCount: 0,
+      };
+    });
+    const byMonth = new Map(months.map((month) => [month.key, month]));
+
+    for (const order of orders) {
+      const date = new Date(order.createdAt);
+      const month = byMonth.get(`${date.getFullYear()}-${date.getMonth()}`);
+      if (month) {
+        month.revenueAmount += Number(order.total) || 0;
+        month.orderCount += 1;
+      }
+    }
+
+    const maxRevenue = Math.max(...months.map((month) => month.revenueAmount), 1);
+    const maxOrders = Math.max(...months.map((month) => month.orderCount), 1);
+    return months.map((month) => ({
+      ...month,
+      revenue: (month.revenueAmount / maxRevenue) * 100,
+      orders: (month.orderCount / maxOrders) * 100,
+    }));
+  }, [orders]);
+
+  const statusSummary = useMemo(() => {
+    const colors = {
+      Pending: ["bg-blue-500", "#3b82f6"],
+      Confirmed: ["bg-cyan-500", "#06b6d4"],
+      Processing: ["bg-violet-500", "#8b5cf6"],
+      Shipped: ["bg-amber-500", "#f59e0b"],
+      Delivered: ["bg-emerald-500", "#10b981"],
+      Cancelled: ["bg-red-500", "#ef4444"],
+    };
+    const counts = new Map();
+    for (const order of orders) counts.set(order.status, (counts.get(order.status) || 0) + 1);
+    return [...counts.entries()].map(([title, count]) => ({
+      title,
+      count,
+      color: colors[title]?.[0] || "bg-slate-400",
+      hex: colors[title]?.[1] || "#94a3b8",
+      percentage: orders.length ? (count / orders.length) * 100 : 0,
+    }));
+  }, [orders]);
+
+  const topProducts = useMemo(() => {
+    const sales = new Map();
+    for (const order of orders) {
+      if (order.status === "Cancelled") continue;
+      for (const item of order.items) {
+        const product = products.find((candidate) => candidate._id === item.productId);
+        const entry = sales.get(item.productId) || {
+          name: item.name,
+          category: product?.category || "",
+          sold: 0,
+          revenue: 0,
+          stock: product?.stock || 0,
+        };
+        entry.sold += item.quantity;
+        entry.revenue += item.price * item.quantity;
+        sales.set(item.productId, entry);
+      }
+    }
+    return [...sales.values()].sort((a, b) => b.sold - a.sold).slice(0, 4);
+  }, [orders, products]);
+
+  const recentOrderList = useMemo(() => orders.slice(0, 10).map((order) => {
+    const customer = order.userEmail || order.userId;
+    return {
+      id: order._id,
+      customer,
+      initials: customer.slice(0, 2).toUpperCase(),
+      product: order.items.map((item) => item.name).join(", "),
+      amount: order.total,
+      date: new Date(order.createdAt).toLocaleDateString("en-BD"),
+      status: order.status,
+      color: "bg-blue-100 text-blue-700",
+    };
+  }), [orders]);
+
+  const statusGradient = statusSummary.reduce((segments, item, index) => {
+    const start = statusSummary
+      .slice(0, index)
+      .reduce((sum, previous) => sum + previous.percentage, 0);
+    return [...segments, `${item.hex} ${start}% ${start + item.percentage}%`];
+  }, []).join(", ");
 
   const filteredOrders = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    return recentOrders.filter((order) => {
+    return recentOrderList.filter((order) => {
       const matchesSearch =
         !query ||
         order.id.toLowerCase().includes(query) ||
@@ -239,7 +372,7 @@ export default function AdminDashboardPage() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [searchQuery, selectedStatus]);
+  }, [recentOrderList, searchQuery, selectedStatus]);
 
   return (
     <div className="min-h-screen bg-[#F6F8FC] text-slate-800">
@@ -345,6 +478,11 @@ export default function AdminDashboardPage() {
       </header>
 
       <main className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        {loadError && (
+          <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            {loadError}
+          </div>
+        )}
         {/* Welcome */}
         <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
           <div>
@@ -358,7 +496,7 @@ export default function AdminDashboardPage() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/admin/products"
+              href="/dashboard/admin/products"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:text-blue-600"
             >
               <Plus size={17} />
@@ -377,9 +515,8 @@ export default function AdminDashboardPage() {
 
         {/* Overview Cards */}
         <section className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          {overviewCards.map((card) => {
+          {dashboardCards.map((card) => {
             const Icon = card.icon;
-            const ChangeIcon = card.positive ? ArrowUpRight : ArrowDownRight;
 
             return (
               <article
@@ -402,14 +539,6 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
                 <div className="mt-5 flex flex-wrap items-center gap-2">
-                  <span
-                    className={`inline-flex items-center gap-1 text-xs font-bold ${
-                      card.positive ? "text-emerald-600" : "text-red-600"
-                    }`}
-                  >
-                    <ChangeIcon size={14} />
-                    {card.change}
-                  </span>
                   <span className="text-xs text-slate-400">
                     {card.description}
                   </span>
@@ -456,12 +585,12 @@ export default function AdminDashboardPage() {
               <div>
                 <p className="text-xs text-slate-500">Total Revenue</p>
                 <p className="mt-1 text-xl font-bold text-slate-900">
-                  ৳12,48,500
+                  {formatCurrency(stats?.totalRevenue || 0)}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">Total Orders</p>
-                <p className="mt-1 text-xl font-bold text-slate-900">8,642</p>
+                <p className="mt-1 text-xl font-bold text-slate-900">{orders.length.toLocaleString("en-BD")}</p>
               </div>
               <div className="ml-auto flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2">
@@ -524,7 +653,7 @@ export default function AdminDashboardPage() {
             <div className="mt-4 flex items-center gap-2 rounded-xl bg-emerald-50 p-3">
               <TrendingUp size={17} className="shrink-0 text-emerald-600" />
               <p className="text-xs leading-5 text-emerald-700">
-                Sales performance is displayed using sample dashboard data.
+                Monthly totals are aggregated from stored orders in the displayed 12-month window.
               </p>
             </div>
           </article>
@@ -540,7 +669,7 @@ export default function AdminDashboardPage() {
                 </p>
               </div>
               <Link
-                href="/admin/orders"
+                href="/dashboard/admin/orders"
                 aria-label="View all orders"
                 className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-50 hover:text-blue-600"
               >
@@ -553,11 +682,11 @@ export default function AdminDashboardPage() {
                 className="relative flex h-44 w-44 items-center justify-center rounded-full"
                 style={{
                   background:
-                    "conic-gradient(#3B82F6 0% 36%, #8B5CF6 36% 60%, #F59E0B 60% 80%, #10B981 80% 100%)",
+                    statusSummary.length ? `conic-gradient(${statusGradient})` : "#e2e8f0",
                 }}
               >
                 <div className="flex h-32 w-32 flex-col items-center justify-center rounded-full bg-white">
-                  <span className="text-3xl font-bold text-slate-900">50</span>
+                  <span className="text-3xl font-bold text-slate-900">{orders.length}</span>
                   <span className="mt-1 text-xs text-slate-500">
                     Total Orders
                   </span>
@@ -592,7 +721,7 @@ export default function AdminDashboardPage() {
             </div>
 
             <Link
-              href="/admin/orders"
+              href="/dashboard/admin/orders"
               className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:text-blue-600"
             >
               View All Orders
@@ -621,6 +750,7 @@ export default function AdminDashboardPage() {
                 >
                   <option>All Status</option>
                   <option>Pending</option>
+                  <option>Confirmed</option>
                   <option>Processing</option>
                   <option>Shipped</option>
                   <option>Delivered</option>
@@ -743,8 +873,7 @@ export default function AdminDashboardPage() {
 
           <div className="flex flex-col justify-between gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:px-6">
             <p className="text-xs text-slate-500">
-              Showing {filteredOrders.length} of {recentOrders.length} sample
-              orders
+              Showing {filteredOrders.length} of {recentOrderList.length} recent orders
             </p>
             <Link
               href="/admin/orders"
@@ -796,7 +925,7 @@ export default function AdminDashboardPage() {
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-xl">
-                            {product.icon}
+                            {product.name.slice(0, 1)}
                           </div>
                           <div>
                             <p className="whitespace-nowrap text-sm font-semibold text-slate-800">
