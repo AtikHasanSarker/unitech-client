@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import FloatingChat from "../FloatingChat";
 
 export default function MainLayout({ children }) {
   const pathname = usePathname();
@@ -16,7 +17,9 @@ export default function MainLayout({ children }) {
   return (
     <>
       <Navbar />
-      <main>{children}</main>
+      <main>{children}
+        <FloatingChat/>
+      </main>
       <Footer />
     </>
   );

@@ -1,0 +1,51 @@
+"use client";
+
+export default function FloatingChat() {
+  const messengerUrl = "https://m.me/unitechfa";
+
+  return (
+    <div className="chat-widget fixed bottom-7 right-7 z-50 flex items-center gap-3">
+      {/* Chat With Us Label */}
+      <a
+        href={messengerUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="chat-label whitespace-nowrap rounded-full border border-blue-500 bg-white px-4 py-2 text-sm font-semibold text-blue-600 shadow-lg"
+      >
+        Chat With Us 👋
+      </a>
+
+      {/* Messenger Button */}
+      <a
+        href={messengerUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat with UniTech on Messenger"
+        className="messenger-button relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#0084FF]"
+      >
+        {/* Messenger Icon */}
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill="#FFFFFF"
+            d="M12 0C5.37 0 0 4.89 0 10.92c0 3.43 1.7 6.48 4.37 8.4v4.14l4-2.2c1.14.32 2.36.49 3.63.49 6.63 0 12-4.89 12-10.92S18.63 0 12 0Z"
+          />
+
+          <path
+            fill="#0084FF"
+            d="m5.17 14.9 5.1-5.42a.75.75 0 0 1 1.08-.07l2.5 2.16 4.98-2.67-5.1 5.42a.75.75 0 0 1-1.08.07l-2.5-2.16-4.98 2.67Z"
+          />
+        </svg>
+
+        {/* Notification Badge */}
+        <span className="absolute -right-0.5 -top-0.5 flex h-[22px] w-[22px] items-center justify-center rounded-full border-2 border-white bg-[#FF3B30] text-[10px] font-bold text-white">
+          1
+        </span>
+      </a>
+    </div>
+  );
+}
