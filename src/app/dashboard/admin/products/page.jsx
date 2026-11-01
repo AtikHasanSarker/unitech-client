@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Plus,
@@ -14,25 +15,69 @@ import {
   X,
   Image as ImageIcon,
   ChevronDown,
+  FileText,
+  Settings2,
+  CheckCircle2,
 } from "lucide-react";
 import { getCategories } from "@/lib/api/category";
-import {
-  addProduct,
-  deleteProduct,
-  getProducts,
-  updateProduct,
-} from "@/lib/api/product";
-
+import { deleteProduct, getProducts, updateProduct } from "@/lib/api/product";
 
 const EMPTY_FORM = {
   name: "",
   sku: "",
-  category: "Charger",
+  category: "",
+  brand: "",
+  description: "",
   price: "",
+  costPrice: "",
+  discountPrice: "",
   stock: "",
-  status: "Active",
+  lowStockThreshold: "5",
+  warranty: "",
+  status: "active",
   image: "",
+  features: [""],
+  specifications: [{ key: "", value: "" }],
 };
+
+const inputClass =
+  "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 disabled:cursor-not-allowed disabled:opacity-60";
+
+function normalizeStatus(status) {
+  const value = String(status || "active").toLowerCase();
+  if (value === "inactive") return "inactive";
+  if (value === "draft") return "draft";
+  return "active";
+}
+
+function normalizeProduct(product) {
+  const images = Array.isArray(product.images) ? product.images : [];
+  return {
+    ...product,
+    id: product._id || product.id,
+    sku: product.sku || product._id || product.id || "",
+    price: Number(product.price) || 0,
+    costPrice: Number(product.costPrice) || 0,
+    discountPrice:
+      product.discountPrice === null || product.discountPrice === undefined
+        ? null
+        : Number(product.discountPrice),
+    stock: Number(product.stock) || 0,
+    lowStockThreshold:
+      Number.isFinite(Number(product.lowStockThreshold)) &&
+      product.lowStockThreshold !== "" &&
+      product.lowStockThreshold !== null
+        ? Number(product.lowStockThreshold)
+        : 5,
+    status: normalizeStatus(product.status),
+    images,
+    image: images[0] || product.image || "",
+    features: Array.isArray(product.features) ? product.features : [],
+    specifications: Array.isArray(product.specifications)
+      ? product.specifications
+      : [],
+  };
+}
 
 function formatPrice(value) {
   return new Intl.NumberFormat("en-BD", {
@@ -42,30 +87,33 @@ function formatPrice(value) {
   }).format(Number(value) || 0);
 }
 
-function getStockLabel(stock) {
-  if (stock === 0) return "Out of stock";
-  if (stock <= 5) return "Low stock";
+function getStockLabel(stock, threshold = 5) {
+  if (stock <= 0) return "Out of stock";
+  if (stock <= threshold) return "Low stock";
   return "In stock";
 }
 
-function getStockClasses(stock) {
-  if (stock === 0) return "bg-red-50 text-red-700 ring-red-600/20";
-  if (stock <= 5) return "bg-amber-50 text-amber-700 ring-amber-600/20";
+function getStockClasses(stock, threshold = 5) {
+  if (stock <= 0) return "bg-red-50 text-red-700 ring-red-600/20";
+  if (stock <= threshold) return "bg-amber-50 text-amber-700 ring-amber-600/20";
   return "bg-emerald-50 text-emerald-700 ring-emerald-600/20";
 }
 
 export default function AdminProductsPage() {
+  const router = useRouter();
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [stockFilter, setStockFilter] = useState("All Stock");
   const [statusFilter, setStatusFilter] = useState("All Status");
-  const [modalOpen, setModalOpen] = useState(false);
+
   const [editingProduct, setEditingProduct] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -73,32 +121,54 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     let active = true;
-    Promise.all([getProducts({ page: 1, limit: 100 }), getCategories()])
-      .then(([productResult, categoryResult]) => {
-        if (!active) return;
-        if (!productResult?.success) {
-          setLoadError(productResult?.message || "Could not load products.");
-          return;
-        }
-        setProducts(
-          productResult.data.map((product) => ({
-            ...product,
-            id: product._id,
-            sku: product.sku || product._id,
-            status: product.status || "Active",
-            image: product.images?.[0] || "",
-          })),
-        );
-        if (categoryResult?.success) {
-          setCategories(categoryResult.data.map((item) => item.name));
-        }
-      })
-      .catch(() => {
-        if (active) setLoadError("Could not connect to catalog data.");
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
+
+    async function loadData() {
+      setIsLoading(true);
+      setLoadError("");
+
+      const [productResponse, categoryResponse] = await Promise.allSettled([
+        getProducts({ page: 1, limit: 100 }),
+        getCategories(),
+      ]);
+
+      if (!active) return;
+
+      if (
+        productResponse.status !== "fulfilled" ||
+        !productResponse.value?.success
+      ) {
+        const message =
+          productResponse.status === "fulfilled"
+            ? productResponse.value?.message
+            : "";
+        setLoadError(message || "Could not load products.");
+        setIsLoading(false);
+        return;
+      }
+
+      const productData = Array.isArray(productResponse.value.data)
+        ? productResponse.value.data
+        : [];
+
+      setProducts(productData.map(normalizeProduct));
+
+      if (
+        categoryResponse.status === "fulfilled" &&
+        categoryResponse.value?.success &&
+        Array.isArray(categoryResponse.value.data)
+      ) {
+        setCategories(categoryResponse.value.data.map((item) => item.name));
+      }
+
+      setIsLoading(false);
+    }
+
+    loadData().catch(() => {
+      if (active) {
+        setLoadError("Could not connect to catalog data.");
+        setIsLoading(false);
+      }
+    });
 
     return () => {
       active = false;
@@ -111,19 +181,24 @@ export default function AdminProductsPage() {
     return products.filter((product) => {
       const matchesSearch =
         !normalizedSearch ||
-        product.name.toLowerCase().includes(normalizedSearch) ||
-        product.sku.toLowerCase().includes(normalizedSearch);
+        String(product.name || "")
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        String(product.sku || "")
+          .toLowerCase()
+          .includes(normalizedSearch);
 
       const matchesCategory =
         category === "All Categories" || product.category === category;
 
+      const threshold = Number(product.lowStockThreshold ?? 5);
       const matchesStock =
         stockFilter === "All Stock" ||
-        (stockFilter === "In Stock" && product.stock > 5) ||
+        (stockFilter === "In Stock" && product.stock > threshold) ||
         (stockFilter === "Low Stock" &&
           product.stock > 0 &&
-          product.stock <= 5) ||
-        (stockFilter === "Out of Stock" && product.stock === 0);
+          product.stock <= threshold) ||
+        (stockFilter === "Out of Stock" && product.stock <= 0);
 
       const matchesStatus =
         statusFilter === "All Status" || product.status === statusFilter;
@@ -136,37 +211,53 @@ export default function AdminProductsPage() {
     (total, product) => total + product.price * product.stock,
     0,
   );
+
   const lowStockCount = products.filter(
-    (product) => product.stock > 0 && product.stock <= 5,
-  ).length;
-  const outOfStockCount = products.filter(
-    (product) => product.stock === 0,
+    (product) =>
+      product.stock > 0 &&
+      product.stock <= Number(product.lowStockThreshold ?? 5),
   ).length;
 
-  function openAddModal() {
-    setEditingProduct(null);
-    setForm(EMPTY_FORM);
-    setFormError("");
-    setModalOpen(true);
-  }
+  const outOfStockCount = products.filter(
+    (product) => product.stock <= 0,
+  ).length;
 
   function openEditModal(product) {
     setEditingProduct(product);
     setForm({
-      name: product.name,
-      sku: product.sku,
-      category: product.category || categories[0] || "",
-      price: String(product.price),
-      stock: String(product.stock),
-      status: product.status,
-      image: product.image || "",
+      name: product.name || "",
+      sku: product.sku || "",
+      category: product.category || "",
+      brand: product.brand || "",
+      description: product.description || "",
+      price: String(product.price ?? ""),
+      costPrice:
+        product.costPrice === null || product.costPrice === undefined
+          ? ""
+          : String(product.costPrice),
+      discountPrice:
+        product.discountPrice === null || product.discountPrice === undefined
+          ? ""
+          : String(product.discountPrice),
+      stock: String(product.stock ?? 0),
+      lowStockThreshold: String(product.lowStockThreshold ?? 5),
+      warranty: product.warranty || "",
+      status: normalizeStatus(product.status),
+      image: product.images?.[0] || product.image || "",
+      features: product.features?.length > 0 ? [...product.features] : [""],
+      specifications:
+        product.specifications?.length > 0
+          ? product.specifications.map((item) => ({
+              key: item.key || "",
+              value: item.value || "",
+            }))
+          : [{ key: "", value: "" }],
     });
     setFormError("");
-    setModalOpen(true);
   }
 
-  function closeModal() {
-    setModalOpen(false);
+  function closeEditModal() {
+    if (isSaving) return;
     setEditingProduct(null);
     setForm(EMPTY_FORM);
     setFormError("");
@@ -175,36 +266,105 @@ export default function AdminProductsPage() {
   function handleFormChange(event) {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
+    if (formError) setFormError("");
   }
 
-  async function handleSubmit(event) {
+  function handleFeatureChange(index, value) {
+    setForm((current) => ({
+      ...current,
+      features: current.features.map((item, i) => (i === index ? value : item)),
+    }));
+  }
+
+  function addFeatureField() {
+    setForm((current) => ({
+      ...current,
+      features: [...current.features, ""],
+    }));
+  }
+
+  function removeFeatureField(index) {
+    setForm((current) => ({
+      ...current,
+      features: current.features.filter((_, i) => i !== index),
+    }));
+  }
+
+  function handleSpecificationChange(index, field, value) {
+    setForm((current) => ({
+      ...current,
+      specifications: current.specifications.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item,
+      ),
+    }));
+  }
+
+  function addSpecificationField() {
+    setForm((current) => ({
+      ...current,
+      specifications: [...current.specifications, { key: "", value: "" }],
+    }));
+  }
+
+  function removeSpecificationField(index) {
+    setForm((current) => ({
+      ...current,
+      specifications: current.specifications.filter((_, i) => i !== index),
+    }));
+  }
+
+  async function handleUpdate(event) {
     event.preventDefault();
+    if (!editingProduct) return;
 
     const name = form.name.trim();
     const sku = form.sku.trim();
+    const price = Number(form.price);
+    const costPrice = form.costPrice === "" ? 0 : Number(form.costPrice);
+    const discountPrice =
+      form.discountPrice === "" ? null : Number(form.discountPrice);
+    const stock = Number(form.stock);
+    const lowStockThreshold = Number(form.lowStockThreshold);
 
-    if (!name || !sku || form.price === "" || form.stock === "") {
-      setFormError("Please complete all required fields.");
+    if (!name || !sku || !form.category.trim()) {
+      setFormError("Product name, SKU and category are required.");
       return;
     }
 
-    const price = Number(form.price);
-    const stock = Number(form.stock);
+    if (form.price.trim() === "" || !Number.isFinite(price) || price < 0) {
+      setFormError("Selling price must be a valid non-negative number.");
+      return;
+    }
 
-    if (!Number.isFinite(price) || price < 0) {
-      setFormError("Price must be a valid non-negative number.");
+    if (!Number.isFinite(costPrice) || costPrice < 0) {
+      setFormError("Purchase price must be a valid non-negative number.");
+      return;
+    }
+
+    if (
+      discountPrice !== null &&
+      (!Number.isFinite(discountPrice) ||
+        discountPrice < 0 ||
+        discountPrice > price)
+    ) {
+      setFormError("Discount price cannot exceed the selling price.");
       return;
     }
 
     if (!Number.isInteger(stock) || stock < 0) {
-      setFormError("Stock must be a whole number of 0 or more.");
+      setFormError("Stock must be a non-negative whole number.");
+      return;
+    }
+
+    if (!Number.isInteger(lowStockThreshold) || lowStockThreshold < 0) {
+      setFormError("Low stock alert must be a non-negative whole number.");
       return;
     }
 
     const duplicateSku = products.some(
       (product) =>
-        product.sku.toLowerCase() === sku.toLowerCase() &&
-        product.id !== editingProduct?.id,
+        String(product.sku).toLowerCase() === sku.toLowerCase() &&
+        product.id !== editingProduct.id,
     );
 
     if (duplicateSku) {
@@ -212,74 +372,120 @@ export default function AdminProductsPage() {
       return;
     }
 
+    const cleanedFeatures = form.features
+      .map((feature) => feature.trim())
+      .filter(Boolean);
+
+    const cleanedSpecifications = form.specifications
+      .map((item) => ({
+        key: item.key.trim(),
+        value: item.value.trim(),
+      }))
+      .filter((item) => item.key && item.value);
+
     const productData = {
       name,
       sku,
-      category: form.category,
+      category: form.category.trim(),
+      brand: form.brand.trim(),
+      description: form.description.trim(),
       price,
+      costPrice,
+      discountPrice,
       stock,
+      lowStockThreshold,
+      features: cleanedFeatures,
+      specifications: cleanedSpecifications,
+      warranty: form.warranty.trim(),
       status: form.status,
       images: form.image.trim() ? [form.image.trim()] : [],
     };
 
     setIsSaving(true);
-    const result = editingProduct
-      ? await updateProduct(editingProduct.id, productData)
-      : await addProduct(productData);
-    setIsSaving(false);
+    setFormError("");
 
-    if (!result?.success) {
-      setFormError(result?.message || "Could not save product.");
-      return;
-    }
+    try {
+      const result = await updateProduct(editingProduct.id, productData);
 
-    if (editingProduct) {
+      if (!result?.success) {
+        setFormError(result?.message || "Could not update product.");
+        return;
+      }
+
+      const updatedFromServer = result.data
+        ? normalizeProduct(result.data)
+        : null;
+
       setProducts((current) =>
         current.map((product) =>
           product.id === editingProduct.id
-            ? { ...product, ...productData, image: productData.images[0] || "" }
+            ? normalizeProduct({
+                ...product,
+                ...(updatedFromServer || productData),
+                ...(!updatedFromServer ? productData : {}),
+                _id: editingProduct.id,
+                images: productData.images,
+              })
             : product,
         ),
       );
-    } else if (result.data) {
-      setProducts((current) => [
-        {
-          ...result.data,
-          id: result.data._id,
-          sku: result.data.sku || result.data._id,
-          image: result.data.images?.[0] || "",
-        },
-        ...current,
-      ]);
-    }
 
-    closeModal();
+      setEditingProduct(null);
+      setForm(EMPTY_FORM);
+    } catch (error) {
+      setFormError(error?.message || "Could not update product.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   async function handleDelete() {
-    if (!deleteTarget) return;
+    if (!deleteTarget || isDeleting) return;
+
     setIsDeleting(true);
-    const result = await deleteProduct(deleteTarget.id);
-    setIsDeleting(false);
-    if (!result?.success) {
-      setLoadError(result?.message || "Could not delete product.");
-      return;
+    setLoadError("");
+
+    try {
+      const result = await deleteProduct(deleteTarget.id);
+
+      if (!result?.success) {
+        setLoadError(result?.message || "Could not delete product.");
+        return;
+      }
+
+      setProducts((current) =>
+        current.filter((product) => product.id !== deleteTarget.id),
+      );
+      setDeleteTarget(null);
+    } catch (error) {
+      setLoadError(error?.message || "Could not delete product.");
+    } finally {
+      setIsDeleting(false);
     }
-    setProducts((current) =>
-      current.filter((product) => product.id !== deleteTarget.id),
-    );
-    setDeleteTarget(null);
+  }
+
+  function resetFilters() {
+    setSearch("");
+    setCategory("All Categories");
+    setStockFilter("All Stock");
+    setStatusFilter("All Status");
   }
 
   return (
     <div className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
         {(isLoading || loadError) && (
-          <div className={`rounded-xl border px-4 py-3 text-sm ${loadError ? "border-amber-200 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600"}`}>
+          <div
+            className={`rounded-xl border px-4 py-3 text-sm ${
+              loadError
+                ? "border-amber-200 bg-amber-50 text-amber-900"
+                : "border-slate-200 bg-white text-slate-600"
+            }`}
+          >
             {loadError || "Loading products..."}
           </div>
         )}
-        {/* Page heading */}
+
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="mb-1 flex items-center gap-2 text-sm text-slate-500">
@@ -297,15 +503,14 @@ export default function AdminProductsPage() {
 
           <button
             type="button"
-            onClick={openAddModal}
-            className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
+            onClick={() => router.push("/dashboard/admin/products/add")}
+            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
           >
             <Plus size={18} />
             Add Product
           </button>
         </div>
 
-        {/* Summary cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <SummaryCard
             label="Total Products"
@@ -324,7 +529,7 @@ export default function AdminProductsPage() {
           <SummaryCard
             label="Inventory Value"
             value={formatPrice(totalValue)}
-            helper="Based on current stock and price"
+            helper="Based on current stock and selling price"
             icon={<CircleDollarSign size={20} />}
             iconClass="bg-emerald-50 text-emerald-600"
           />
@@ -337,7 +542,6 @@ export default function AdminProductsPage() {
           />
         </div>
 
-        {/* Product list */}
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-100 p-4 sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -388,8 +592,9 @@ export default function AdminProductsPage() {
                   onChange={setStatusFilter}
                   options={[
                     { value: "All Status", label: "All Status" },
-                    { value: "Active", label: "Active" },
-                    { value: "Draft", label: "Draft" },
+                    { value: "active", label: "Active" },
+                    { value: "inactive", label: "Inactive" },
+                    { value: "draft", label: "Draft" },
                   ]}
                   ariaLabel="Filter by status"
                 />
@@ -412,88 +617,81 @@ export default function AdminProductsPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredProducts.map((product) => (
-                  <tr
-                    key={product.id}
-                    className="transition hover:bg-slate-50/70"
-                  >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <ProductThumbnail product={product} />
-                        <div>
-                          <p className="max-w-56 font-semibold text-slate-800">
-                            {product.name}
-                          </p>
-                          <p className="mt-1 text-xs text-slate-400">
-                            ID: {product.id}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-slate-500">
-                      {product.sku}
-                    </td>
-                    <td className="px-5 py-4 text-sm text-slate-600">
-                      {product.category}
-                    </td>
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-800">
-                      {formatPrice(product.price)}
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="space-y-1.5">
-                        <p className="text-sm font-semibold text-slate-800">
-                          {product.stock} units
-                        </p>
-                        <span
-                          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${getStockClasses(product.stock)}`}
-                        >
-                          {getStockLabel(product.stock)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-                          product.status === "Active"
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        <span
-                          className={`h-1.5 w-1.5 rounded-full ${
-                            product.status === "Active"
-                              ? "bg-emerald-500"
-                              : "bg-slate-400"
-                          }`}
-                        />
-                        {product.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(product)}
-                          aria-label={`Edit ${product.name}`}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeleteTarget(product)}
-                          aria-label={`Delete ${product.name}`}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
 
-                {filteredProducts.length === 0 && (
+              <tbody className="divide-y divide-slate-100">
+                {filteredProducts.map((product) => {
+                  const threshold = Number(product.lowStockThreshold ?? 5);
+
+                  return (
+                    <tr
+                      key={product.id}
+                      className="transition hover:bg-slate-50/70"
+                    >
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <ProductThumbnail product={product} />
+                          <div>
+                            <p className="max-w-56 font-semibold text-slate-800">
+                              {product.name}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-400">
+                              ID: {product.id}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-sm text-slate-500">
+                        {product.sku}
+                      </td>
+                      <td className="px-5 py-4 text-sm text-slate-600">
+                        {product.category || "—"}
+                      </td>
+                      <td className="px-5 py-4 text-sm font-semibold text-slate-800">
+                        {formatPrice(product.price)}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="space-y-1.5">
+                          <p className="text-sm font-semibold text-slate-800">
+                            {product.stock} units
+                          </p>
+                          <span
+                            className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${getStockClasses(
+                              product.stock,
+                              threshold,
+                            )}`}
+                          >
+                            {getStockLabel(product.stock, threshold)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <StatusBadge status={product.status} />
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(product)}
+                            aria-label={`Edit ${product.name}`}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleteTarget(product)}
+                            aria-label={`Delete ${product.name}`}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+
+                {filteredProducts.length === 0 && !isLoading && (
                   <tr>
                     <td colSpan={7} className="px-5 py-16 text-center">
                       <div className="mx-auto flex max-w-sm flex-col items-center">
@@ -508,12 +706,7 @@ export default function AdminProductsPage() {
                         </p>
                         <button
                           type="button"
-                          onClick={() => {
-                            setSearch("");
-                            setCategory("All Categories");
-                            setStockFilter("All Stock");
-                            setStatusFilter("All Status");
-                          }}
+                          onClick={resetFilters}
                           className="mt-4 text-sm font-semibold text-blue-600 hover:text-blue-700"
                         >
                           Clear all filters
@@ -536,12 +729,7 @@ export default function AdminProductsPage() {
             </p>
             <button
               type="button"
-              onClick={() => {
-                setSearch("");
-                setCategory("All Categories");
-                setStockFilter("All Stock");
-                setStatusFilter("All Status");
-              }}
+              onClick={resetFilters}
               className="inline-flex items-center gap-2 self-start font-medium text-slate-600 hover:text-blue-600 sm:self-auto"
             >
               <SlidersHorizontal size={15} />
@@ -551,128 +739,320 @@ export default function AdminProductsPage() {
         </section>
       </div>
 
-      {/* Add / Edit modal */}
-      {modalOpen && (
+      {/* Edit Product Modal: product creation is handled by AddProductPage. */}
+      {editingProduct && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-950/50 p-4 backdrop-blur-sm"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) closeModal();
+            if (event.target === event.currentTarget) closeEditModal();
           }}
         >
           <div
             role="dialog"
             aria-modal="true"
-            aria-labelledby="product-modal-title"
-            className="my-auto w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+            aria-labelledby="edit-product-modal-title"
+            className="my-auto max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
           >
             <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
               <div>
                 <h2
-                  id="product-modal-title"
+                  id="edit-product-modal-title"
                   className="text-lg font-bold text-slate-900"
                 >
-                  {editingProduct ? "Edit Product" : "Add New Product"}
+                  Edit Product
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Enter the product details below.
+                  Update product information, pricing and inventory.
                 </p>
               </div>
               <button
                 type="button"
-                onClick={closeModal}
-                aria-label="Close modal"
-                className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                onClick={closeEditModal}
+                disabled={isSaving}
+                aria-label="Close edit modal"
+                className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
               >
                 <X size={19} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 gap-4 px-5 py-5 sm:grid-cols-2 sm:px-6">
-                <FormField label="Product Name *">
-                  <input
-                    name="name"
-                    value={form.name}
-                    onChange={handleFormChange}
-                    placeholder="e.g. 20W Fast Charger"
-                    className={inputClass}
-                    autoFocus
+            <form onSubmit={handleUpdate}>
+              <div className="max-h-[calc(92vh-145px)] space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
+                <section>
+                  <SectionHeading
+                    icon={<Package size={18} />}
+                    title="Basic Information"
                   />
-                </FormField>
-                <FormField label="SKU *">
-                  <input
-                    name="sku"
-                    value={form.sku}
-                    onChange={handleFormChange}
-                    placeholder="e.g. CH-APL-20W"
-                    className={inputClass}
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FormField label="Product Name *">
+                      <input
+                        name="name"
+                        value={form.name}
+                        onChange={handleFormChange}
+                        required
+                        maxLength={150}
+                        className={inputClass}
+                      />
+                    </FormField>
+                    <FormField label="SKU *">
+                      <input
+                        name="sku"
+                        value={form.sku}
+                        onChange={handleFormChange}
+                        required
+                        maxLength={80}
+                        className={inputClass}
+                      />
+                    </FormField>
+                    <FormField label="Category *">
+                      <input
+                        name="category"
+                        value={form.category}
+                        onChange={handleFormChange}
+                        required
+                        maxLength={100}
+                        list="product-category-options"
+                        className={inputClass}
+                      />
+                      <datalist id="product-category-options">
+                        {categories.map((item) => (
+                          <option key={item} value={item} />
+                        ))}
+                      </datalist>
+                    </FormField>
+                    <FormField label="Brand">
+                      <input
+                        name="brand"
+                        value={form.brand}
+                        onChange={handleFormChange}
+                        maxLength={100}
+                        className={inputClass}
+                      />
+                    </FormField>
+                    <div className="sm:col-span-2">
+                      <FormField label="Description">
+                        <textarea
+                          name="description"
+                          value={form.description}
+                          onChange={handleFormChange}
+                          rows={4}
+                          maxLength={5000}
+                          className={`${inputClass} resize-y`}
+                        />
+                        <p className="mt-1 text-right text-xs text-slate-400">
+                          {form.description.length}/5000 characters
+                        </p>
+                      </FormField>
+                    </div>
+                  </div>
+                </section>
+
+                <section>
+                  <SectionHeading
+                    icon={<CheckCircle2 size={18} />}
+                    title="Product Features"
                   />
-                </FormField>
-                <FormField label="Category *">
-                  <select
-                    name="category"
-                    value={form.category}
-                    onChange={handleFormChange}
-                    className={inputClass}
+                  <div className="space-y-2">
+                    {form.features.map((feature, index) => (
+                      <div key={index} className="flex gap-2">
+                        <input
+                          value={feature}
+                          onChange={(event) =>
+                            handleFeatureChange(index, event.target.value)
+                          }
+                          placeholder={`Feature ${index + 1}`}
+                          className={inputClass}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeFeatureField(index)}
+                          disabled={form.features.length === 1}
+                          aria-label="Remove feature"
+                          className="rounded-xl border border-slate-200 px-3 text-slate-400 hover:border-red-200 hover:text-red-600 disabled:opacity-40"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addFeatureField}
+                    className="mt-3 inline-flex items-center gap-2 rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50"
                   >
-                    {categories.map(
-                      (item) => (
-                        <option key={item} value={item}>
-                          {item}
-                        </option>
-                      ),
-                    )}
-                  </select>
-                </FormField>
-                <FormField label="Price (BDT) *">
-                  <input
-                    name="price"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={form.price}
-                    onChange={handleFormChange}
-                    placeholder="0"
-                    className={inputClass}
+                    <Plus size={15} />
+                    Add Feature
+                  </button>
+                </section>
+
+                <section>
+                  <SectionHeading
+                    icon={<Settings2 size={18} />}
+                    title="Specifications"
                   />
-                </FormField>
-                <FormField label="Stock Quantity *">
-                  <input
-                    name="stock"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={form.stock}
-                    onChange={handleFormChange}
-                    placeholder="0"
-                    className={inputClass}
-                  />
-                </FormField>
-                <FormField label="Status *">
-                  <select
-                    name="status"
-                    value={form.status}
-                    onChange={handleFormChange}
-                    className={inputClass}
+                  <div className="space-y-2">
+                    {form.specifications.map((item, index) => (
+                      <div
+                        key={index}
+                        className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto]"
+                      >
+                        <input
+                          value={item.key}
+                          onChange={(event) =>
+                            handleSpecificationChange(
+                              index,
+                              "key",
+                              event.target.value,
+                            )
+                          }
+                          placeholder="Specification name (e.g. Capacity)"
+                          className={inputClass}
+                        />
+                        <input
+                          value={item.value}
+                          onChange={(event) =>
+                            handleSpecificationChange(
+                              index,
+                              "value",
+                              event.target.value,
+                            )
+                          }
+                          placeholder="Value (e.g. 20000mAh)"
+                          className={inputClass}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeSpecificationField(index)}
+                          disabled={form.specifications.length === 1}
+                          aria-label="Remove specification"
+                          className="justify-self-end rounded-xl border border-slate-200 px-3 text-slate-400 hover:border-red-200 hover:text-red-600 disabled:opacity-40 sm:justify-self-auto"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addSpecificationField}
+                    className="mt-3 inline-flex items-center gap-2 rounded-lg border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50"
                   >
-                    <option value="Active">Active</option>
-                    <option value="Draft">Draft</option>
-                  </select>
-                </FormField>
-                <div className="sm:col-span-2">
-                  <FormField label="Image URL (optional)">
-                    <input
-                      name="image"
-                      type="url"
-                      value={form.image}
-                      onChange={handleFormChange}
-                      placeholder="https://example.com/product.jpg"
-                      className={inputClass}
-                    />
-                  </FormField>
-                </div>
+                    <Plus size={15} />
+                    Add Specification
+                  </button>
+                </section>
+
+                <section>
+                  <SectionHeading
+                    icon={<CircleDollarSign size={18} />}
+                    title="Pricing & Inventory"
+                  />
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FormField label="Purchase Price (৳)">
+                      <input
+                        name="costPrice"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={form.costPrice}
+                        onChange={handleFormChange}
+                        className={inputClass}
+                      />
+                    </FormField>
+                    <FormField label="Selling Price (৳) *">
+                      <input
+                        name="price"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={form.price}
+                        onChange={handleFormChange}
+                        required
+                        className={inputClass}
+                      />
+                    </FormField>
+                    <FormField label="Discount Price (৳)">
+                      <input
+                        name="discountPrice"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={form.discountPrice}
+                        onChange={handleFormChange}
+                        className={inputClass}
+                      />
+                    </FormField>
+                    <FormField label="Stock Quantity *">
+                      <input
+                        name="stock"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={form.stock}
+                        onChange={handleFormChange}
+                        required
+                        className={inputClass}
+                      />
+                    </FormField>
+                    <FormField label="Low Stock Alert">
+                      <input
+                        name="lowStockThreshold"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={form.lowStockThreshold}
+                        onChange={handleFormChange}
+                        className={inputClass}
+                      />
+                    </FormField>
+                    <FormField label="Warranty">
+                      <input
+                        name="warranty"
+                        value={form.warranty}
+                        onChange={handleFormChange}
+                        placeholder="e.g. 6 Months / No Warranty"
+                        className={inputClass}
+                      />
+                    </FormField>
+                  </div>
+                </section>
+
+                <section>
+                  <SectionHeading
+                    icon={<ImageIcon size={18} />}
+                    title="Product Image & Status"
+                  />
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FormField label="Image URL">
+                      <input
+                        name="image"
+                        type="url"
+                        value={form.image}
+                        onChange={handleFormChange}
+                        placeholder="https://example.com/product.jpg"
+                        className={inputClass}
+                      />
+                    </FormField>
+                    <FormField label="Product Status">
+                      <select
+                        name="status"
+                        value={form.status}
+                        onChange={handleFormChange}
+                        className={inputClass}
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="draft">Draft</option>
+                      </select>
+                    </FormField>
+                  </div>
+                </section>
+
                 {formError && (
-                  <p className="sm:col-span-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                  <p
+                    role="alert"
+                    className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+                  >
                     {formError}
                   </p>
                 )}
@@ -681,17 +1061,18 @@ export default function AdminProductsPage() {
               <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
                 <button
                   type="button"
-                  onClick={closeModal}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  onClick={closeEditModal}
+                  disabled={isSaving}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                  className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSaving ? "Saving..." : editingProduct ? "Save Changes" : "Create Product"}
+                  {isSaving ? "Saving Changes..." : "Save Changes"}
                 </button>
               </div>
             </form>
@@ -699,12 +1080,13 @@ export default function AdminProductsPage() {
         </div>
       )}
 
-      {/* Delete confirmation modal */}
       {deleteTarget && (
         <div
           className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setDeleteTarget(null);
+            if (event.target === event.currentTarget && !isDeleting) {
+              setDeleteTarget(null);
+            }
           }}
         >
           <div
@@ -733,7 +1115,8 @@ export default function AdminProductsPage() {
               <button
                 type="button"
                 onClick={() => setDeleteTarget(null)}
-                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                disabled={isDeleting}
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -741,7 +1124,7 @@ export default function AdminProductsPage() {
                 type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+                className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isDeleting ? "Deleting..." : "Delete Product"}
               </button>
@@ -752,9 +1135,6 @@ export default function AdminProductsPage() {
     </div>
   );
 }
-
-const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-50";
 
 function SummaryCard({ label, value, helper, icon, iconClass }) {
   return (
@@ -782,7 +1162,7 @@ function ProductThumbnail({ product }) {
     return (
       <img
         src={product.image}
-        alt={product.name}
+        alt={product.name || "Product"}
         className="h-12 w-12 rounded-xl border border-slate-100 object-cover"
         onError={(event) => {
           event.currentTarget.style.display = "none";
@@ -795,6 +1175,33 @@ function ProductThumbnail({ product }) {
     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-slate-400">
       <ImageIcon size={20} />
     </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const label = status.charAt(0).toUpperCase() + status.slice(1);
+  const classes =
+    status === "active"
+      ? "bg-emerald-50 text-emerald-700"
+      : status === "draft"
+        ? "bg-amber-50 text-amber-700"
+        : "bg-slate-100 text-slate-600";
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${classes}`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          status === "active"
+            ? "bg-emerald-500"
+            : status === "draft"
+              ? "bg-amber-500"
+              : "bg-slate-400"
+        }`}
+      />
+      {label}
+    </span>
   );
 }
 
@@ -827,5 +1234,14 @@ function FormField({ label, children }) {
       <span className="text-sm font-medium text-slate-700">{label}</span>
       {children}
     </label>
+  );
+}
+
+function SectionHeading({ icon, title }) {
+  return (
+    <div className="mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
+      <span className="text-blue-600">{icon}</span>
+      <h3 className="font-semibold text-slate-900">{title}</h3>
+    </div>
   );
 }

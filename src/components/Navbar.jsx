@@ -111,7 +111,7 @@ const navigationLinks = [
   },
   {
     name: "Budget Deals",
-    href: "/deals",
+    href: "/budget-deals",
     icon: Tag,
   },
   {

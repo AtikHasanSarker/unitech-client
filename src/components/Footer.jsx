@@ -156,12 +156,12 @@ export default function Footer() {
         </div>
 
         {/* Bottom Footer */}
-        <div className="flex flex-col gap-5 border-t border-white/[0.08] py-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col mb-15 gap-3 border-t border-white/[0.08] py-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-center text-xs text-slate-500 sm:text-left">
             ©2026 UniTech | All Rights Reserved.
           </p>
 
-          <div className="flex text-slate-300 text-sm sm:justify-end">
+          <div className="flex text-slate-300 text-sm justify-center sm:justify-end">
             Design & Developed by{" "}
             <Link
               href="https://atikhasan-dev.vercel.app"

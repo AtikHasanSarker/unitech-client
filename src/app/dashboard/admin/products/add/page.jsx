@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -8,7 +9,6 @@ import {
   Package,
   DollarSign,
   Boxes,
-  Tag,
   FileText,
   LoaderCircle,
   CheckCircle2,
@@ -32,25 +32,27 @@ const initialForm = {
   costPrice: "",
   discountPrice: "",
   stock: "",
-  lowStockThreshold: "5",
+  lowStockThreshold: "2",
   warranty: "",
-  status: "active",
 };
 
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = [
   "image/jpeg",
+  "image/jpg",
   "image/png",
   "image/webp",
   "image/gif",
 ];
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60";
+  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60";
 
 const labelClass = "mb-2 block text-sm font-medium text-slate-700";
 
 export default function AddProductPage() {
+  const router = useRouter();
+
   const [form, setForm] = useState(initialForm);
   const [features, setFeatures] = useState([""]);
   const [specifications, setSpecifications] = useState([
@@ -62,10 +64,19 @@ export default function AddProductPage() {
   const [imageUploading, setImageUploading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
+  useEffect(() => {
+    return () => {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((previous) => ({ ...previous, [name]: value }));
-    if (message.text) setMessage({ type: "", text: "" });
+
+    if (message.text) {
+      setMessage({ type: "", text: "" });
+    }
   };
 
   const handleFeatureChange = (index, value) => {
@@ -74,7 +85,9 @@ export default function AddProductPage() {
     );
   };
 
-  const addFeatureField = () => setFeatures((previous) => [...previous, ""]);
+  const addFeatureField = () => {
+    setFeatures((previous) => [...previous, ""]);
+  };
 
   const removeFeatureField = (index) => {
     setFeatures((previous) => previous.filter((_, i) => i !== index));
@@ -112,51 +125,39 @@ export default function AddProductPage() {
     if (file.size > MAX_IMAGE_SIZE) {
       setMessage({
         type: "error",
-        text: "Image size must be 2 MB or less.",
+        text: "Image size must be 5 MB or less.",
       });
       event.target.value = "";
       return;
     }
 
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
     setSelectedImage(file);
     setImagePreview(URL.createObjectURL(file));
     setMessage({ type: "", text: "" });
   };
 
   const removeImage = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
     setSelectedImage(null);
     setImagePreview("");
+
     const input = document.getElementById("imageFile");
     if (input) input.value = "";
   };
 
   const resetForm = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
     setForm(initialForm);
     setFeatures([""]);
     setSpecifications([{ key: "", value: "" }]);
     setSelectedImage(null);
     setImagePreview("");
     setMessage({ type: "", text: "" });
+
     const input = document.getElementById("imageFile");
     if (input) input.value = "";
   };
 
   const uploadImage = async (file) => {
-    const base64Image = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === "string") resolve(reader.result);
-        else reject(new Error("Failed to read the selected image."));
-      };
-      reader.onerror = () =>
-        reject(new Error("Failed to read the selected image."));
-      reader.readAsDataURL(file);
-    });
-
-    const result = await uploadImageAction(base64Image, file.name);
+    const result = await uploadImageAction(file, file.name);
 
     if (!result?.success || !result?.data?.url) {
       throw new Error(
@@ -169,6 +170,9 @@ export default function AddProductPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (loading) return;
+
     setMessage({ type: "", text: "" });
 
     const price = Number(form.price);
@@ -193,7 +197,7 @@ export default function AddProductPage() {
       return;
     }
 
-    if (!form.price.trim() || !Number.isFinite(price) || price < 0) {
+    if (form.price.trim() === "" || !Number.isFinite(price) || price < 0) {
       setMessage({
         type: "error",
         text: "Please enter a valid selling price.",
@@ -267,6 +271,7 @@ export default function AddProductPage() {
         setImageUploading(false);
       }
 
+      // Keep this payload aligned with AdminProductsPage and the Product model.
       const payload = {
         name: form.name.trim(),
         sku: form.sku.trim(),
@@ -281,33 +286,28 @@ export default function AddProductPage() {
         features: cleanedFeatures,
         specifications: cleanedSpecifications,
         warranty: form.warranty.trim(),
-        status: form.status,
         images: imageUrl ? [imageUrl] : [],
       };
 
       const result = await addProduct(payload);
 
-      if (result?.success === false) {
+      if (!result?.success) {
         throw new Error(result.message || "Failed to create product.");
       }
 
       setMessage({
         type: "success",
-        text: "Product created successfully!",
+        text: "Product created successfully. Redirecting to products...",
       });
-      setForm(initialForm);
-      setFeatures([""]);
-      setSpecifications([{ key: "", value: "" }]);
-      if (imagePreview) URL.revokeObjectURL(imagePreview);
-      setSelectedImage(null);
-      setImagePreview("");
-      const input = document.getElementById("imageFile");
-      if (input) input.value = "";
+
+      // Return to the product list after a successful create.
+      router.replace("/dashboard/admin/products");
+      router.refresh();
     } catch (error) {
       console.error("Create product error:", error);
       setMessage({
         type: "error",
-        text: error.message || "Something went wrong. Please try again.",
+        text: error?.message || "Something went wrong. Please try again.",
       });
     } finally {
       setLoading(false);
@@ -320,17 +320,22 @@ export default function AddProductPage() {
       <div className="mx-auto max-w-5xl">
         <div className="mb-8">
           <Link
-            href="/dashboard/admin"
+            href="/dashboard/admin/products"
             className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-blue-600"
           >
             <ArrowLeft size={17} />
-            Back to Dashboard
+            Back to Products
           </Link>
 
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
               <div className="mb-2 flex items-center gap-2 text-sm text-slate-500">
-                <span>Admin</span>
+                <Link
+                  href="/dashboard/admin"
+                  className="transition hover:text-blue-600"
+                >
+                  Admin
+                </Link>
                 <span>/</span>
                 <Link
                   href="/dashboard/admin/products"
@@ -341,6 +346,7 @@ export default function AddProductPage() {
                 <span>/</span>
                 <span className="text-blue-600">Add Product</span>
               </div>
+
               <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
                 Add New Product
               </h1>
@@ -730,38 +736,6 @@ export default function AddProductPage() {
                   </div>
                 </div>
               </section>
-
-              {/* Product status */}
-              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-                <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                    <ShieldCheck size={21} />
-                  </div>
-                  <div>
-                    <h2 className="font-semibold text-slate-900">
-                      Product Status
-                    </h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Choose whether this product is available in your store.
-                    </p>
-                  </div>
-                </div>
-                <label htmlFor="status" className={labelClass}>
-                  Status
-                </label>
-                <select
-                  id="status"
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                  disabled={loading}
-                  className={inputClass}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="draft">Draft</option>
-                </select>
-              </section>
             </div>
 
             {/* Sidebar */}
@@ -816,13 +790,13 @@ export default function AddProductPage() {
                 <input
                   id="imageFile"
                   type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
                   onChange={handleImageChange}
                   disabled={loading}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-medium file:text-blue-600 disabled:opacity-60"
                 />
                 <p className="mt-2 text-xs leading-5 text-slate-400">
-                  Supported formats: JPG, PNG, WEBP, GIF. Maximum size: 2 MB.
+                  Supported formats: JPG, JPEG, PNG, WEBP, GIF. Maximum size: 5 MB.
                 </p>
 
                 {selectedImage && (
