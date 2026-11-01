@@ -1,90 +1,188 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@heroui/react";
-import { getCategories } from "@/lib/api/category";
+import {
+  ArrowRight,
+  Cable,
+  Headphones,
+  WashingMachine,
+  Flower2,
+  Smartphone,
+  BatteryCharging,
+  Fan,
+  Watch,
+  Speaker,
+  Ear,
+  PlugZap,
+  AudioLines,
+  ChevronRight,
+  Sparkles,
+  Laptop,
+  ScanFace,
+} from "lucide-react";
 
-export default async function ShopByCategory() {
-  const result = await getCategories();
-  const categories = result?.success ? result.data : [];
+const categories = [
+  {
+    name: "Adapters & Cables",
+    slug: "adapters-cables",
+    icon: Cable,
+    color: "from-blue-500/10 to-cyan-500/5",
+  },
+  {
+    name: "Headsets",
+    slug: "headsets",
+    icon: Headphones,
+    color: "from-violet-500/10 to-purple-500/5",
+  },
+  {
+    name: "Neckbands",
+    slug: "neckbands",
+    icon: AudioLines,
+    color: "from-indigo-500/10 to-blue-500/5",
+  },
+  {
+    name: "Phone Accessories",
+    slug: "phone-accessories",
+    icon: Smartphone,
+    color: "from-sky-500/10 to-cyan-500/5",
+  },
+  {
+    name: "Laptop Accessories",
+    slug: "laptop-accessories",
+    icon: Laptop,
+    color: "from-indigo-500/10 to-blue-500/5",
+  },
+  {
+    name: "Personal Care Gadgets",
+    slug: "personal-care-gadgets",
+    icon: ScanFace,
+    color: "from-rose-500/10 to-pink-500/5",
+  },
+  {
+    name: "Powerbanks",
+    slug: "powerbanks",
+    icon: BatteryCharging,
+    color: "from-amber-500/10 to-orange-500/5",
+  },
+  {
+    name: "Rechargeable Fans",
+    slug: "rechargeable-fans",
+    icon: Fan,
+    color: "from-teal-500/10 to-emerald-500/5",
+  },
+  {
+    name: "Smart Watches",
+    slug: "smart-watches",
+    icon: Watch,
+    color: "from-purple-500/10 to-fuchsia-500/5",
+  },
+  {
+    name: "Speakers",
+    slug: "speakers",
+    icon: Speaker,
+    color: "from-orange-500/10 to-red-500/5",
+  },
+  {
+    name: "TWS",
+    slug: "tws",
+    icon: Ear,
+    color: "from-blue-500/10 to-indigo-500/5",
+  },
+  {
+    name: "Wired Earphones",
+    slug: "wired-earphones",
+    icon: PlugZap,
+    color: "from-emerald-500/10 to-teal-500/5",
+  },
+];
 
+export default function ShopByCategory() {
   return (
-    <section className="bg-[#f8fafc] py-14 text-slate-900 sm:py-16 lg:py-20">
-      <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10">
+    <section className="relative overflow-hidden bg-white py-14 text-slate-900 sm:py-16">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-10">
         {/* Section Heading */}
-        <div className="mb-8 flex items-center justify-between gap-4 sm:mb-10">
+        <div className="mb-8 flex items-end justify-between gap-4 sm:mb-10">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 sm:text-sm">
-              Find Your Essentials
-            </p>
+            <div className="mb-3 flex items-center gap-2">
+              <Sparkles size={15} className="text-blue-600" />
 
-            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Shop by Category
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 sm:text-sm">
+                Explore Our Collection
+              </p>
+            </div>
+
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+              Shop by <span className="text-blue-600">Category</span>
             </h2>
 
-            <p className="mt-2 max-w-lg text-sm leading-6 text-slate-500">
-              Explore quality accessories designed for your everyday tech.
+            <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-500 sm:text-base">
+              Find the right tech accessories for your everyday needs. Explore our collection and upgrade your lifestyle.
             </p>
           </div>
 
-          <Link href="/products">
-            <Button
-              variant="outline"
-              className="hidden shrink-0 rounded-full border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-blue-600 sm:inline-flex"
-            >
-              View All
-              <ArrowRight size={16} className="ml-2" />
-            </Button>
+          {/* Desktop View All */}
+          <Link
+            href="/products"
+            className="group hidden shrink-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all hover:border-blue-300 hover:bg-blue-600 hover:text-white sm:inline-flex"
+          >
+            View All
+            <ArrowRight
+              size={16}
+              className="transition-transform group-hover:translate-x-1"
+            />
           </Link>
         </div>
 
         {/* Category Grid */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 lg:grid-cols-8">
-          {categories.map((category) => (
-            <Link
-              key={category._id}
-              href={`/products?category=${encodeURIComponent(category.name)}`}
-              className="group min-w-0"
-            >
-              {/* Image Card */}
-              <div className="relative aspect-square overflow-hidden rounded-2xl border border-slate-100 bg-white p-3 shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:border-blue-200 group-hover:shadow-lg group-hover:shadow-blue-900/[0.06] sm:rounded-3xl sm:p-4">
-                {/* Background Glow */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-50/80 via-transparent to-slate-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4 xl:grid-cols-6">
+          {categories.map((category) => {
+            const Icon = category.icon;
 
-                <div className="relative h-full w-full">
-                  <Image
-                    src={category.image || "/favicon.ico"}
-                    alt={category.name}
-                    fill
-                    sizes="(max-width: 640px) 45vw, (max-width: 1024px) 28vw, 12vw"
-                    className="object-contain p-1 transition-transform duration-300 group-hover:scale-110"
-                  />
+            return (
+              <Link
+                key={category.slug}
+                href={`/products?category=${encodeURIComponent(category.name)}`}
+                className="group relative min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-900/[0.07] sm:rounded-3xl"
+              >
+                {/* Background Gradient */}
+                <div
+                  className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${category.color} opacity-30 transition-opacity duration-300 group-hover:opacity-100`}
+                />
+
+                <div className="relative">
+                  {/* Icon */}
+                  <div className="mb-3 flex aspect-[1.5/1] items-center justify-center">
+                    <div className="relative flex h-[76px] w-[76px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-blue-600 transition-all duration-300 group-hover:scale-110 group-hover:border-blue-200 group-hover:bg-blue-50 sm:h-[88px] sm:w-[88px] sm:rounded-3xl">
+                      <Icon
+                        size={39}
+                        strokeWidth={1.6}
+                        className="transition-all duration-300 group-hover:text-blue-700 sm:h-11 sm:w-11"
+                      />
+
+                      {/* Icon Glow */}
+                      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-blue-500/10 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100" />
+                    </div>
+                  </div>
+
+                  {/* Category Details */}
+                      <h3 className="text-sm text-center font-semibold leading-5 text-slate-800 transition-colors group-hover:text-blue-600 sm:text-[15px]">
+                        {category.name}
+                      </h3>
                 </div>
-
-                {/* Hover Arrow */}
-                <div className="absolute bottom-2 right-2 flex h-7 w-7 translate-y-2 items-center justify-center rounded-full bg-blue-600 text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                  <ArrowRight size={14} />
-                </div>
-              </div>
-
-              {/* Category Name */}
-              <h3 className="mt-3 text-center text-xs font-semibold text-slate-700 transition-colors group-hover:text-blue-600 sm:mt-4 sm:text-sm">
-                {category.name}
-              </h3>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Mobile View All */}
-        <div className="mt-7 flex justify-center sm:hidden">
-          <Link href="/products">
-          <Button
-            variant="outline"
-            className="rounded-full border-slate-200 bg-white px-6 text-sm font-medium text-slate-700"
+        <div className="mt-8 flex justify-center sm:hidden">
+          <Link
+            href="/products"
+            className="group inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-6 py-3 text-sm font-semibold text-blue-600 transition-all hover:bg-blue-600 hover:text-white"
           >
-            View All Categories
-            <ArrowRight size={16} className="ml-2" />
-          </Button>
+            Explore All Products
+            <ArrowRight
+              size={16}
+              className="transition-transform group-hover:translate-x-1"
+            />
           </Link>
         </div>
       </div>

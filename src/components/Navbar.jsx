@@ -30,12 +30,13 @@ import {
   Contact,
   Phone,
   Mail,
+  Van,
+  Laptop,
 } from "lucide-react";
 
 import { Button } from "@heroui/react";
 import { FaFacebook, FaYoutube } from "react-icons/fa";
 import { BsInstagram } from "react-icons/bs";
-import { GiMailbox } from "react-icons/gi";
 
 
 const productCategories = [
@@ -70,19 +71,14 @@ const productCategories = [
     icon: Cable,
   },
   {
-    name: "Adapters",
-    href: "/products?category=adapters",
+    name: "Phone Accessories",
+    href: "/products?category=phone-accessories",
     icon: Smartphone,
   },
   {
-    name: "Smartwatches",
-    href: "/products?category=smartwatches",
-    icon: Watch,
-  },
-  {
-    name: "Gaming Accessories",
-    href: "/products?category=gaming-accessories",
-    icon: Gamepad2,
+    name: "Laptop Accessories",
+    href: "/products?category=laptop-accessories",
+    icon: Laptop,
   },
   {
     name: "Other Accessories",
@@ -127,6 +123,11 @@ const navigationLinks = [
     name: "Contact Us",
     href: "/contact",
     icon: Contact,
+  },
+  {
+    name: "Track Order",
+    href: "/track-order",
+    icon: Van,
   },
 ];
 

@@ -23,79 +23,6 @@ import {
   updateProduct,
 } from "@/lib/api/product";
 
-const INITIAL_PRODUCTS = [
-  {
-    id: 1,
-    name: "Anker PowerCore 20K",
-    sku: "PB-ANK-20000",
-    category: "Power Bank",
-    price: 2490,
-    stock: 24,
-    status: "Active",
-    image: "",
-  },
-  {
-    id: 2,
-    name: "Baseus Bowie WM02",
-    sku: "EAR-BAS-WM02",
-    category: "Earbuds",
-    price: 1890,
-    stock: 8,
-    status: "Active",
-    image: "",
-  },
-  {
-    id: 3,
-    name: "UGREEN USB-C Cable 100W",
-    sku: "CB-UGR-100W",
-    category: "Cables",
-    price: 650,
-    stock: 0,
-    status: "Draft",
-    image: "",
-  },
-  {
-    id: 4,
-    name: "Oraimo Watch 4 Plus",
-    sku: "WT-ORA-W4P",
-    category: "Smart Watch",
-    price: 3290,
-    stock: 13,
-    status: "Active",
-    image: "",
-  },
-  {
-    id: 5,
-    name: "Apple 20W USB-C Adapter",
-    sku: "AD-APL-20W",
-    category: "Charger",
-    price: 1950,
-    stock: 5,
-    status: "Active",
-    image: "",
-  },
-  {
-    id: 6,
-    name: "JBL Tune 520BT",
-    sku: "HP-JBL-520BT",
-    category: "Headphones",
-    price: 4250,
-    stock: 17,
-    status: "Active",
-    image: "",
-  },
-];
-
-const CATEGORIES = [
-  "All Categories",
-  "Charger",
-  "Cables",
-  "Earbuds",
-  "Headphones",
-  "Power Bank",
-  "Smart Watch",
-  "Other",
-];
 
 const EMPTY_FORM = {
   name: "",
@@ -371,7 +298,7 @@ export default function AdminProductsPage() {
           <button
             type="button"
             onClick={openAddModal}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
+            className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
           >
             <Plus size={18} />
             Add Product
