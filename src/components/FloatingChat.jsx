@@ -4,7 +4,7 @@ export default function FloatingChat() {
   const messengerUrl = "https://m.me/unitechfa";
 
   return (
-    <div className="chat-widget fixed bottom-7 right-7 z-50 flex items-center gap-3">
+    <div className="chat-widget flex items-center gap-3 fixed bottom-24 right-5 z-40 md:bottom-7 md:right-7">
       {/* Chat With Us Label */}
       <a
         href={messengerUrl}

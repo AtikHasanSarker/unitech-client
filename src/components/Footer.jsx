@@ -56,7 +56,7 @@ export default function Footer() {
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         {/* Main Footer */}
-        <div className="grid grid-cols-1 gap-12 py-14 sm:grid-cols-2 lg:grid-cols-12 lg:gap-10 lg:py-20">
+        <div className="grid grid-cols-1 gap-12 py-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-10">
           {/* Brand Information */}
           <div className="lg:col-span-4">
             <Link
@@ -64,40 +64,31 @@ export default function Footer() {
               aria-label="UniTech homepage"
               className="inline-flex items-center gap-3"
             >
-              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl">
+              <div className="relative h-20 w-50 shrink-0 overflow-hidden rounded-xl">
                 <Image
-                  src="/images/logo.png"
+                  src="/logo.png"
                   alt="UniTech logo"
                   fill
-                  sizes="44px"
                   className="object-contain"
                 />
               </div>
-
-              <span className="text-2xl font-bold tracking-tight">
-                Uni<span className="text-blue-500">Tech</span>
-              </span>
             </Link>
 
-            <p className="mt-5 max-w-sm text-sm leading-7 text-slate-400">
+            <p className="max-w-sm text-sm leading-5 text-slate-400">
               Your trusted destination for quality mobile accessories. Discover
               useful gadgets, explore great deals, and upgrade your everyday
               tech experience with UniTech.
             </p>
 
             {/* Location */}
-            <div className="mt-6 flex items-start gap-3 text-sm text-slate-400">
+            <div className="mt-5 flex items-start gap-3 text-sm text-slate-400">
               <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
 
-              <p>
-                NSTU Campus
-                <br />
-                Noakhali, Bangladesh
-              </p>
+              <p>NSTU Campus, Noakhali, Bangladesh</p>
             </div>
 
             {/* Social Links */}
-            <div className="mt-7 flex items-center gap-3">
+            <div className="mt-6 flex items-center gap-3">
               {socialLinks.map(({ icon: Icon, href, label }) => (
                 <a
                   key={label}
@@ -167,29 +158,18 @@ export default function Footer() {
         {/* Bottom Footer */}
         <div className="flex flex-col gap-5 border-t border-white/[0.08] py-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-center text-xs text-slate-500 sm:text-left">
-            ©2026 UniTech. All rights reserved.
+            ©2026 UniTech | All Rights Reserved.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-slate-500 sm:justify-end">
+          <div className="flex text-slate-300 text-sm sm:justify-end">
+            Design & Developed by{" "}
             <Link
-              href="/privacy-policy"
-              className="transition-colors hover:text-slate-300"
+              href="https://atikhasan-dev.vercel.app"
+              target="_blank"
+              className="font-bold text-violet-600"
             >
-              Privacy
-            </Link>
-
-            <Link
-              href="/terms"
-              className="transition-colors hover:text-slate-300"
-            >
-              Terms & Conditions
-            </Link>
-
-            <Link
-              href="/return-policy"
-              className="transition-colors hover:text-slate-300"
-            >
-              Returns
+              {" "}
+              {"<Atik Hasan Sarker />"}
             </Link>
           </div>
         </div>

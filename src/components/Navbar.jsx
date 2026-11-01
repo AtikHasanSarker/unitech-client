@@ -403,7 +403,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   aria-haspopup="true"
-                  className="flex h-full min-w-[190px] items-center justify-between gap-2 rounded-t-xl bg-blue-600 px-3 text-xs font-semibold text-white shadow-lg shadow-blue-600/20 transition-colors hover:bg-blue-500 xl:min-w-[215px] xl:px-4 xl:text-sm"
+                  className="flex h-full min-w-[190px] items-center justify-between gap-2 rounded-t-xl bg-blue-600 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-500 xl:min-w-[215px] xl:px-4 xl:text-sm"
                 >
                   <span className="flex items-center gap-2">
                     <Menu size={19} />

@@ -5,38 +5,43 @@ const brands = [
   {
     name: "Apple",
     slug: "apple",
-    logo: "https://cdn.simpleicons.org/apple",
+    logo: "/images/brand/apple.png",
   },
   {
     name: "Xiaomi",
     slug: "xiaomi",
-    logo: "https://cdn.simpleicons.org/xiaomi",
+    logo: "/images/brand/xiaomi.jpeg",
   },
   {
-    name: "hoco",
+    name: "Hoco",
     slug: "hoco",
     logo: "/images/brand/hoco.jpg",
   },
   {
-    name: "Xiaomi",
-    slug: "xiaomi",
-    logo: "https://cdn.simpleicons.org/xiaomi",
+    name: "HTC",
+    slug: "htc",
+    logo: "/images/brand/htc.webp",
+  },
+  {
+    name: "Oraimo",
+    slug: "oraimo",
+    logo: "/images/brand/oraimo.png",
   },
 
   {
     name: "Baseus",
     slug: "baseus",
-    logo: "https://i.ibb.co.com/4nf9HkQb/images.png",
+    logo: "/images/brand/baseus.png",
   },
   {
     name: "OnePlus",
     slug: "oneplus",
-    logo: "https://cdn.simpleicons.org/oneplus",
+    logo: "/images/brand/oneplus.jpg",
   },
   {
     name: "Ven-Dens",
     slug: "ven-dens",
-    logo: "https://cdn.simpleicons.org/ven-dens",
+    logo: "/images/brand/ven-dens.webp",
   },
 ];
 
@@ -77,7 +82,7 @@ export default function BrandsPage() {
           <Link
             key={brand.slug}
             href={`/products?brand=${brand.slug}`}
-            className="group flex h-20 flex-col items-center justify-center gap-4 rounded-xl border border-default-200 bg-content1 p-5 transition-all duration-200 hover:-translate-y-1 hover:border-primary hover:shadow-md"
+            className="group flex h-20 flex-col items-center justify-center gap-4 rounded-xl border border-default-200 bg-content1 p-4 transition-all duration-200 hover:-translate-y-1 hover:border-primary hover:shadow-md"
           >
               <Image
                 width={100}
