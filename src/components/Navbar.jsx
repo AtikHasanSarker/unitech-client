@@ -27,6 +27,7 @@ import {
 import { Button, Input } from "@heroui/react";
 import { FaFacebook, FaYoutube } from "react-icons/fa";
 import { BsInstagram } from "react-icons/bs";
+import { redirect } from "next/navigation";
 
 const categories = [
   { name: "Home", href: "/", icon: House },
@@ -43,26 +44,7 @@ const categories = [
     href: "/products?category=power-bank",
     icon: BatteryCharging,
   },
-  {
-    name: "Mobile Cases",
-    href: "/products?category=mobile-cases",
-    icon: Smartphone,
-  },
-  {
-    name: "Screen Protector",
-    href: "/products?category=screen-protector",
-    icon: ShieldCheck,
-  },
-  {
-    name: "Mobile Holder",
-    href: "/products?category=mobile-holder",
-    icon: Smartphone,
-  },
-  {
-    name: "Car Accessories",
-    href: "/products?category=car-accessories",
-    icon: CarFront,
-  },
+
 ];
 
 const moreCategories = [
@@ -85,12 +67,10 @@ export default function Navbar() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-
     const query = searchQuery.trim();
 
     if (!query) return;
-
-    window.location.href = `/products?search=${encodeURIComponent(query)}`;
+    redirect(`/products?search=${encodeURIComponent(query)}`);
   };
 
   const closeMobileMenu = () => {
@@ -124,7 +104,7 @@ export default function Navbar() {
 
             <div className="flex items-center gap-3 border-l border-white/10 pl-5">
               <a
-                href="#"
+                href="https://www.facebook.com/unitechfa"
                 aria-label="Facebook"
                 className="text-slate-400 transition-colors hover:text-blue-400"
               >
