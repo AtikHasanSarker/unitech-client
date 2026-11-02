@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 import {
   Heart,
   ShoppingCart,
@@ -253,7 +252,6 @@ export default function WishlistPage() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <Navbar />
 
       {/* Toast Notification */}
       {notification && (
