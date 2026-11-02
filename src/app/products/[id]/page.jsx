@@ -21,7 +21,6 @@ import {
   Share2,
   BadgeCheck,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
 import { addCartItem } from "@/lib/api/cart";
 import { getProductById, getProducts } from "@/lib/api/product";
 import {
@@ -29,176 +28,6 @@ import {
   getWishlist,
   removeFromWishlist,
 } from "@/lib/api/wishlist";
-
-const products = [
-  {
-    id: "p1",
-    name: "Baseus Bowie WM02 Wireless Earbuds",
-    brand: "Baseus",
-    category: "Earphones",
-    price: 1450,
-    oldPrice: 1890,
-    rating: 4.8,
-    reviews: 124,
-    stock: 18,
-    sku: "UT-AUD-001",
-    badge: "BEST SELLER",
-    description:
-      "Enjoy your everyday listening experience with these compact wireless earbuds. Designed for music, calls, online classes, and entertainment, they are a practical choice for students and everyday users.",
-    features: [
-      "Wireless Bluetooth connectivity",
-      "Compact, lightweight design",
-      "Convenient charging case",
-      "Suitable for music and calls",
-    ],
-    specifications: [
-      ["Brand", "Baseus"],
-      ["Category", "Wireless Earbuds"],
-      ["Connectivity", "Bluetooth"],
-      ["Color", "Black"],
-      ["Warranty", "Check product warranty at purchase"],
-    ],
-    images: [
-      "https://placehold.co/900x900/f5f3ff/7c3aed?text=Wireless+Earbuds",
-      "https://placehold.co/900x900/ede9fe/6d28d9?text=Earbuds+Case",
-      "https://placehold.co/900x900/e0e7ff/4338ca?text=Product+Details",
-      "https://placehold.co/900x900/f8fafc/475569?text=Package",
-    ],
-  },
-  {
-    id: "p2",
-    name: "UGREEN 20W USB-C Fast Charger",
-    brand: "UGREEN",
-    category: "Chargers",
-    price: 890,
-    oldPrice: 1090,
-    rating: 4.7,
-    reviews: 86,
-    stock: 12,
-    sku: "UT-CHG-002",
-    badge: "POPULAR",
-    description:
-      "A compact USB-C charger for compatible phones and accessories. Check your device's supported charging protocol before purchasing to ensure compatibility.",
-    features: [
-      "Compact wall charger design",
-      "USB-C charging connection",
-      "Convenient for home and travel",
-      "Compatible with supported devices",
-    ],
-    specifications: [
-      ["Brand", "UGREEN"],
-      ["Category", "Fast Charger"],
-      ["Output", "Up to 20W (model dependent)"],
-      ["Port", "USB-C"],
-      ["Warranty", "Check product warranty at purchase"],
-    ],
-    images: [
-      "https://placehold.co/900x900/eff6ff/2563eb?text=Fast+Charger",
-      "https://placehold.co/900x900/dbeafe/1d4ed8?text=Charger+Side",
-      "https://placehold.co/900x900/e0f2fe/0369a1?text=USB-C+Port",
-      "https://placehold.co/900x900/f8fafc/475569?text=Packaging",
-    ],
-  },
-  {
-    id: "p3",
-    name: "Baseus Cafule USB-C Cable",
-    brand: "Baseus",
-    category: "Cables",
-    price: 390,
-    oldPrice: 490,
-    rating: 4.6,
-    reviews: 58,
-    stock: 25,
-    sku: "UT-CAB-003",
-    badge: "",
-    description:
-      "A practical USB-C cable for everyday charging and compatible devices. Confirm the connector type, charging capacity, and data-transfer specifications of the exact model before purchase.",
-    features: [
-      "USB-C connection",
-      "Convenient everyday cable",
-      "Portable design",
-      "Suitable for compatible devices",
-    ],
-    specifications: [
-      ["Brand", "Baseus"],
-      ["Category", "Charging Cable"],
-      ["Connector", "USB-C"],
-      ["Color", "Black"],
-      ["Warranty", "Check product warranty at purchase"],
-    ],
-    images: [
-      "https://placehold.co/900x900/f1f5f9/475569?text=USB-C+Cable",
-      "https://placehold.co/900x900/e2e8f0/334155?text=Cable+Connector",
-      "https://placehold.co/900x900/f8fafc/64748b?text=Cable+Detail",
-      "https://placehold.co/900x900/e0f2fe/0369a1?text=Packaging",
-    ],
-  },
-  {
-    id: "p4",
-    name: "Remax 10000mAh Power Bank",
-    brand: "Remax",
-    category: "Power Banks",
-    price: 1690,
-    oldPrice: 1990,
-    rating: 4.8,
-    reviews: 93,
-    stock: 9,
-    sku: "UT-PWB-004",
-    badge: "SALE",
-    description:
-      "A portable power bank designed for charging compatible devices while travelling or attending classes. Actual output and charging speed depend on the exact model and connected device.",
-    features: [
-      "Portable battery pack",
-      "Useful for everyday travel",
-      "Rechargeable design",
-      "Compatible with supported devices",
-    ],
-    specifications: [
-      ["Brand", "Remax"],
-      ["Category", "Power Bank"],
-      ["Capacity", "10000mAh"],
-      ["Charging", "Model dependent"],
-      ["Warranty", "Check product warranty at purchase"],
-    ],
-    images: [
-      "https://placehold.co/900x900/ecfeff/0891b2?text=Power+Bank",
-      "https://placehold.co/900x900/cffafe/0e7490?text=Power+Bank+Side",
-      "https://placehold.co/900x900/e0f2fe/0369a1?text=Ports",
-      "https://placehold.co/900x900/f8fafc/475569?text=Packaging",
-    ],
-  },
-];
-
-const relatedProducts = [
-  {
-    id: "p1",
-    name: "Baseus Bowie WM02 Wireless Earbuds",
-    price: 1450,
-    oldPrice: 1890,
-    image: "https://placehold.co/500x500/f5f3ff/7c3aed?text=Wireless+Earbuds",
-  },
-  {
-    id: "p2",
-    name: "UGREEN 20W USB-C Fast Charger",
-    price: 890,
-    oldPrice: 1090,
-    image: "https://placehold.co/500x500/eff6ff/2563eb?text=Fast+Charger",
-  },
-  {
-    id: "p3",
-    name: "Baseus Cafule USB-C Cable",
-    price: 390,
-    oldPrice: 490,
-    image: "https://placehold.co/500x500/f1f5f9/475569?text=USB-C+Cable",
-  },
-  {
-    id: "p4",
-    name: "Remax 10000mAh Power Bank",
-    price: 1690,
-    oldPrice: 1990,
-    image: "https://placehold.co/500x500/ecfeff/0891b2?text=Power+Bank",
-  },
-];
 
 const formatPrice = (price) => `৳${price.toLocaleString("en-BD")}`;
 
@@ -312,7 +141,6 @@ export default function ProductDetailsPage() {
   if (!product) {
     return (
       <>
-        <Navbar />
         <main className="flex min-h-[65vh] items-center justify-center bg-[#f8fafc] px-5">
           <div className="max-w-md text-center">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
@@ -346,8 +174,6 @@ export default function ProductDetailsPage() {
 
   return (
     <>
-      <Navbar />
-
       <main className="min-h-screen bg-[#f8fafc] text-slate-900">
         {/* Breadcrumb */}
         <div className="border-b border-slate-200 bg-white">

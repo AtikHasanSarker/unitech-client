@@ -301,6 +301,7 @@ export default function AddProductPage() {
       });
 
       // Return to the product list after a successful create.
+      resetForm();
       router.replace("/dashboard/admin/products");
       router.refresh();
     } catch (error) {
@@ -796,7 +797,8 @@ export default function AddProductPage() {
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-medium file:text-blue-600 disabled:opacity-60"
                 />
                 <p className="mt-2 text-xs leading-5 text-slate-400">
-                  Supported formats: JPG, JPEG, PNG, WEBP, GIF. Maximum size: 5 MB.
+                  Supported formats: JPG, JPEG, PNG, WEBP, GIF. Maximum size: 5
+                  MB.
                 </p>
 
                 {selectedImage && (
@@ -859,7 +861,7 @@ export default function AddProductPage() {
               type="button"
               onClick={resetForm}
               disabled={loading}
-              className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl border cursor-pointer border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Reset Form
             </button>
@@ -867,7 +869,7 @@ export default function AddProductPage() {
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (
                 <>

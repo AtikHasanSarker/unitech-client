@@ -57,7 +57,7 @@ export default function MobileBottomNav({ cartCount = 0 }) {
               }`}
             >
               <div className="relative">
-                <Icon size={25} strokeWidth={2} />
+                <Icon size={20} strokeWidth={2} />
 
                 {item.type === "cart" && cartCount > 0 && (
                   <span className="absolute -right-3 -top-2 flex h-[19px] min-w-[19px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
@@ -66,7 +66,7 @@ export default function MobileBottomNav({ cartCount = 0 }) {
                 )}
               </div>
 
-              <span className="text-[11px] font-medium">{item.label}</span>
+              <span className="text-[10px] font-medium">{item.label}</span>
             </div>
           );
 

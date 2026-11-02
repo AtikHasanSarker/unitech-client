@@ -2,11 +2,11 @@
 
 import { getUserToken } from "../session";
 
-const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+const baseUrl = process.env.NEXT_SERVER_URL;
 
 const getApiUrl = (api) => {
   if (!baseUrl) {
-    throw new Error("NEXT_PUBLIC_SERVER_URL is not configured.");
+    throw new Error("NEXT_SERVER_URL is not configured.");
   }
 
   return `${baseUrl.replace(/\/+$/, "")}/api/${api}`;

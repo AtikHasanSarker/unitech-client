@@ -587,7 +587,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() => setIsOrderModalOpen(true)}
-                      disabled={cartItems.length === 0}
+                      disabled={cart.length === 0}
                       className="w-full rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Place Order
@@ -663,7 +663,7 @@ export default function CartPage() {
       <OrderPlacementModal
         isOpen={isOrderModalOpen}
         onClose={() => setIsOrderModalOpen(false)}
-        cartItems={cartItems}
+        cartItems={cart}
         subtotal={subtotal}
                     couponCode={appliedCoupon?.code}
         onOrderPlaced={(order) => {

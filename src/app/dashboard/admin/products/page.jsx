@@ -15,7 +15,6 @@ import {
   X,
   Image as ImageIcon,
   ChevronDown,
-  FileText,
   Settings2,
   CheckCircle2,
 } from "lucide-react";
