@@ -62,7 +62,7 @@ function FilterSidebar({
 
         <div className="space-y-1">
           {categoryOptions.map((item) => {
-            const value = item.slug === "all" ? "All" : item._id;
+            const value = item.slug === "all" ? "All" : item.name;
 
             return (
               <button
@@ -353,25 +353,6 @@ export default function ProductsPage() {
     } else {
       setCurrentPage(1);
     }
-  };
-
-  const updateSearch = (value) => {
-    setCurrentPage(1);
-
-    const nextSearchParams = new URLSearchParams(searchParams.toString());
-    const normalizedSearch = value.trim();
-
-    if (normalizedSearch) {
-      nextSearchParams.set("search", normalizedSearch);
-    } else {
-      nextSearchParams.delete("search");
-    }
-
-    const query = nextSearchParams.toString();
-
-    router.replace(query ? `/products?${query}` : "/products", {
-      scroll: false,
-    });
   };
 
   const updateCategory = (value) => {
