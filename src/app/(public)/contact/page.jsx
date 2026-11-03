@@ -3,19 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  ArrowDown,
   ArrowRight,
   CheckCircle2,
   ChevronDown,
-  Clock,
   Headphones,
   Mail,
   MapPin,
-  MessageCircle,
   Phone,
   Send,
-  ShoppingBag,
-  Truck,
 } from "lucide-react";
 
 import { submitContactMessage } from "@/lib/api/site";
@@ -26,16 +21,14 @@ const contactMethods = [
     title: "Call Us",
     description: "Speak directly with our support team.",
     value: "Add your phone number",
-    href: null,
-    color: "bg-blue-50 text-blue-600",
+    color: "text-blue-600 bg-blue-50",
   },
   {
     icon: Mail,
     title: "Email Us",
     description: "Send us your questions anytime.",
     value: "Add your support email",
-    href: null,
-    color: "bg-violet-50 text-violet-600",
+    color: "text-violet-600 bg-violet-50",
   },
   {
     icon: MapPin,
@@ -43,7 +36,7 @@ const contactMethods = [
     description: "Serving students at NSTU.",
     value: "NSTU Campus, Noakhali",
     href: "https://maps.google.com/?q=Noakhali+Science+and+Technology+University",
-    color: "bg-emerald-50 text-emerald-600",
+    color: "text-emerald-600 bg-emerald-50",
   },
 ];
 
@@ -79,7 +72,7 @@ const supportTips = [
   {
     title: "Order ID",
     description:
-      "Keep your order number available if your question is about an order.",
+      "Keep your order number available for order-related questions.",
   },
   {
     title: "Product Details",
@@ -88,12 +81,12 @@ const supportTips = [
   {
     title: "Delivery Information",
     description:
-      "Provide relevant delivery details when requesting order assistance.",
+      "Provide relevant delivery details when requesting assistance.",
   },
 ];
 
 const inputClasses =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10";
+  "w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -148,7 +141,6 @@ export default function ContactPage() {
     }
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
@@ -193,222 +185,128 @@ export default function ContactPage() {
 
   return (
     <main className="min-h-screen bg-white text-slate-800">
-      {/* 1. Minimal Hero */}
-      <section className="border-b border-slate-100 bg-slate-50/70">
-        <div className="mx-auto max-w-7xl px-4 py-14 text-center sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-            <MessageCircle size={27} strokeWidth={1.8} />
-          </div>
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        {/* Page Heading */}
+        <div className="mb-10">
+          <nav className="mb-5 text-sm text-slate-500">
+            <Link href="/" className="hover:text-blue-600">
+              Home
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="font-medium text-slate-800">Contact Us</span>
+          </nav>
 
-          <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-blue-600 sm:text-sm">
-            Contact UniTech
-          </p>
-
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-            How Can We Help You?
+          <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+            Contact Us
           </h1>
 
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-500 sm:text-base">
-            Have a question about a product or order? Get in touch with our
-            team. We are here to help.
+          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
+            Have a question about a product or order? Send us a message. We are
+            here to help.
           </p>
+        </div>
 
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <a
-              href="#contact-form"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
-            >
-              Send a Message
-              <ArrowRight size={16} />
-            </a>
+        {/* Contact Information */}
+        <section>
+          <h2 className="mb-5 text-lg font-semibold text-slate-900">
+            Contact Information
+          </h2>
 
-            <Link
-              href="/products"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:text-blue-600"
-            >
-              <ShoppingBag size={16} />
-              Explore Products
-            </Link>
-          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {contactMethods.map((method) => {
+              const Icon = method.icon;
 
-          {/* Small Support Highlights */}
-          <div className="mx-auto mt-10 grid max-w-3xl grid-cols-1 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-            {[
-              {
-                icon: Headphones,
-                title: "Customer Support",
-                description: "Help with your questions",
-              },
-              {
-                icon: Truck,
-                title: "Order Assistance",
-                description: "Delivery and order queries",
-              },
-              {
-                icon: Clock,
-                title: "Student Friendly",
-                description: "Designed for NSTU students",
-              },
-            ].map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <div
-                  key={item.title}
-                  className="flex items-center gap-3 px-5 py-4 text-left"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                    <Icon size={20} />
+              const content = (
+                <div className="flex h-full items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 transition hover:border-blue-200">
+                  <div
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${method.color}`}
+                  >
+                    <Icon size={21} />
                   </div>
 
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-800">
-                      {item.title}
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-slate-900">
+                      {method.title}
                     </h3>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {item.description}
+
+                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                      {method.description}
+                    </p>
+
+                    <p className="mt-3 break-words text-sm font-medium text-slate-700">
+                      {method.value}
                     </p>
                   </div>
                 </div>
               );
+
+              return method.href ? (
+                <a
+                  key={method.title}
+                  href={method.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {content}
+                </a>
+              ) : (
+                <div key={method.title}>{content}</div>
+              );
             })}
           </div>
-        </div>
-      </section>
 
-      {/* 2. Contact Information */}
-      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
-        <div className="mb-8">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
-            Get In Touch
+          <p className="mt-3 text-xs text-slate-400">
+            Replace the placeholder phone number and email with your actual
+            support details before publishing.
           </p>
+        </section>
 
-          <h2 className="mt-3 text-2xl font-bold text-slate-900 sm:text-3xl">
-            Contact Information
-          </h2>
+        {/* Contact Form */}
+        <section
+          id="contact-form"
+          className="mt-12 grid grid-cols-1 gap-10 border-t border-slate-100 pt-10 lg:grid-cols-3"
+        >
+          <div className="lg:col-span-2">
+            <h2 className="text-xl font-bold text-slate-900">
+              Send Us a Message
+            </h2>
 
-          <p className="mt-2 text-sm leading-6 text-slate-500">
-            Choose a contact method that works best for you.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {contactMethods.map((method) => {
-            const Icon = method.icon;
-
-            const content = (
-              <div className="group h-full rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-blue-200 hover:shadow-md sm:p-6">
-                <div
-                  className={`flex h-12 w-12 items-center justify-center rounded-xl ${method.color}`}
-                >
-                  <Icon size={23} />
-                </div>
-
-                <h3 className="mt-5 text-base font-bold text-slate-900">
-                  {method.title}
-                </h3>
-
-                <p className="mt-2 text-sm leading-6 text-slate-500">
-                  {method.description}
-                </p>
-
-                <div className="mt-5 flex items-center justify-between gap-3">
-                  <span className="text-sm font-semibold text-slate-800">
-                    {method.value}
-                  </span>
-
-                  {method.href && (
-                    <ArrowRight
-                      size={17}
-                      className="shrink-0 text-blue-600 transition group-hover:translate-x-1"
-                    />
-                  )}
-                </div>
-              </div>
-            );
-
-            return method.href ? (
-              <a
-                key={method.title}
-                href={method.href}
-                target="_blank"
-                rel="noreferrer"
-                className="block"
-              >
-                {content}
-              </a>
-            ) : (
-              <div key={method.title}>{content}</div>
-            );
-          })}
-        </div>
-
-        <p className="mt-4 text-xs text-slate-400">
-          Replace the placeholder phone number and email with your actual
-          customer support details before publishing.
-        </p>
-      </section>
-
-      {/* 3. Contact Form */}
-      <section
-        id="contact-form"
-        className="border-y border-slate-100 bg-slate-50/60"
-      >
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-5 lg:gap-10 lg:px-8">
-          {/* Form */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 lg:col-span-3">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
-                Contact Form
-              </p>
-
-              <h2 className="mt-3 text-2xl font-bold text-slate-900 sm:text-3xl">
-                Send Us a Message
-              </h2>
-
-              <p className="mt-2 text-sm leading-6 text-slate-500">
-                Fill out the form below with your question or concern.
-              </p>
-            </div>
+            <p className="mt-2 text-sm text-slate-500">
+              Fill out the form and our team will get back to you.
+            </p>
 
             {isSubmitted && (
               <div
                 role="status"
-                className="mt-6 flex gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4"
+                className="mt-6 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4"
               >
-                <CheckCircle2
-                  size={21}
-                  className="mt-0.5 shrink-0 text-emerald-600"
-                />
-
+                <CheckCircle2 size={20} className="shrink-0 text-emerald-600" />
                 <div>
                   <p className="text-sm font-semibold text-emerald-800">
                     Message received
                   </p>
-
-                  <p className="mt-1 text-sm leading-6 text-emerald-700">
+                  <p className="mt-1 text-sm text-emerald-700">
                     Your message has been sent to the UniTech support team.
                   </p>
                 </div>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+            <form onSubmit={handleSubmit} noValidate className="mt-7 space-y-5">
               {errors.submit && (
                 <p
                   role="alert"
-                  className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                  className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
                 >
                   {errors.submit}
                 </p>
               )}
 
-              {/* Name & Email */}
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
                   <label
                     htmlFor="name"
-                    className="mb-2 block text-sm font-semibold text-slate-700"
+                    className="mb-2 block text-sm font-medium text-slate-700"
                   >
                     Full Name <span className="text-red-500">*</span>
                   </label>
@@ -426,14 +324,14 @@ export default function ContactPage() {
                   />
 
                   {errors.name && (
-                    <p className="mt-2 text-xs text-red-600">{errors.name}</p>
+                    <p className="mt-1.5 text-xs text-red-600">{errors.name}</p>
                   )}
                 </div>
 
                 <div>
                   <label
                     htmlFor="email"
-                    className="mb-2 block text-sm font-semibold text-slate-700"
+                    className="mb-2 block text-sm font-medium text-slate-700"
                   >
                     Email Address <span className="text-red-500">*</span>
                   </label>
@@ -451,16 +349,17 @@ export default function ContactPage() {
                   />
 
                   {errors.email && (
-                    <p className="mt-2 text-xs text-red-600">{errors.email}</p>
+                    <p className="mt-1.5 text-xs text-red-600">
+                      {errors.email}
+                    </p>
                   )}
                 </div>
               </div>
 
-              {/* Subject */}
               <div>
                 <label
                   htmlFor="subject"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
+                  className="mb-2 block text-sm font-medium text-slate-700"
                 >
                   Subject <span className="text-red-500">*</span>
                 </label>
@@ -490,15 +389,16 @@ export default function ContactPage() {
                 </select>
 
                 {errors.subject && (
-                  <p className="mt-2 text-xs text-red-600">{errors.subject}</p>
+                  <p className="mt-1.5 text-xs text-red-600">
+                    {errors.subject}
+                  </p>
                 )}
               </div>
 
-              {/* Message */}
               <div>
                 <label
                   htmlFor="message"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
+                  className="mb-2 block text-sm font-medium text-slate-700"
                 >
                   Your Message <span className="text-red-500">*</span>
                 </label>
@@ -515,7 +415,7 @@ export default function ContactPage() {
                   aria-invalid={Boolean(errors.message)}
                 />
 
-                <div className="mt-2 flex items-center justify-between gap-3">
+                <div className="mt-2 flex justify-between gap-3">
                   {errors.message ? (
                     <p className="text-xs text-red-600">{errors.message}</p>
                   ) : (
@@ -524,192 +424,133 @@ export default function ContactPage() {
                     </p>
                   )}
 
-                  <span className="shrink-0 text-xs text-slate-400">
+                  <span className="text-xs text-slate-400">
                     {formData.message.length}/1000
                   </span>
                 </div>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? "Sending..." : "Send Message"}
-
-                <Send size={17} />
+                <Send size={16} />
               </button>
-
-              <p className="text-xs leading-5 text-slate-400">
-                Your information should only be submitted through a properly
-                secured and configured contact form.
-              </p>
             </form>
           </div>
 
           {/* Support Information */}
-          <aside className="lg:col-span-2">
-            <div className="h-full rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <Headphones size={25} />
-              </div>
-
-              <h3 className="mt-5 text-xl font-bold text-slate-900">
-                Need Help with an Order?
-              </h3>
-
-              <p className="mt-3 text-sm leading-7 text-slate-500">
-                Whether you have a question about an accessory or need help
-                understanding your order, start by checking your order details.
-              </p>
-
-              <Link
-                href="/my-orders"
-                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-              >
-                View My Orders
-                <ArrowRight size={17} />
-              </Link>
-
-              <div className="my-7 border-t border-slate-100" />
-
-              <h4 className="text-sm font-bold text-slate-900">
-                Before contacting us
-              </h4>
-
-              <div className="mt-5 space-y-5">
-                {supportTips.map((item, index) => (
-                  <div key={item.title} className="flex gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-bold text-blue-600">
-                      {index + 1}
-                    </div>
-
-                    <div>
-                      <h5 className="text-sm font-semibold text-slate-800">
-                        {item.title}
-                      </h5>
-
-                      <p className="mt-1 text-xs leading-6 text-slate-500">
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-7 rounded-xl border border-blue-100 bg-blue-50/70 p-4">
-                <p className="text-sm font-semibold text-blue-800">
-                  Built for NSTU Students
-                </p>
-
-                <p className="mt-2 text-xs leading-6 text-slate-600">
-                  UniTech aims to make finding and ordering mobile accessories
-                  easier for the university community.
-                </p>
-              </div>
+          <aside className="border-t border-slate-100 pt-8 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+              <Headphones size={22} />
             </div>
-          </aside>
-        </div>
-      </section>
 
-      {/* 4. FAQ */}
-      <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-        <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
-            FAQ
-          </p>
+            <h3 className="mt-4 text-lg font-bold text-slate-900">
+              Need Help with an Order?
+            </h3>
 
-          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-            Frequently Asked Questions
-          </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Check your order details before contacting our support team.
+            </p>
 
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-500">
-            Find answers to common questions about shopping with UniTech.
-          </p>
-        </div>
+            <Link
+              href="/my-orders"
+              className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+            >
+              View My Orders
+              <ArrowRight size={16} />
+            </Link>
 
-        <div className="mt-10 space-y-3">
-          {faqs.map((faq, index) => {
-            const isOpen = openFaq === index;
+            <div className="my-7 border-t border-slate-100" />
 
-            return (
-              <div
-                key={faq.question}
-                className={`overflow-hidden rounded-xl border bg-white transition ${
-                  isOpen
-                    ? "border-blue-200"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(isOpen ? -1 : index)}
-                  aria-expanded={isOpen}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left sm:px-6"
-                >
-                  <span className="text-sm font-semibold leading-6 text-slate-800 sm:text-base">
-                    {faq.question}
+            <h4 className="text-sm font-semibold text-slate-900">
+              Before contacting us
+            </h4>
+
+            <div className="mt-5 space-y-5">
+              {supportTips.map((item, index) => (
+                <div key={item.title} className="flex gap-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-xs font-semibold text-slate-600">
+                    {index + 1}
                   </span>
 
-                  <ChevronDown
-                    size={19}
-                    className={`shrink-0 text-slate-400 transition-transform ${
-                      isOpen ? "rotate-180 text-blue-600" : ""
-                    }`}
-                  />
-                </button>
-
-                {isOpen && (
-                  <div className="px-5 pb-5 sm:px-6">
-                    <div className="border-t border-slate-100 pt-4">
-                      <p className="text-sm leading-7 text-slate-500">
-                        {faq.answer}
-                      </p>
-                    </div>
+                  <div>
+                    <h5 className="text-sm font-medium text-slate-800">
+                      {item.title}
+                    </h5>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                      {item.description}
+                    </p>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </section>
 
-        <div className="mt-10 text-center">
-          <p className="text-sm text-slate-500">Still have questions?</p>
-
-          <a
-            href="#contact-form"
-            className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 transition hover:text-blue-700"
-          >
-            Send us a message
-            <ArrowDown size={16} />
-          </a>
-        </div>
-      </section>
-
-      {/* 5. Minimal Bottom CTA */}
-      <section className="px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-6 sm:p-8 md:flex-row md:items-center">
+        {/* FAQ */}
+        <section className="mx-auto mt-16 max-w-3xl border-t border-slate-100 pt-10">
           <div>
-            <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
-              Ready to Find Your Next Accessory?
+            <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+              FAQ
+            </p>
+
+            <h2 className="mt-2 text-2xl font-bold text-slate-900">
+              Frequently Asked Questions
             </h2>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-              Explore our collection of mobile accessories and find the products
-              that fit your needs.
+            <p className="mt-2 text-sm text-slate-500">
+              Find answers to common questions about shopping with UniTech.
             </p>
           </div>
 
-          <Link
-            href="/products"
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-          >
-            Shop Now
-            <ArrowRight size={17} />
-          </Link>
-        </div>
-      </section>
+          <div className="mt-7 divide-y divide-slate-200 border-y border-slate-200">
+            {faqs.map((faq, index) => {
+              const isOpen = openFaq === index;
+
+              return (
+                <div key={faq.question}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? -1 : index)}
+                    aria-expanded={isOpen}
+                    className="flex w-full items-center justify-between gap-4 py-5 text-left"
+                  >
+                    <span className="text-sm font-semibold text-slate-800">
+                      {faq.question}
+                    </span>
+
+                    <ChevronDown
+                      size={18}
+                      className={`shrink-0 text-slate-400 transition-transform ${
+                        isOpen ? "rotate-180 text-blue-600" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <p className="max-w-2xl pb-5 text-sm leading-7 text-slate-500">
+                      {faq.answer}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-7 text-sm text-slate-500">
+            Still have questions?{" "}
+            <a
+              href="#contact-form"
+              className="font-semibold text-blue-600 hover:text-blue-700"
+            >
+              Send us a message.
+            </a>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
