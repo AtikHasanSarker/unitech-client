@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import {
   Search,
   SlidersHorizontal,
@@ -173,7 +174,6 @@ export default function AdminOrdersPage() {
   const [paymentFilter, setPaymentFilter] = useState("All Payments");
   const [dateFilter, setDateFilter] = useState("All Dates");
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -266,41 +266,47 @@ export default function AdminOrdersPage() {
     .reduce((sum, order) => sum + order.total, 0);
 
   async function updateOrderStatus(orderId, nextStatus) {
-    const result = await saveOrderStatus(orderId, nextStatus);
-    if (!result?.success) {
-      setNotice(result?.message || "Order status could not be saved.");
-      return;
+    try {
+      const result = await saveOrderStatus(orderId, nextStatus);
+      if (!result?.success) {
+        toast.error(result?.message || "Order status could not be saved.");
+        return;
+      }
+      setOrders((current) =>
+        current.map((order) =>
+          order.id === orderId ? { ...order, status: nextStatus } : order,
+        ),
+      );
+      setSelectedOrder((current) =>
+        current?.id === orderId ? { ...current, status: nextStatus } : current,
+      );
+      toast.success(`Order ${orderId} status updated to ${nextStatus}.`);
+    } catch {
+      toast.error("Order status could not be saved.");
     }
-    setOrders((current) =>
-      current.map((order) =>
-        order.id === orderId ? { ...order, status: nextStatus } : order,
-      ),
-    );
-    setSelectedOrder((current) =>
-      current?.id === orderId ? { ...current, status: nextStatus } : current,
-    );
-    setNotice(`Order ${orderId} status updated to ${nextStatus}.`);
-    window.setTimeout(() => setNotice(""), 3000);
   }
 
   async function updatePaymentStatus(orderId, nextStatus) {
-    const result = await savePaymentStatus(orderId, nextStatus);
-    if (!result?.success) {
-      setNotice(result?.message || "Payment status could not be saved.");
-      return;
+    try {
+      const result = await savePaymentStatus(orderId, nextStatus);
+      if (!result?.success) {
+        toast.error(result?.message || "Payment status could not be saved.");
+        return;
+      }
+      setOrders((current) =>
+        current.map((order) =>
+          order.id === orderId ? { ...order, paymentStatus: nextStatus } : order,
+        ),
+      );
+      setSelectedOrder((current) =>
+        current?.id === orderId
+          ? { ...current, paymentStatus: nextStatus }
+          : current,
+      );
+      toast.success(`Order ${orderId} payment status updated to ${nextStatus}.`);
+    } catch {
+      toast.error("Payment status could not be saved.");
     }
-    setOrders((current) =>
-      current.map((order) =>
-        order.id === orderId ? { ...order, paymentStatus: nextStatus } : order,
-      ),
-    );
-    setSelectedOrder((current) =>
-      current?.id === orderId
-        ? { ...current, paymentStatus: nextStatus }
-        : current,
-    );
-    setNotice(`Order ${orderId} payment status updated to ${nextStatus}.`);
-    window.setTimeout(() => setNotice(""), 3000);
   }
 
   function resetFilters() {
@@ -345,24 +351,6 @@ export default function AdminOrdersPage() {
             </div>
           </div>
         </div>
-
-        {/* Notification */}
-        {notice && (
-          <div
-            role="status"
-            className="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"
-          >
-            <span>{notice}</span>
-            <button
-              type="button"
-              onClick={() => setNotice("")}
-              aria-label="Dismiss notification"
-              className="rounded-md p-1 hover:bg-emerald-100"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        )}
 
         {/* Summary cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

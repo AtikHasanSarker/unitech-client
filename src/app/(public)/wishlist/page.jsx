@@ -1,5 +1,6 @@
 "use client";
 
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -131,16 +132,7 @@ export default function WishlistPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [addedItems, setAddedItems] = useState([]);
-  const [notification, setNotification] = useState(null);
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
-
-  const showToast = (message, type = "success") => {
-    setNotification({ message, type });
-
-    setTimeout(() => {
-      setNotification(null);
-    }, 2500);
-  };
 
   useEffect(() => {
     let active = true;
@@ -149,7 +141,7 @@ export default function WishlistPage() {
       .then(async (result) => {
         if (!active) return;
         if (!result?.success) {
-          showToast(result?.message || "Sign in to load your wishlist.", "error");
+          toast.error(result?.message || "Sign in to load your wishlist.");
           return;
         }
 
@@ -174,7 +166,7 @@ export default function WishlistPage() {
         if (active) setWishlist(products);
       })
       .catch(() => {
-        if (active) showToast("Could not connect to your wishlist.", "error");
+        if (active) toast.error("Could not connect to your wishlist.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -202,95 +194,68 @@ export default function WishlistPage() {
   );
 
   const removeFromWishlist = async (productId) => {
-    const product = wishlist.find((item) => item.id === productId);
-    const result = await removeWishlistItem(productId);
-    if (!result?.success) {
-      showToast(result?.message || "Could not remove this product.", "error");
-      return;
-    }
+    try {
+      const product = wishlist.find((item) => item.id === productId);
+      const result = await removeWishlistItem(productId);
+      if (!result?.success) {
+        toast.error(result?.message || "Could not remove this product.");
+        return;
+      }
 
-    setWishlist((previous) =>
-      previous.filter((item) => item.id !== productId)
-    );
+      setWishlist((previous) =>
+        previous.filter((item) => item.id !== productId)
+      );
 
-    setAddedItems((previous) =>
-      previous.filter((item) => item !== productId)
-    );
+      setAddedItems((previous) =>
+        previous.filter((item) => item !== productId)
+      );
 
-    if (product) {
-      showToast(`${product.name} removed from wishlist.`);
+      if (product) {
+        toast.success(`${product.name} removed from wishlist.`);
+      }
+    } catch {
+      toast.error("Could not remove this product.");
     }
   };
 
   const addToCart = async (product) => {
-    const result = await addCartItem(product.id);
-    if (!result?.success) {
-      showToast(result?.message || "Could not add this product to your cart.", "error");
-      return;
+    try {
+      const result = await addCartItem(product.id);
+      if (!result?.success) {
+        toast.error(result?.message || "Could not add this product to your cart.");
+        return;
+      }
+
+      setAddedItems((previous) =>
+        previous.includes(product.id) ? previous : [...previous, product.id]
+      );
+
+      toast.success(`${product.name} added to cart.`);
+    } catch {
+      toast.error("Could not add this product to your cart.");
     }
-
-    setAddedItems((previous) =>
-      previous.includes(product.id) ? previous : [...previous, product.id]
-    );
-
-    showToast(`${product.name} added to cart.`);
   };
 
   const clearWishlist = async () => {
-    const results = await Promise.all(
-      wishlist.map((product) => removeWishlistItem(product.id)),
-    );
-    if (results.some((result) => !result?.success)) {
-      showToast("Some wishlist items could not be removed.", "error");
-      return;
+    try {
+      const results = await Promise.all(
+        wishlist.map((product) => removeWishlistItem(product.id)),
+      );
+      if (results.some((result) => !result?.success)) {
+        toast.error("Some wishlist items could not be removed.");
+        return;
+      }
+      setWishlist([]);
+      setAddedItems([]);
+      setShowClearConfirmation(false);
+      toast.success("Wishlist cleared.");
+    } catch {
+      toast.error("Some wishlist items could not be removed.");
     }
-    setWishlist([]);
-    setAddedItems([]);
-    setShowClearConfirmation(false);
-    showToast("Wishlist cleared.");
   };
 
   return (
     <main className="min-h-screen bg-slate-50">
-
-      {/* Toast Notification */}
-      {notification && (
-        <div
-          role="status"
-          className={`fixed right-4 top-24 z-[120] flex max-w-sm items-center gap-3 rounded-xl border bg-white px-4 py-3 shadow-xl ${
-            notification.type === "success"
-              ? "border-emerald-100"
-              : "border-red-100"
-          }`}
-        >
-          <div
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-              notification.type === "success"
-                ? "bg-emerald-50 text-emerald-600"
-                : "bg-red-50 text-red-600"
-            }`}
-          >
-            {notification.type === "success" ? (
-              <Check size={18} />
-            ) : (
-              <X size={18} />
-            )}
-          </div>
-
-          <p className="text-sm font-medium text-slate-800">
-            {notification.message}
-          </p>
-
-          <button
-            type="button"
-            onClick={() => setNotification(null)}
-            aria-label="Dismiss notification"
-            className="ml-1 text-slate-400 hover:text-slate-700"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
 
       {/* Page Header */}
       <section className="border-b border-slate-200 bg-white">

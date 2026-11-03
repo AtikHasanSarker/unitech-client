@@ -32,7 +32,7 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-       const { data, error } = await signUp.email({
+      const { data, error } = await signUp.email({
          name: user.name,
          email: user.email,
          password: user.password,
@@ -41,12 +41,14 @@ export default function RegisterPage() {
        console.log("userData:", data)
 
        if (data) {
-         toast.success("You have Registered Successfully!");
+         toast.success("Registration successful.");
          router.push("/");
        } else {
-         toast.error("Registration Failed!");
+         toast.error(error?.message || "Registration failed.");
        }
 
+    } catch {
+      toast.error("Registration failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import toast from "react-hot-toast";
 import {
   ShoppingBag,
   ShoppingCart,
@@ -51,7 +52,6 @@ export default function CartPage() {
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponMessage, setCouponMessage] = useState("");
-  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -61,11 +61,11 @@ export default function CartPage() {
         if (result?.success) {
           setCart(normalizeCartItems(result.data));
         } else {
-          setNotice(result?.message || "Sign in to load your cart.");
+          toast.error(result?.message || "Sign in to load your cart.");
         }
       })
       .catch(() => {
-        if (active) setNotice("Could not connect to your cart.");
+        if (active) toast.error("Could not connect to your cart.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -105,29 +105,37 @@ export default function CartPage() {
     const item = cart.find((product) => product.id === id);
     if (!item) return;
 
-    const result = await updateCartItem(id, Math.max(1, item.quantity + amount));
-    if (result?.success) {
-      setCart(normalizeCartItems(result.data));
-    } else {
-      setNotice(result?.message || "Could not update item quantity.");
+    try {
+      const result = await updateCartItem(id, Math.max(1, item.quantity + amount));
+      if (result?.success) {
+        setCart(normalizeCartItems(result.data));
+      } else {
+        toast.error(result?.message || "Could not update item quantity.");
+      }
+    } catch {
+      toast.error("Could not update item quantity.");
     }
   };
 
   const removeItem = async (id) => {
-    const item = cart.find((product) => product.id === id);
-    const result = await removeCartItem(id);
-    if (!result?.success) {
-      setNotice(result?.message || "Could not remove this item.");
-      return;
-    }
-    setCart(normalizeCartItems(result.data));
+    try {
+      const item = cart.find((product) => product.id === id);
+      const result = await removeCartItem(id);
+      if (!result?.success) {
+        toast.error(result?.message || "Could not remove this item.");
+        return;
+      }
+      setCart(normalizeCartItems(result.data));
 
-    if (item) {
-      setNotice(`${item.name} removed from your cart.`);
-    }
+      if (item) {
+        toast.success(`${item.name} removed from your cart.`);
+      }
 
-    setAppliedCoupon(null);
-    setCouponMessage("");
+      setAppliedCoupon(null);
+      setCouponMessage("");
+    } catch {
+      toast.error("Could not remove this item.");
+    }
   };
 
   const applyCoupon = (event) => {
@@ -159,16 +167,19 @@ export default function CartPage() {
   };
 
   const clearCart = async () => {
-    const result = await clearCartRequest();
-    if (!result?.success) {
-      setNotice(result?.message || "Could not clear your cart.");
-      return;
+    try {
+      const result = await clearCartRequest();
+      if (!result?.success) {
+        toast.error(result?.message || "Could not clear your cart.");
+        return;
+      }
+      setCart([]);
+      setAppliedCoupon(null);
+      setCouponInput("");
+      setCouponMessage("");
+    } catch {
+      toast.error("Could not clear your cart.");
     }
-    setCart([]);
-    setAppliedCoupon(null);
-    setCouponInput("");
-    setCouponMessage("");
-    setNotice("");
   };
 
 
@@ -634,31 +645,6 @@ export default function CartPage() {
         </section>
       </main>
 
-      {/* Feedback notification */}
-      {notice && (
-        <div
-          role="status"
-          className="fixed bottom-5 right-5 z-[120] flex max-w-[calc(100vw-40px)] items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-xl"
-        >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-            <Check size={17} />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-slate-900">Cart update</p>
-            <p className="mt-1 text-xs leading-5 text-slate-500">{notice}</p>
-          </div>
-
-          <button
-            onClick={() => setNotice("")}
-            aria-label="Dismiss notification"
-            className="text-slate-400 hover:text-slate-700"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
-
       {/* Order placement modal  */}
       <OrderPlacementModal
         isOpen={isOrderModalOpen}
@@ -671,7 +657,7 @@ export default function CartPage() {
           setAppliedCoupon(null);
           setCouponInput("");
           setCouponMessage("");
-          setNotice(`Order ${order._id} placed successfully.`);
+          toast.success(`Order ${order._id} placed successfully.`);
         }}
       />
     </>

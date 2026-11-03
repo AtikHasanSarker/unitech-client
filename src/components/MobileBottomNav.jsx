@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PhoneCall, House, Store, ShoppingBag } from "lucide-react";
+import { PhoneCall, House, Store, Tag } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
 const navItems = [
@@ -29,10 +29,9 @@ const navItems = [
     icon: Store,
   },
   {
-    label: "Cart",
-    href: "/cart",
-    icon: ShoppingBag,
-    type: "cart",
+    label: "Deals",
+    href: "/deals",
+    icon: Tag,
   },
 ];
 
@@ -58,12 +57,6 @@ export default function MobileBottomNav({ cartCount = 0 }) {
             >
               <div className="relative">
                 <Icon size={20} strokeWidth={2} />
-
-                {item.type === "cart" && cartCount > 0 && (
-                  <span className="absolute -right-3 -top-2 flex h-[19px] min-w-[19px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
               </div>
 
               <span className="text-[10px] font-medium">{item.label}</span>

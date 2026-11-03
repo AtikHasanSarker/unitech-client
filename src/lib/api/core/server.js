@@ -1,6 +1,6 @@
 "use server";
 
-import { getUserToken } from "../session";
+import { getUserToken } from "../../session";
 
 const baseUrl = process.env.NEXT_SERVER_URL;
 
@@ -49,6 +49,18 @@ export const serverMutation = async (api, data, method = "POST") => {
     headers: {
       "content-type": "application/json",
       ...(await authHeader()),
+    },
+    ...(data === undefined ? {} : { body: JSON.stringify(data) }),
+  });
+
+  return parseResponse(response);
+};
+
+export const userServerMutation = async (api, data, method = "POST") => {
+  const response = await fetch(getApiUrl(api), {
+    method,
+    headers: {
+      "content-type": "application/json",
     },
     ...(data === undefined ? {} : { body: JSON.stringify(data) }),
   });

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import {
   ChevronRight,
   ChevronLeft,
@@ -42,8 +43,7 @@ export default function ProductDetailsPage() {
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
-  const [cartCount, setCartCount] = useState(0);
-  const [notice, setNotice] = useState("");
+  const [productError, setProductError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -53,7 +53,7 @@ export default function ProductDetailsPage() {
         if (!active) return;
         if (!result?.success) {
           setProduct(null);
-          setNotice(result?.message || "Product not found.");
+          setProductError(result?.message || "Product not found.");
           return;
         }
 
@@ -97,7 +97,7 @@ export default function ProductDetailsPage() {
         }
       })
       .catch(() => {
-        if (active) setNotice("Could not connect to the product service.");
+        if (active) setProductError("Could not connect to the product service.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -108,30 +108,34 @@ export default function ProductDetailsPage() {
     };
   }, [productId]);
 
-  const showNotice = (message) => {
-    setNotice(message);
-  };
-
   const addToCart = async () => {
-    const result = await addCartItem(productId, quantity);
-    if (!result?.success) {
-      showNotice(result?.message || "Sign in to add this product to your cart.");
+    try {
+      const result = await addCartItem(productId, quantity);
+      if (!result?.success) {
+        toast.error(result?.message || "Sign in to add this product to your cart.");
+        return false;
+      }
+      toast.success(`${quantity} item(s) added to your cart.`);
+      return true;
+    } catch {
+      toast.error("Could not add this product to your cart.");
       return false;
     }
-    setCartCount((count) => count + quantity);
-    showNotice(`${quantity} item(s) added to your cart.`);
-    return true;
   };
 
   const toggleWishlist = async () => {
-    const result = isWishlisted
-      ? await removeFromWishlist(productId)
-      : await addToWishlist(productId);
-    if (!result?.success) {
-      showNotice(result?.message || "Sign in to update your wishlist.");
-      return;
+    try {
+      const result = isWishlisted
+        ? await removeFromWishlist(productId)
+        : await addToWishlist(productId);
+      if (!result?.success) {
+        toast.error(result?.message || "Sign in to update your wishlist.");
+        return;
+      }
+      setIsWishlisted((value) => !value);
+    } catch {
+      toast.error("Could not update your wishlist.");
     }
-    setIsWishlisted((value) => !value);
   };
 
   const buyNow = async () => {
@@ -152,7 +156,7 @@ export default function ProductDetailsPage() {
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-slate-500">
-              {notice || "This product is not available. Try another product from the listing page."}
+              {productError || "This product is not available. Try another product from the listing page."}
             </p>
 
             <Link
@@ -469,7 +473,7 @@ export default function ProductDetailsPage() {
                 Share this product
                 <button
                   onClick={() =>
-                    showNotice("Product sharing can be enabled later.")
+                    toast("Product sharing is not available yet.")
                   }
                   className="ml-2 inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-blue-600"
                 >
@@ -666,35 +670,6 @@ export default function ProductDetailsPage() {
           </section>
         </section>
 
-        {/* Demo feedback */}
-        {notice && (
-          <div
-            role="status"
-            className="fixed bottom-5 right-5 z-[120] flex max-w-[calc(100vw-40px)] items-start gap-3 rounded-xl border border-emerald-200 bg-white p-4 shadow-xl"
-          >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-              <Check size={17} />
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-slate-900">
-                Demo interaction
-              </p>
-              <p className="mt-1 text-xs leading-5 text-slate-500">{notice}</p>
-              <p className="mt-2 text-xs font-semibold text-blue-600">
-                Items added this session: {cartCount}
-              </p>
-            </div>
-
-            <button
-              onClick={() => setNotice("")}
-              aria-label="Dismiss notification"
-              className="text-slate-400 hover:text-slate-700"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        )}
       </main>
     </>
   );

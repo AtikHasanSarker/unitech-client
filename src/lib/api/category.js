@@ -1,6 +1,6 @@
 "use server";
 
-import { serverFetch } from "./server";
+import { serverFetch } from "./core/server";
 
 // Get all categories
 export const getCategories = async () => {

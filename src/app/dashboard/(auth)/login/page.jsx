@@ -33,17 +33,22 @@ export default function LoginPage() {
     const form = new FormData(e.currentTarget);
     const user = Object.fromEntries(form.entries());
 
-    const { data, error } = await signIn.email({
-      email: user.email,
-      password: user.password,
-    });
-    if (data) {
-      toast.success("Sign In Successful! Redirecting...");
+    try {
+      const { data, error } = await signIn.email({
+        email: user.email,
+        password: user.password,
+      });
+      if (data) {
+        toast.success("Sign in successful. Redirecting...");
         router.replace("/dashboard/admin");
-    }else{
-      toast.warning("Email and password is incorrect!")
-    }  
-   
+      } else {
+        toast.error(error?.message || "Email or password is incorrect.");
+      }
+    } catch {
+      toast.error("Sign in failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (session?.user) {

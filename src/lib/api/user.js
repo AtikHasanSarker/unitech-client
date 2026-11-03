@@ -1,6 +1,6 @@
 "use server";
 
-import { protectedServerFetch, serverMutation } from "./server";
+import { protectedServerFetch, serverMutation } from "./core/server";
 
 export const getUsers = async () => protectedServerFetch("users");
 

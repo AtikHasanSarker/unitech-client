@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import {
   Search,
   Users,
@@ -127,7 +128,6 @@ export default function AdminCustomersPage() {
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [sortBy, setSortBy] = useState("newest");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -232,38 +232,44 @@ export default function AdminCustomersPage() {
     if (!customer) return;
 
     const nextStatus = customer.status === "Active" ? "Inactive" : "Active";
-    const result = await updateUserStatus(customerId, nextStatus);
-    if (!result?.success) {
-      setNotice(result?.message || "Customer status could not be saved.");
-      return;
+    try {
+      const result = await updateUserStatus(customerId, nextStatus);
+      if (!result?.success) {
+        toast.error(result?.message || "Customer status could not be saved.");
+        return;
+      }
+
+      setCustomers((current) =>
+        current.map((item) =>
+          item.id === customerId ? { ...item, status: nextStatus } : item,
+        ),
+      );
+
+      setSelectedCustomer((current) =>
+        current?.id === customerId ? { ...current, status: nextStatus } : current,
+      );
+
+      toast.success(`${customer.name} marked as ${nextStatus.toLowerCase()}.`);
+    } catch {
+      toast.error("Customer status could not be saved.");
     }
-
-    setCustomers((current) =>
-      current.map((item) =>
-        item.id === customerId ? { ...item, status: nextStatus } : item,
-      ),
-    );
-
-    setSelectedCustomer((current) =>
-      current?.id === customerId ? { ...current, status: nextStatus } : current,
-    );
-
-    setNotice(`${customer.name} marked as ${nextStatus.toLowerCase()}.`);
-    window.setTimeout(() => setNotice(""), 3000);
   }
 
   async function changeCustomerRole(customerId, role) {
-    const result = await updateUserRole(customerId, role);
-    if (!result?.success) {
-      setNotice(result?.message || "Customer role could not be saved.");
-      return;
+    try {
+      const result = await updateUserRole(customerId, role);
+      if (!result?.success) {
+        toast.error(result?.message || "Customer role could not be saved.");
+        return;
+      }
+      setCustomers((current) => current.map((customer) =>
+        customer.id === customerId ? { ...customer, role } : customer,
+      ));
+      setSelectedCustomer((current) => current?.id === customerId ? { ...current, role } : current);
+      toast.success("Customer role updated.");
+    } catch {
+      toast.error("Customer role could not be saved.");
     }
-    setCustomers((current) => current.map((customer) =>
-      customer.id === customerId ? { ...customer, role } : customer,
-    ));
-    setSelectedCustomer((current) => current?.id === customerId ? { ...current, role } : current);
-    setNotice("Customer role updated.");
-    window.setTimeout(() => setNotice(""), 3000);
   }
 
   function resetFilters() {
@@ -307,23 +313,6 @@ export default function AdminCustomersPage() {
             </div>
           </div>
         </div>
-
-        {notice && (
-          <div
-            role="status"
-            className="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800"
-          >
-            <span>{notice}</span>
-            <button
-              type="button"
-              onClick={() => setNotice("")}
-              aria-label="Dismiss notification"
-              className="rounded-md p-1 hover:bg-emerald-100"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        )}
 
         {/* Summary cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

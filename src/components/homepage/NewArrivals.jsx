@@ -1,5 +1,6 @@
 "use client";
 
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,7 +24,6 @@ export default function NewArrivals() {
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [cart, setCart] = useState([]);
-  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -40,13 +40,13 @@ export default function NewArrivals() {
           badge: "NEW",
         })));
       } else {
-        setNotice(productResult?.message || "Could not load new products.");
+        toast.error(productResult?.message || "Could not load new products.");
       }
       if (wishlistResult?.success) {
         setWishlist(wishlistResult.data.items.map((item) => item.productId));
       }
     }).catch(() => {
-      if (active) setNotice("Could not connect to new products.");
+      if (active) toast.error("Could not connect to new products.");
     });
     return () => {
       active = false;
@@ -54,26 +54,34 @@ export default function NewArrivals() {
   }, []);
 
   const toggleWishlist = async (productId) => {
-    const result = wishlist.includes(productId)
-      ? await removeFromWishlist(productId)
-      : await addToWishlist(productId);
-    if (!result?.success) {
-      setNotice(result?.message || "Sign in to update your wishlist.");
-      return;
+    try {
+      const result = wishlist.includes(productId)
+        ? await removeFromWishlist(productId)
+        : await addToWishlist(productId);
+      if (!result?.success) {
+        toast.error(result?.message || "Sign in to update your wishlist.");
+        return;
+      }
+      setWishlist((prev) => prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]);
+    } catch {
+      toast.error("Could not update your wishlist.");
     }
-    setWishlist((prev) => prev.includes(productId)
-      ? prev.filter((id) => id !== productId)
-      : [...prev, productId]);
   };
 
   const addToCart = async (productId) => {
-    const result = await addCartItem(productId);
-    if (!result?.success) {
-      setNotice(result?.message || "Sign in to add products to your cart.");
-      return;
+    try {
+      const result = await addCartItem(productId);
+      if (!result?.success) {
+        toast.error(result?.message || "Sign in to add products to your cart.");
+        return;
+      }
+      setCart((prev) => prev.includes(productId) ? prev : [...prev, productId]);
+      toast.success("Product added to your cart.");
+    } catch {
+      toast.error("Could not add this product to your cart.");
     }
-    setCart((prev) => prev.includes(productId) ? prev : [...prev, productId]);
-    setNotice("Product added to your cart.");
   };
 
   return (
@@ -106,8 +114,6 @@ export default function NewArrivals() {
             <ArrowRight size={16} className="ml-2" />
           </Button>
         </div>
-
-        {notice && <p role="status" className="mb-4 text-sm text-slate-600">{notice}</p>}
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">

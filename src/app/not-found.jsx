@@ -5,10 +5,6 @@ export default function NotFound() {
   return (
     <main className="flex min-h-[75vh] items-center justify-center bg-white px-4 py-16">
       <div className="w-full max-w-lg text-center">
-        {/* 404 Illustration */}
-        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50">
-          <SearchX size={46} strokeWidth={1.5} className="text-blue-600" />
-        </div>
 
         {/* Error Code */}
         <h1 className="mt-7 text-7xl font-extrabold tracking-tight text-blue-600 sm:text-8xl">

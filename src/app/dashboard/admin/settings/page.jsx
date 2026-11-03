@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import {
   Bell,
-  Check,
   Eye,
   EyeOff,
   Globe,
@@ -104,8 +104,7 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [saveError, setSaveError] = useState("");
+  const [loadError, setLoadError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [passwords, setPasswords] = useState({
     current: "",
@@ -123,11 +122,11 @@ export default function AdminSettingsPage() {
         if (result?.success) {
           setSettings({ ...DEFAULT_SETTINGS, ...result.data });
         } else {
-          setSaveError(result?.message || "Could not load admin settings.");
+          setLoadError(result?.message || "Could not load admin settings.");
         }
       })
       .catch(() => {
-        if (active) setSaveError("Could not connect to admin settings.");
+        if (active) setLoadError("Could not connect to admin settings.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -140,28 +139,30 @@ export default function AdminSettingsPage() {
 
   const updateSetting = (key, value) => {
     setSettings((current) => ({ ...current, [key]: value }));
-    setSaved(false);
-    setSaveError("");
+    setLoadError("");
   };
 
   const handleSave = async (event) => {
     event.preventDefault();
     setIsSaving(true);
-    const result = await saveAdminSettings(settings);
-    setIsSaving(false);
-    if (result?.success) {
-      setSaved(true);
-      setSaveError("");
-    } else {
-      setSaved(false);
-      setSaveError(result?.message || "Settings could not be saved.");
+    try {
+      const result = await saveAdminSettings(settings);
+      if (result?.success) {
+        setLoadError("");
+        toast.success("Settings saved successfully.");
+      } else {
+        toast.error(result?.message || "Settings could not be saved.");
+      }
+    } catch {
+      toast.error("Settings could not be saved.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const resetSettings = () => {
     setSettings(DEFAULT_SETTINGS);
-    setSaved(false);
-    setSaveError("");
+    setLoadError("");
   };
 
   const handlePasswordSubmit = async (event) => {
@@ -179,17 +180,23 @@ export default function AdminSettingsPage() {
       return;
     }
     setIsChangingPassword(true);
-    const result = await authClient.changePassword({
-      currentPassword: passwords.current,
-      newPassword: passwords.next,
-    });
-    setIsChangingPassword(false);
-    if (result.error) {
-      setPasswordMessage(result.error.message || "Password could not be changed.");
-      return;
+    setPasswordMessage("");
+    try {
+      const result = await authClient.changePassword({
+        currentPassword: passwords.current,
+        newPassword: passwords.next,
+      });
+      if (result.error) {
+        toast.error(result.error.message || "Password could not be changed.");
+        return;
+      }
+      setPasswords({ current: "", next: "", confirm: "" });
+      toast.success("Password changed successfully.");
+    } catch {
+      toast.error("Password could not be changed.");
+    } finally {
+      setIsChangingPassword(false);
     }
-    setPasswords({ current: "", next: "", confirm: "" });
-    setPasswordMessage("Password changed successfully.");
   };
 
   const inputClass =
@@ -231,20 +238,12 @@ export default function AdminSettingsPage() {
         </div>
       </header>
 
-      {saved && (
-        <div
-          role="status"
-          className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
-        >
-          <Check size={17} /> Settings saved in this browser.
-        </div>
-      )}
-      {saveError && (
+      {loadError && (
         <div
           role="alert"
           className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800"
         >
-          {saveError}
+          {loadError}
         </div>
       )}
 

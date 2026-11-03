@@ -1,6 +1,6 @@
 'use server'
 
-import { serverFetch, serverMutation } from "./server";
+import { serverFetch, serverMutation } from "./core/server";
 
 export const getProducts = async (filters = {}) => {
     const query = new URLSearchParams();

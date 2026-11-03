@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -148,7 +148,6 @@ const socialLinks = [
   },
 ];
 
-
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -157,9 +156,27 @@ export default function Navbar() {
   const [mobileActiveTab, setMobileActiveTab] = useState("menu");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Connect with your actual cart state later.
-  const cartCount = 3;
+  // Lock background scroll while mobile menu is open
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
 
+    const body = document.body;
+    const html = document.documentElement;
+
+    const previousBodyOverflow = body.style.overflow;
+    const previousHtmlOverflow = html.style.overflow;
+
+    body.style.overflow = "hidden";
+    html.style.overflow = "hidden";
+
+    return () => {
+      body.style.overflow = previousBodyOverflow;
+      html.style.overflow = previousHtmlOverflow;
+    };
+  }, [mobileMenuOpen]);
+
+  // Connect with your actual cart state later.
+  const cartCount = 0;
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -233,12 +250,12 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
       {/* ========================================
           MAIN NAVBAR
       ======================================== */}
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#07111e] text-white shadow-xl shadow-black/10">
         <div className="mx-auto max-w-[1440px] px-4 backdrop-blur-xl sm:px-6 xl:px-10">
-
           <div className="flex h-[76px] items-center justify-between gap-4 lg:gap-6">
             {/* Logo */}
             <Link
@@ -355,10 +372,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* ====================================
-              MOBILE SEARCH
-          ==================================== */}
-
+          {/* MOBILE SEARCH */}
           <form onSubmit={handleSearch} className="pb-4 lg:hidden">
             <div className="flex h-11 overflow-hidden rounded-full border border-white/10 bg-[#101f32] focus-within:border-blue-500/60">
               <div className="flex items-center pl-4 text-slate-400">
@@ -385,10 +399,7 @@ export default function Navbar() {
             </div>
           </form>
 
-          {/* ====================================
-              DESKTOP NAVIGATION
-          ==================================== */}
-
+          {/* DESKTOP NAVIGATION */}
           <nav
             aria-label="Main navigation"
             className="hidden h-10 items-center justify-between gap-3 border-t border-white/10 lg:flex"
@@ -479,6 +490,7 @@ export default function Navbar() {
           </nav>
         </div>
       </header>
+
       {/* ========================================
           MOBILE NAVIGATION DRAWER
       ======================================== */}
@@ -493,16 +505,16 @@ export default function Navbar() {
           />
 
           {/* Drawer */}
-          <aside className="absolute right-0 top-0 flex h-full w-[min(88%,380px)] flex-col border-l border-white/10 bg-[#07111e] shadow-2xl shadow-black/50">
+          <aside className="absolute right-0 top-0 flex h-full w-[min(88%,380px)] min-h-0 flex-col overflow-hidden border-l border-white/10 bg-[#07111e] shadow-2xl shadow-black/50">
             {/* Drawer Header */}
-            <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-white/10 px-5">
+            <div className="flex h-18 shrink-0 items-center justify-between border-b border-white/10 px-5">
               <Link href="/" onClick={closeMobileMenu}>
                 <Image
-                  src="/images/logo.png"
+                  src="/logo.png"
                   alt="UniTech"
                   width={160}
                   height={50}
-                  className="h-auto w-[135px] object-contain"
+                  className="h-auto w-30 object-contain"
                 />
               </Link>
 
@@ -580,7 +592,7 @@ export default function Navbar() {
                   ? "Mobile navigation links"
                   : "Mobile product categories"
               }
-              className="flex-1 overflow-y-auto px-4 pb-5"
+              className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 pb-5"
             >
               {mobileActiveTab === "menu" ? (
                 /* MENU TAB */
@@ -638,35 +650,14 @@ export default function Navbar() {
               {/* Utility Links */}
               <div className="my-4 border-t border-white/10" />
 
-              <div className="space-y-1">
-                {[
-                  {
-                    name: "Track Order",
-                    href: "/track-order",
-                    icon: Package,
-                  },
-                  {
-                    name: "Help & Support",
-                    href: "/help",
-                    icon: CircleHelp,
-                  },
-                  {
-                    name: "My Account",
-                    href: "/account",
-                    icon: UserRound,
-                  },
-                ].map(({ name, href, icon: Icon }) => (
-                  <Link
-                    key={name}
-                    href={href}
-                    onClick={closeMobileMenu}
-                    className="flex min-h-12 items-center gap-4 rounded-xl px-4 py-3 text-sm text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
-                  >
-                    <Icon size={19} />
-                    {name}
-                  </Link>
-                ))}
-              </div>
+              <Link
+                href="/account"
+                onClick={closeMobileMenu}
+                className="flex min-h-12 items-center gap-4 rounded-xl px-4 py-3 text-sm text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                <UserRound size={19} />
+                My Account
+              </Link>
             </nav>
           </aside>
         </div>

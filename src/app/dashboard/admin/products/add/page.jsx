@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import {
   ArrowLeft,
   ImagePlus,
@@ -295,10 +296,7 @@ export default function AddProductPage() {
         throw new Error(result.message || "Failed to create product.");
       }
 
-      setMessage({
-        type: "success",
-        text: "Product created successfully. Redirecting to products...",
-      });
+      toast.success("Product created successfully.");
 
       // Return to the product list after a successful create.
       resetForm();

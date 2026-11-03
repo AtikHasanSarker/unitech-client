@@ -1,6 +1,6 @@
 "use server";
 
-import { protectedServerFetch, serverMutation } from "./server";
+import { protectedServerFetch, serverMutation } from "./core/server";
 
 // Create a new order
 export const createOrder = async (orderData) => {

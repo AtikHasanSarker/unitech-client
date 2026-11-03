@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
 import {
   ArrowRight,
   BadgePercent,
@@ -10,6 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { getProducts } from "@/lib/api/product";
+import ActionButton from "@/components/ui/ActionButton";
 
 const MAX_PRODUCTS = 20;
 const formatPrice = (value) =>
@@ -91,14 +91,9 @@ export default function DealsPage() {
                 Explore our exclusive collection and save 10% on every purchase.
               </p>
             </div>
-            <p className="mt-4 shrink-0 text-sm font-medium text-slate-500 sm:mt-0">
-              Up to {MAX_PRODUCTS} products
-            </p>
           </div>
 
-          <Suspense fallback={<ProductsLoading />}>
             <DealsProducts />
-          </Suspense>
         </section>
 
         <aside className="mt-12 flex flex-col gap-4 rounded-xl border border-blue-100 bg-blue-50/70 p-5 sm:flex-row sm:items-center sm:gap-5 sm:p-6">
@@ -122,19 +117,9 @@ export default function DealsPage() {
 }
 
 async function DealsProducts() {
-  let response;
+  const fetchProducts = await getProducts({ page: 1, limit: MAX_PRODUCTS })
 
-  try {
-    response = await getProducts({ page: 1, limit: MAX_PRODUCTS });
-  } catch {
-    return <ProductsError />;
-  }
-
-  if (!response?.success || !Array.isArray(response.data)) {
-    return <ProductsError />;
-  }
-
-  const products = response.data
+  const products = fetchProducts?.data
     .filter(
       (product) =>
         product?._id &&
@@ -221,51 +206,12 @@ async function DealsProducts() {
                     {formatPrice(originalPrice)}
                   </span>
                 </div>
+              <ActionButton product={product} />
               </div>
             </Link>
           </article>
         );
       })}
-    </div>
-  );
-}
-
-function ProductsLoading() {
-  return (
-    <div
-      aria-label="Loading student deals"
-      aria-busy="true"
-      className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4"
-    >
-      {Array.from({ length: 8 }, (_, index) => (
-        <div
-          key={index}
-          className="overflow-hidden rounded-xl border border-slate-200 bg-white"
-        >
-          <div className="aspect-square animate-pulse bg-slate-100" />
-          <div className="space-y-3 p-3 sm:p-4">
-            <div className="h-3 w-1/3 animate-pulse rounded bg-slate-100" />
-            <div className="h-4 w-4/5 animate-pulse rounded bg-slate-100" />
-            <div className="h-5 w-1/2 animate-pulse rounded bg-slate-100" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function ProductsError() {
-  return (
-    <div
-      role="alert"
-      className="rounded-xl border border-rose-200 bg-rose-50 px-5 py-8 text-center"
-    >
-      <h3 className="font-semibold text-rose-900">
-        Deals could not be loaded
-      </h3>
-      <p className="mt-2 text-sm text-rose-800">
-        The product service is unavailable right now. Please try again shortly.
-      </p>
     </div>
   );
 }

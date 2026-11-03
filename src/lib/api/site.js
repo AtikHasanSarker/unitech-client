@@ -1,6 +1,6 @@
 "use server";
 
-import { serverMutation } from "./server";
+import { serverMutation } from "./core/server";
 
 export const submitContactMessage = async (message) =>
   serverMutation("contact", message);

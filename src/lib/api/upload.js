@@ -1,4 +1,4 @@
-import { serverMutation } from "./server";
+import { serverMutation } from "./core/server";
 
 export const uploadImage = async (file, name) => {
   const formData = new FormData();

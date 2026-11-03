@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import {
   Activity,
   ArrowDownRight,
@@ -151,7 +152,6 @@ function RevenueChart({ data }) {
 
 export default function AdminAnalyticsPage() {
   const [period, setPeriod] = useState("6 months");
-  const [reportNotice, setReportNotice] = useState("");
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loadError, setLoadError] = useState("");
@@ -265,30 +265,33 @@ export default function AdminAnalyticsPage() {
   const largestStatus = [...orderBreakdown].sort((a, b) => b.value - a.value)[0];
 
   const handleExport = () => {
-    const rows = [
-      ["Month", "Revenue (BDT)", "Orders"],
-      ...visibleData.map((item) => [item.month, item.revenue, item.orders]),
-    ];
-    const csv = rows
-      .map((row) =>
-        row
-          .map((value) => `"${String(value).replaceAll('"', '""')}"`)
-          .join(","),
-      )
-      .join("\n");
-    const blob = new Blob(["\uFEFF" + csv], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "unitech-analytics-report.csv";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-    setReportNotice("CSV report exported using current order data.");
-    window.setTimeout(() => setReportNotice(""), 3500);
+    try {
+      const rows = [
+        ["Month", "Revenue (BDT)", "Orders"],
+        ...visibleData.map((item) => [item.month, item.revenue, item.orders]),
+      ];
+      const csv = rows
+        .map((row) =>
+          row
+            .map((value) => `"${String(value).replaceAll('"', '""')}"`)
+            .join(","),
+        )
+        .join("\n");
+      const blob = new Blob(["\uFEFF" + csv], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "unitech-analytics-report.csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      toast.success("CSV report exported using current order data.");
+    } catch {
+      toast.error("Could not export the analytics report.");
+    }
   };
 
   return (
@@ -329,15 +332,6 @@ export default function AdminAnalyticsPage() {
           </button>
         </div>
       </section>
-
-      {reportNotice && (
-        <div
-          role="status"
-          className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
-        >
-          {reportNotice}
-        </div>
-      )}
 
       {loadError && (
         <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
