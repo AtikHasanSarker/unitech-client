@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-
 import {
   Search,
   UserRound,
@@ -33,11 +32,9 @@ import {
   Van,
   Laptop,
 } from "lucide-react";
-
 import { Button } from "@heroui/react";
 import { FaFacebook, FaYoutube } from "react-icons/fa";
 import { BsInstagram } from "react-icons/bs";
-
 
 const productCategories = [
   {
@@ -87,7 +84,6 @@ const productCategories = [
   },
 ];
 
-
 const navigationLinks = [
   {
     name: "Home",
@@ -106,7 +102,7 @@ const navigationLinks = [
   },
   {
     name: "Top Trending",
-    href: "/products?sort=trending",
+    href: "/trending",
     icon: TrendingUp,
   },
   {

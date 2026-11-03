@@ -3,8 +3,6 @@ import {
   ArrowRight,
   Cable,
   Headphones,
-  WashingMachine,
-  Flower2,
   Smartphone,
   BatteryCharging,
   Fan,
@@ -13,7 +11,6 @@ import {
   Ear,
   PlugZap,
   AudioLines,
-  ChevronRight,
   Sparkles,
   Laptop,
   ScanFace,
@@ -24,79 +21,67 @@ const categories = [
     name: "Adapters & Cables",
     slug: "adapters-cables",
     icon: Cable,
-    color: "from-blue-500/10 to-cyan-500/5",
   },
   {
     name: "Headsets",
     slug: "headsets",
     icon: Headphones,
-    color: "from-violet-500/10 to-purple-500/5",
   },
   {
     name: "Neckbands",
     slug: "neckbands",
     icon: AudioLines,
-    color: "from-indigo-500/10 to-blue-500/5",
   },
   {
     name: "Phone Accessories",
     slug: "phone-accessories",
     icon: Smartphone,
-    color: "from-sky-500/10 to-cyan-500/5",
   },
   {
     name: "Laptop Accessories",
     slug: "laptop-accessories",
     icon: Laptop,
-    color: "from-indigo-500/10 to-blue-500/5",
   },
   {
     name: "Personal Care Gadgets",
     slug: "personal-care-gadgets",
     icon: ScanFace,
-    color: "from-rose-500/10 to-pink-500/5",
   },
   {
     name: "Powerbanks",
     slug: "powerbanks",
     icon: BatteryCharging,
-    color: "from-amber-500/10 to-orange-500/5",
   },
   {
     name: "Rechargeable Fans",
     slug: "rechargeable-fans",
     icon: Fan,
-    color: "from-teal-500/10 to-emerald-500/5",
   },
   {
     name: "Smart Watches",
     slug: "smart-watches",
     icon: Watch,
-    color: "from-purple-500/10 to-fuchsia-500/5",
   },
   {
     name: "Speakers",
     slug: "speakers",
     icon: Speaker,
-    color: "from-orange-500/10 to-red-500/5",
   },
   {
     name: "TWS",
     slug: "tws",
     icon: Ear,
-    color: "from-blue-500/10 to-indigo-500/5",
   },
   {
     name: "Wired Earphones",
     slug: "wired-earphones",
     icon: PlugZap,
-    color: "from-emerald-500/10 to-teal-500/5",
   },
 ];
 
 export default function ShopByCategory() {
   return (
-    <section className="relative overflow-hidden bg-white py-14 text-slate-900 sm:py-16">
+    <section className="bg-white py-14 text-slate-900 sm:py-16">
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-10">
         {/* Section Heading */}
         <div className="mb-8 flex items-end justify-between gap-4 sm:mb-10">
@@ -114,14 +99,15 @@ export default function ShopByCategory() {
             </h2>
 
             <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-500 sm:text-base">
-              Find the right tech accessories for your everyday needs. Explore our collection and upgrade your lifestyle.
+              Find the right tech accessories for your everyday needs. Explore
+              our collection and upgrade your lifestyle.
             </p>
           </div>
 
           {/* Desktop View All */}
           <Link
             href="/products"
-            className="group hidden shrink-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all hover:border-blue-300 hover:bg-blue-600 hover:text-white sm:inline-flex"
+            className="group hidden shrink-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all hover:border-blue-600 hover:bg-blue-600 hover:text-white sm:inline-flex"
           >
             View All
             <ArrowRight
@@ -131,8 +117,8 @@ export default function ShopByCategory() {
           </Link>
         </div>
 
-        {/* Category Grid */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4 xl:grid-cols-6">
+        {/* Category Cards */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 md:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8">
           {categories.map((category) => {
             const Icon = category.icon;
 
@@ -140,33 +126,21 @@ export default function ShopByCategory() {
               <Link
                 key={category.slug}
                 href={`/products?category=${encodeURIComponent(category.name)}`}
-                className="group relative min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-900/[0.07] sm:rounded-3xl"
+                className="group flex min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 transition-colors duration-200 hover:border-blue-400"
               >
-                {/* Background Gradient */}
-                <div
-                  className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${category.color} opacity-30 transition-opacity duration-300 group-hover:opacity-100`}
-                />
-
-                <div className="relative">
-                  {/* Icon */}
-                  <div className="mb-3 flex aspect-[1.5/1] items-center justify-center">
-                    <div className="relative flex h-[76px] w-[76px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-blue-600 transition-all duration-300 group-hover:scale-110 group-hover:border-blue-200 group-hover:bg-blue-50 sm:h-[88px] sm:w-[88px] sm:rounded-3xl">
-                      <Icon
-                        size={39}
-                        strokeWidth={1.6}
-                        className="transition-all duration-300 group-hover:text-blue-700 sm:h-11 sm:w-11"
-                      />
-
-                      {/* Icon Glow */}
-                      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-blue-500/10 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100" />
-                    </div>
-                  </div>
-
-                  {/* Category Details */}
-                      <h3 className="text-sm text-center font-semibold leading-5 text-slate-800 transition-colors group-hover:text-blue-600 sm:text-[15px]">
-                        {category.name}
-                      </h3>
+                {/* Category Icon */}
+                <div className="flex h-15 w-full items-center justify-center">
+                  <Icon
+                    size={60}
+                    strokeWidth={1.35}
+                    className="text-neutral-500 transition-colors duration-200 group-hover:text-blue-600 sm:h-15 sm:w-15"
+                  />
                 </div>
+
+                {/* Category Name */}
+                <h3 className="text-center text-sm font-medium text-slate-900 transition-colors duration-200 group-hover:text-blue-600 sm:text-base">
+                  {category.name}
+                </h3>
               </Link>
             );
           })}

@@ -77,7 +77,7 @@ export default function NewArrivals() {
   };
 
   return (
-    <section className="bg-white py-14 text-slate-900 sm:py-16 lg:py-20">
+    <section className="bg-white py-14 text-slate-900 sm:py-16">
       <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10">
         {/* Section Heading */}
         <div className="mb-8 flex items-end justify-between gap-4 sm:mb-10">

@@ -61,7 +61,7 @@ export default function DealsPage() {
 
           <div className="relative min-h-64 border-t border-slate-200 bg-slate-100 sm:min-h-80 lg:min-h-95 lg:border-l lg:border-t-0">
             <Image
-              src="/images/nstu-students.png"
+              src="/images/nstu.png"
               alt="Students at Noakhali Science and Technology University"
               fill
               priority

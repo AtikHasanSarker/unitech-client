@@ -92,7 +92,7 @@ export default function Newsletter() {
                   Subscribe to our newsletter
                 </label>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:rounded-full sm:border sm:border-white/10 sm:bg-white/[0.05] sm:p-1.5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:rounded-full sm:border sm:border-white/10 sm:bg-white/[0.05] p-1.5">
                   <div className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border border-white/10 bg-white/[0.05] px-4 sm:border-0 sm:bg-transparent">
                     <Mail
                       size={18}
