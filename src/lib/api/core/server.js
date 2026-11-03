@@ -25,7 +25,6 @@ export const serverFetch = async (api) => {
   const response = await fetch(getApiUrl(api), { cache: "no-store" });
   return parseResponse(response);
 };
-
 export const authHeader = async () => {
   try {
     const token = await getUserToken();
@@ -42,24 +41,12 @@ export const protectedServerFetch = async (api) => {
   });
   return parseResponse(response);
 };
-
-export const serverMutation = async (api, data, method = "POST") => {
+export const serverMutation = async (api, data, method = "POST", extraHeaders = {}) => {
   const response = await fetch(getApiUrl(api), {
     method,
     headers: {
-      "content-type": "application/json",
+      ...extraHeaders,
       ...(await authHeader()),
-    },
-    ...(data === undefined ? {} : { body: JSON.stringify(data) }),
-  });
-
-  return parseResponse(response);
-};
-
-export const userServerMutation = async (api, data, method = "POST") => {
-  const response = await fetch(getApiUrl(api), {
-    method,
-    headers: {
       "content-type": "application/json",
     },
     ...(data === undefined ? {} : { body: JSON.stringify(data) }),
@@ -67,3 +54,4 @@ export const userServerMutation = async (api, data, method = "POST") => {
 
   return parseResponse(response);
 };
+

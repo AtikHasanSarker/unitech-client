@@ -16,7 +16,7 @@ import {
   X,
   ArrowUpRight,
 } from "lucide-react";
-import { addCartItem } from "@/lib/api/cart";
+import { useCart } from "@/components/cart/CartProvider";
 import { getProductById } from "@/lib/api/product";
 import {
   getWishlist,
@@ -128,6 +128,7 @@ function ProductCard({ product, onRemove, onAddToCart, isAdded }) {
 }
 
 export default function WishlistPage() {
+  const { addItem } = useCart();
   const [wishlist, setWishlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -219,20 +220,11 @@ export default function WishlistPage() {
   };
 
   const addToCart = async (product) => {
-    try {
-      const result = await addCartItem(product.id);
-      if (!result?.success) {
-        toast.error(result?.message || "Could not add this product to your cart.");
-        return;
-      }
-
+    const added = await addItem(product.id);
+    if (added) {
       setAddedItems((previous) =>
         previous.includes(product.id) ? previous : [...previous, product.id]
       );
-
-      toast.success(`${product.name} added to cart.`);
-    } catch {
-      toast.error("Could not add this product to your cart.");
     }
   };
 

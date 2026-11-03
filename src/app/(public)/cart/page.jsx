@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import toast from "react-hot-toast";
@@ -23,20 +23,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import OrderPlacementModal from "./OrderPlacementModal";
-import {
-  clearCart as clearCartRequest,
-  getCart,
-  removeCartItem,
-  updateCartItem,
-} from "@/lib/api/cart";
-
-const normalizeCartItems = (cart) =>
-  (cart?.items || []).map((item) => ({
-    ...item,
-    id: item.productId,
-    brand: "",
-    category: "",
-  }));
+import { useCart } from "@/components/cart/CartProvider";
 
 const formatPrice = (price) => `৳${price.toLocaleString("en-BD")}`;
 
@@ -46,35 +33,18 @@ const DEMO_COUPONS = {
 };
 
 export default function CartPage() {
-  const [cart, setCart] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    items: cart,
+    isLoading,
+    setQuantity,
+    removeItem,
+    clearCart: clearProviderCart,
+    refreshCart,
+  } = useCart();
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponMessage, setCouponMessage] = useState("");
-
-  useEffect(() => {
-    let active = true;
-    getCart()
-      .then((result) => {
-        if (!active) return;
-        if (result?.success) {
-          setCart(normalizeCartItems(result.data));
-        } else {
-          toast.error(result?.message || "Sign in to load your cart.");
-        }
-      })
-      .catch(() => {
-        if (active) toast.error("Could not connect to your cart.");
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const subtotal = cart.reduce(
     (total, item) => total + item.price * item.quantity,
@@ -104,37 +74,13 @@ export default function CartPage() {
   const updateQuantity = async (id, amount) => {
     const item = cart.find((product) => product.id === id);
     if (!item) return;
-
-    try {
-      const result = await updateCartItem(id, Math.max(1, item.quantity + amount));
-      if (result?.success) {
-        setCart(normalizeCartItems(result.data));
-      } else {
-        toast.error(result?.message || "Could not update item quantity.");
-      }
-    } catch {
-      toast.error("Could not update item quantity.");
-    }
+    await setQuantity(id, Math.max(1, item.quantity + amount));
   };
 
-  const removeItem = async (id) => {
-    try {
-      const item = cart.find((product) => product.id === id);
-      const result = await removeCartItem(id);
-      if (!result?.success) {
-        toast.error(result?.message || "Could not remove this item.");
-        return;
-      }
-      setCart(normalizeCartItems(result.data));
-
-      if (item) {
-        toast.success(`${item.name} removed from your cart.`);
-      }
-
+  const handleRemoveItem = async (id) => {
+    if (await removeItem(id)) {
       setAppliedCoupon(null);
       setCouponMessage("");
-    } catch {
-      toast.error("Could not remove this item.");
     }
   };
 
@@ -166,19 +112,11 @@ export default function CartPage() {
     setCouponMessage("");
   };
 
-  const clearCart = async () => {
-    try {
-      const result = await clearCartRequest();
-      if (!result?.success) {
-        toast.error(result?.message || "Could not clear your cart.");
-        return;
-      }
-      setCart([]);
+  const handleClearCart = async () => {
+    if (await clearProviderCart()) {
       setAppliedCoupon(null);
       setCouponInput("");
       setCouponMessage("");
-    } catch {
-      toast.error("Could not clear your cart.");
     }
   };
 
@@ -268,7 +206,7 @@ export default function CartPage() {
                     </div>
 
                     <button
-                      onClick={clearCart}
+                      onClick={handleClearCart}
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-red-600"
                     >
                       <Trash2 size={14} />
@@ -351,7 +289,7 @@ export default function CartPage() {
                             </div>
 
                             <button
-                              onClick={() => removeItem(item.id)}
+                              onClick={() => handleRemoveItem(item.id)}
                               className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 transition hover:text-red-600"
                             >
                               <Trash2 size={14} />
@@ -653,7 +591,7 @@ export default function CartPage() {
         subtotal={subtotal}
                     couponCode={appliedCoupon?.code}
         onOrderPlaced={(order) => {
-          setCart([]);
+                      refreshCart();
           setAppliedCoupon(null);
           setCouponInput("");
           setCouponMessage("");

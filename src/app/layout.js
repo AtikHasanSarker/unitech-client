@@ -2,6 +2,7 @@ import { Poppins } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 import MainLayout from "@/components/layout/MainLayout";
+import { CartProvider } from "@/components/cart/CartProvider";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -21,7 +22,9 @@ export default function RootLayout({ children }) {
       className={`${poppins.className} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <MainLayout>{children}</MainLayout>
+        <CartProvider>
+          <MainLayout>{children}</MainLayout>
+        </CartProvider>
         <Toaster
           position="top-right"
           toastOptions={{

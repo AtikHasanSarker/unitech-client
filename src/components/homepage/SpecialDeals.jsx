@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -11,61 +11,60 @@ import {
   Star,
 } from "lucide-react";
 import { Button } from "@heroui/react";
-
-const deals = [
-  {
-    id: "deal-1",
-    name: "Baseus 20W Fast Charger",
-    image: "/images/products/baseus-charger.png",
-    price: 1190,
-    oldPrice: 1490,
-    discount: 20,
-    rating: 4.8,
-    reviews: 120,
-    slug: "baseus-20w-fast-charger",
-  },
-  {
-    id: "deal-2",
-    name: "UGREEN Type-C Cable (60W)",
-    image: "/images/products/ugreen-cable.png",
-    price: 490,
-    oldPrice: 590,
-    discount: 17,
-    rating: 4.7,
-    reviews: 99,
-    slug: "ugreen-type-c-cable",
-  },
-  {
-    id: "deal-3",
-    name: "QCY Wireless Earbuds",
-    image: "/images/products/qcy-earbuds.png",
-    price: 1490,
-    oldPrice: 1990,
-    discount: 25,
-    rating: 4.9,
-    reviews: 210,
-    slug: "qcy-wireless-earbuds",
-  },
-  {
-    id: "deal-4",
-    name: "Remax 10000mAh Power Bank",
-    image: "/images/products/remax-powerbank.png",
-    price: 1690,
-    oldPrice: 1990,
-    discount: 15,
-    rating: 4.6,
-    reviews: 78,
-    slug: "remax-10000mah-power-bank",
-  },
-];
+import toast from "react-hot-toast";
+import { useCart } from "@/components/cart/CartProvider";
+import { getProducts } from "@/lib/api/product";
 
 function formatPrice(price) {
   return `৳${price.toLocaleString("en-US")}`;
 }
 
 export default function SpecialDeals() {
+  const { items: cartItems, addItem } = useCart();
+  const [deals, setDeals] = useState([]);
   const [wishlist, setWishlist] = useState([]);
-  const [cart, setCart] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    getProducts({ page: 1, limit: 4, sort: "newest", status: "Active" })
+      .then((result) => {
+        if (!active) return;
+        if (!result?.success) {
+          toast.error(result?.message || "Could not load featured products.");
+          return;
+        }
+
+        setDeals(
+          (result.data || [])
+            .filter((product) => product?._id && product.name)
+            .map((product) => {
+              const price = Number(product.price);
+              const oldPrice = Number(product.oldPrice) || price;
+              return {
+                ...product,
+                id: String(product._id),
+                slug: String(product._id),
+                image: product.images?.[0] || "/images/product-placeholder.png",
+                price,
+                oldPrice,
+                discount: oldPrice > price
+                  ? Math.round((1 - price / oldPrice) * 100)
+                  : 0,
+                rating: Number(product.rating) || 0,
+                reviews: Number(product.reviews) || 0,
+                stock: Number(product.stock) || 0,
+              };
+            }),
+        );
+      })
+      .catch(() => {
+        if (active) toast.error("Could not load featured products.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const toggleWishlist = (id) => {
     setWishlist((prev) =>
@@ -75,10 +74,8 @@ export default function SpecialDeals() {
     );
   };
 
-  const addToCart = (product) => {
-    setCart((prev) =>
-      prev.includes(product.id) ? prev : [...prev, product.id]
-    );
+  const addToCart = async (product) => {
+    await addItem(product.id);
   };
 
   return (
@@ -139,7 +136,7 @@ export default function SpecialDeals() {
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
           {deals.map((product) => {
             const isWishlisted = wishlist.includes(product.id);
-            const isAdded = cart.includes(product.id);
+            const isAdded = cartItems.some((item) => item.id === product.id);
 
             return (
               <article
@@ -163,9 +160,11 @@ export default function SpecialDeals() {
                   </Link>
 
                   {/* Discount Badge */}
-                  <span className="absolute left-2 top-2 rounded-lg bg-red-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm sm:left-3 sm:top-3 sm:text-xs">
-                    -{product.discount}%
-                  </span>
+                  {product.discount > 0 && (
+                    <span className="absolute left-2 top-2 rounded-lg bg-red-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm sm:left-3 sm:top-3 sm:text-xs">
+                      -{product.discount}%
+                    </span>
+                  )}
 
                   {/* Wishlist */}
                   <button
@@ -227,9 +226,11 @@ export default function SpecialDeals() {
                         {formatPrice(product.price)}
                       </p>
 
-                      <p className="mt-0.5 text-[10px] text-slate-400 line-through sm:text-xs">
-                        {formatPrice(product.oldPrice)}
-                      </p>
+                      {product.oldPrice > product.price && (
+                        <p className="mt-0.5 text-[10px] text-slate-400 line-through sm:text-xs">
+                          {formatPrice(product.oldPrice)}
+                        </p>
+                      )}
                     </div>
 
                     <Button

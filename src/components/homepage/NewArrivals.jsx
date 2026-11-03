@@ -12,18 +12,18 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@heroui/react";
-import { addCartItem } from "@/lib/api/cart";
 import { getProducts } from "@/lib/api/product";
 import { addToWishlist, getWishlist, removeFromWishlist } from "@/lib/api/wishlist";
+import { useCart } from "@/components/cart/CartProvider";
 
 function formatPrice(price) {
   return `৳${price.toLocaleString("en-US")}`;
 }
 
 export default function NewArrivals() {
+  const { items: cartItems, addItem } = useCart();
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
-  const [cart, setCart] = useState([]);
 
   useEffect(() => {
     let active = true;
@@ -71,17 +71,7 @@ export default function NewArrivals() {
   };
 
   const addToCart = async (productId) => {
-    try {
-      const result = await addCartItem(productId);
-      if (!result?.success) {
-        toast.error(result?.message || "Sign in to add products to your cart.");
-        return;
-      }
-      setCart((prev) => prev.includes(productId) ? prev : [...prev, productId]);
-      toast.success("Product added to your cart.");
-    } catch {
-      toast.error("Could not add this product to your cart.");
-    }
+    await addItem(productId);
   };
 
   return (
@@ -119,7 +109,7 @@ export default function NewArrivals() {
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
           {products.map((product) => {
             const isWishlisted = wishlist.includes(product.id);
-            const isAdded = cart.includes(product.id);
+            const isAdded = cartItems.some((item) => item.id === product.id);
 
             return (
               <article

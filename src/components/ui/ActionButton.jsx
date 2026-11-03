@@ -2,12 +2,15 @@
 import { Button } from '@heroui/react';
 import { ShoppingCart } from 'lucide-react';
 import React from 'react';
+import { useCart } from '@/components/cart/CartProvider';
 
 const ActionButton = ({ product }) => {
+  const { addItem } = useCart();
+
   return (
     <div>
       <Button
-        onClick={() => onAddToCart(product)}
+        onClick={() => addItem(product.id || product._id)}
         disabled={!product.stock}
         aria-label={
           product.stock ? `Add ${product.name} to cart` : "Unavailable"

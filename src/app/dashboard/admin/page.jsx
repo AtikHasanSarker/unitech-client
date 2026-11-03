@@ -33,6 +33,7 @@ import { useRouter } from "next/navigation";
 import { getAdminStats } from "@/lib/api/admin";
 import { getAllOrders } from "@/lib/api/order";
 import { getProducts } from "@/lib/api/product";
+import { useCart } from "@/components/cart/CartProvider";
 
 const overviewCards = [
   {
@@ -210,6 +211,7 @@ function StatusBadge({ status }) {
 
 export default function AdminDashboardPage() {
   const router = useRouter()
+  const { resetAfterLogout } = useCart();
    const { data: session, isPending, error } = useSession();
   const user = session?.user;
 
@@ -219,6 +221,7 @@ export default function AdminDashboardPage() {
       toast.error("Logout failed!");
       return;
     }
+    resetAfterLogout();
     toast.success("Logout successful!");
     router.replace("/dashboard/login");
   };

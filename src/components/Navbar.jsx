@@ -35,6 +35,7 @@ import {
 import { Button } from "@heroui/react";
 import { FaFacebook, FaYoutube } from "react-icons/fa";
 import { BsInstagram } from "react-icons/bs";
+import { useCart } from "@/components/cart/CartProvider";
 
 const productCategories = [
   {
@@ -151,6 +152,7 @@ const socialLinks = [
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
+  const { itemCount: cartCount } = useCart();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileActiveTab, setMobileActiveTab] = useState("menu");
@@ -174,9 +176,6 @@ export default function Navbar() {
       html.style.overflow = previousHtmlOverflow;
     };
   }, [mobileMenuOpen]);
-
-  // Connect with your actual cart state later.
-  const cartCount = 0;
 
   const handleSearch = (e) => {
     e.preventDefault();

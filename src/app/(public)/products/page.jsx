@@ -176,7 +176,7 @@ function FilterSidebar({
 }
 
 
-function ProductCard({ product, isWishlisted, onWishlist, onAddToCart }) {
+function ProductCard({ product, isWishlisted, onWishlist }) {
   const discount = product.oldPrice
     ? Math.round((1 - product.price / product.oldPrice) * 100)
     : 0;
@@ -271,7 +271,7 @@ function ProductCard({ product, isWishlisted, onWishlist, onAddToCart }) {
           )}
         </div>
 
-        <ActionButton product={product}/>
+        <ActionButton product={product} />
       </div>
     </article>
   );
@@ -660,7 +660,7 @@ export default function ProductsPage() {
               </div>
 
               {visibleProducts.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-2 md:grid-cols-3 sm:gap-5 lg:grid-cols-4">
                   {visibleProducts.map((product) => (
                     <ProductCard
                       key={product.id}

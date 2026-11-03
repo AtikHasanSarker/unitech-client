@@ -22,7 +22,7 @@ import {
   Share2,
   BadgeCheck,
 } from "lucide-react";
-import { addCartItem } from "@/lib/api/cart";
+import { useCart } from "@/components/cart/CartProvider";
 import { getProductById, getProducts } from "@/lib/api/product";
 import {
   addToWishlist,
@@ -33,6 +33,7 @@ import {
 const formatPrice = (price) => `৳${price.toLocaleString("en-BD")}`;
 
 export default function ProductDetailsPage() {
+  const { addItem } = useCart();
   const params = useParams();
   const router = useRouter();
   const productId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -109,18 +110,7 @@ export default function ProductDetailsPage() {
   }, [productId]);
 
   const addToCart = async () => {
-    try {
-      const result = await addCartItem(productId, quantity);
-      if (!result?.success) {
-        toast.error(result?.message || "Sign in to add this product to your cart.");
-        return false;
-      }
-      toast.success(`${quantity} item(s) added to your cart.`);
-      return true;
-    } catch {
-      toast.error("Could not add this product to your cart.");
-      return false;
-    }
+    return addItem(productId, quantity);
   };
 
   const toggleWishlist = async () => {
