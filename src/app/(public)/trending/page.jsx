@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
 import { ArrowRight, Flame, ImageOff, PackageSearch } from "lucide-react";
 
 import { getProducts } from "@/lib/api/product";
 import ActionButton from "@/components/ui/ActionButton";
+import ProductCard from "@/components/ui/ProductCard";
 
 const MAX_PRODUCTS = 10;
 
@@ -16,7 +16,7 @@ const formatPrice = (value) =>
 export default function TopTrendingPage() {
   return (
     <main className="min-h-screen bg-white text-slate-900">
-      <div className="mx-auto max-w-[1500px] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+      <div className="mx-auto container px-4 pb-16 pt-8 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
           <ol className="flex items-center gap-2">
@@ -68,9 +68,7 @@ export default function TopTrendingPage() {
           </div>
 
           {/* Products */}
-          <Suspense fallback={<ProductsLoading />}>
             <TrendingProducts />
-          </Suspense>
         </section>
       </div>
     </main>
@@ -121,89 +119,15 @@ async function TrendingProducts() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
       {products.map((product) => {
-        const imageUrl = Array.isArray(product.images)
-          ? product.images[0]
-          : null;
-
         return (
-          <article
+          <ProductCard
             key={product._id}
-            className="group relative min-w-0 overflow-hidden rounded-2xl border border-blue-100 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-900/5"
-          >
-            {/* Product Image */}
-            <Link
-              href={`/products/${product._id}`}
-              aria-label={`View ${product.name}`}
-              className="block"
-            >
-              <div className="relative aspect-square overflow-hidden bg-white p-3 sm:p-4">
-                {imageUrl ? (
-                  <Image
-                    src={imageUrl}
-                    alt={product.name}
-                    fill
-                    sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 20vw"
-                    className="object-contain p-3 transition-transform duration-300 group-hover:scale-105 sm:p-5"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-slate-300">
-                    <ImageOff size={35} />
-                  </div>
-                )}
-
-                {/* Trending Badge */}
-                <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10px] font-bold text-white sm:text-xs">
-                  <Flame size={12} />
-                  TRENDING
-                </span>
-              </div>
-
-              {/* Product Information */}
-              <div className="px-3 pt-1 sm:px-4">
-                {product.brand && (
-                  <p className="mb-1 truncate text-[10px] font-semibold uppercase tracking-wide text-slate-400 sm:text-xs">
-                    {product.brand}
-                  </p>
-                )}
-
-                <h3 className="line-clamp-2 min-h-10 text-xs font-medium leading-5 text-slate-800 transition-colors group-hover:text-blue-600 sm:text-sm">
-                  {product.name}
-                </h3>
-
-                <p className="mt-2 text-base font-bold text-blue-600 sm:text-lg">
-                  {formatPrice(product.price)}
-                </p>
-              </div>
-            </Link>
-
-            {/* Product Action */}
-            <div className="p-3 pt-3 sm:px-4 sm:pb-4">
-              <ActionButton product={product} />
-            </div>
-          </article>
+            product={product}
+            isWishListed={false}
+            onWishlist={[]}
+          />
         );
       })}
-    </div>
-  );
-}
-
-function ProductsLoading() {
-  return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
-      {Array.from({ length: 10 }).map((_, index) => (
-        <div
-          key={index}
-          className="overflow-hidden rounded-2xl border border-slate-200"
-        >
-          <div className="aspect-square animate-pulse bg-slate-100" />
-          <div className="space-y-3 p-4">
-            <div className="h-3 w-1/3 animate-pulse rounded bg-slate-100" />
-            <div className="h-4 w-4/5 animate-pulse rounded bg-slate-100" />
-            <div className="h-5 w-1/2 animate-pulse rounded bg-slate-100" />
-            <div className="h-10 animate-pulse rounded-full bg-slate-100" />
-          </div>
-        </div>
-      ))}
     </div>
   );
 }

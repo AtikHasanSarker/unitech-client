@@ -4,17 +4,6 @@ export default function Loading() {
   return (
     <main className="fixed inset-0 z-[9999] flex min-h-screen items-center justify-center bg-white">
       <div className="flex flex-col items-center justify-center px-5 text-center">
-        {/* Logo */}
-        <div className="mb-8">
-          <Image
-            src="/images/logo.png"
-            alt="UniTech"
-            width={160}
-            height={65}
-            priority
-            className="h-auto w-36 object-contain sm:w-40"
-          />
-        </div>
 
         {/* Loading Animation */}
         <div className="relative flex h-14 w-14 items-center justify-center">

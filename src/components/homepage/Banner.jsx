@@ -70,34 +70,31 @@ export default function HeroBanner() {
 
           {/* Description */}
           <p className="mt-6 max-w-lg text-sm leading-7 text-slate-400 sm:text-base sm:leading-8">
-            Discover premium mobile accessories at affordable prices.
-            Upgrade your everyday tech with trusted products, student-friendly
-            deals, and convenient campus delivery.
+            Discover premium mobile accessories at affordable prices. Upgrade
+            your everyday tech with trusted products, student-friendly deals,
+            and convenient campus delivery.
           </p>
 
           {/* Buttons */}
           <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
-            <Button
-              as={Link}
-              href="/products"
-              className="group h-12 rounded-full bg-blue-600 px-6 font-semibold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-500 sm:px-7"
-            >
-              Shop Now
+            <Link href="/products">
+              <Button className="group h-12 rounded-full bg-blue-600 px-6 font-semibold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-500 sm:px-7">
+                Shop Now
+                <ArrowRight
+                  size={18}
+                  className="ml-2 transition-transform group-hover:translate-x-1"
+                />
+              </Button>
+            </Link>
 
-              <ArrowRight
-                size={18}
-                className="ml-2 transition-transform group-hover:translate-x-1"
-              />
-            </Button>
-
-            <Button
-              as={Link}
-              href="/categories"
-              variant="outline"
-              className="h-12 rounded-full border border-white/20 bg-white/[0.03] px-6 font-medium text-white transition-all hover:border-blue-400/50 hover:bg-blue-500/10 sm:px-7"
-            >
-              Explore Categories
-            </Button>
+            <Link href="/deals">
+              <Button
+                variant="outline"
+                className="h-12 rounded-full border border-white/20 bg-white/[0.03] px-6 font-medium text-white transition-all hover:border-blue-400/50 hover:bg-blue-500/10 sm:px-7"
+              >
+                Explore Deals
+              </Button>
+            </Link>
           </div>
 
           {/* Small Trust Message */}
@@ -169,11 +166,7 @@ export default function HeroBanner() {
                 index === 0 || index === 2
                   ? "md:border-r md:border-white/[0.07] md:pr-5"
                   : ""
-              } ${
-                index === 1 || index === 3
-                  ? "md:pl-5 lg:pl-8"
-                  : ""
-              }`}
+              } ${index === 1 || index === 3 ? "md:pl-5 lg:pl-8" : ""}`}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-400/20 bg-blue-500/10 text-blue-400 sm:h-12 sm:w-12">
                 <Icon size={21} strokeWidth={1.8} />

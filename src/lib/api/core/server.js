@@ -8,9 +8,9 @@ const getApiUrl = (api) => {
   if (!baseUrl) {
     throw new Error("NEXT_SERVER_URL is not configured.");
   }
-
   return `${baseUrl.replace(/\/+$/, "")}/api/${api}`;
 };
+
 
 const parseResponse = async (response) => {
   const payload = await response.json().catch(() => ({
@@ -25,6 +25,8 @@ export const serverFetch = async (api) => {
   const response = await fetch(getApiUrl(api), { cache: "no-store" });
   return parseResponse(response);
 };
+
+
 export const authHeader = async () => {
   try {
     const token = await getUserToken();
@@ -41,6 +43,8 @@ export const protectedServerFetch = async (api) => {
   });
   return parseResponse(response);
 };
+
+
 export const serverMutation = async (api, data, method = "POST", extraHeaders = {}) => {
   const response = await fetch(getApiUrl(api), {
     method,
