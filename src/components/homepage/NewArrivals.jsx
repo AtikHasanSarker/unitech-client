@@ -117,7 +117,7 @@ export default function NewArrivals() {
                 className="group relative min-w-0 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-100 hover:shadow-xl hover:shadow-slate-900/[0.06] sm:rounded-3xl"
               >
                 {/* Product Image */}
-                <div className="relative m-2 aspect-square overflow-hidden rounded-xl bg-slate-50 sm:m-3 sm:rounded-2xl">
+                <div className="relative m-2 aspect-square overflow-hidden rounded-xl bg-white sm:m-3 sm:rounded-2xl">
                   <Link
                     href={`/products/${product.id}`}
                     aria-label={`View ${product.name}`}

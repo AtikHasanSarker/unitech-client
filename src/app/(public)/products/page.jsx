@@ -177,12 +177,13 @@ export default function ProductsPage() {
   const productListingRef = useRef(null);
   const searchParams = useSearchParams();
   const search = searchParams.get("search")?.trim() || "";
+  const categoryFromUrl = searchParams.get("category") || "All";
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({ totalPages: 0 });
   const [categoryOptions, setCategoryOptions] = useState([
     { name: "All Products", slug: "all" },
   ]);
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState(() => categoryFromUrl);
   const [sort, setSort] = useState("featured");
   const [maxPrice, setMaxPrice] = useState(5000);
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -202,6 +203,15 @@ export default function ProductsPage() {
 
   const selectedCategoryName =
     categoryOptions.find((item) => item._id === category)?.name || "";
+
+  useEffect(() => {
+    if (category !== categoryFromUrl) {
+      // URL navigation is external state that needs to update the existing filters.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCategory(categoryFromUrl);
+      setCurrentPage(1);
+    }
+  }, [categoryFromUrl, category]);
 
   useEffect(() => {
     let active = true;
@@ -324,13 +334,25 @@ export default function ProductsPage() {
   const visibleProducts = filteredProducts;
 
   const resetFilters = () => {
-    updateSearch("");
     setCategory("All");
     setSort("featured");
     setMaxPrice(5000);
     setInStockOnly(false);
     setMinRating(0);
     setCurrentPage(1);
+
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    nextSearchParams.delete("search");
+    nextSearchParams.delete("category");
+    const query = nextSearchParams.toString();
+
+    if (query !== searchParams.toString()) {
+      router.replace(query ? `/products?${query}` : "/products", {
+        scroll: false,
+      });
+    } else {
+      setCurrentPage(1);
+    }
   };
 
   const updateSearch = (value) => {
@@ -353,9 +375,24 @@ export default function ProductsPage() {
   };
 
   const updateCategory = (value) => {
-    setCategory(value);
+    const nextCategory = value === "All" ? "All" : value;
+    setCategory(nextCategory);
     setCurrentPage(1);
     setMobileFiltersOpen(false);
+
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    if (nextCategory === "All") {
+      nextSearchParams.delete("category");
+    } else {
+      nextSearchParams.set("category", nextCategory);
+    }
+
+    if (nextSearchParams.toString() !== searchParams.toString()) {
+      const query = nextSearchParams.toString();
+      router.replace(query ? `/products?${query}` : "/products", {
+        scroll: false,
+      });
+    }
   };
 
   const toggleWishlist = async (id) => {

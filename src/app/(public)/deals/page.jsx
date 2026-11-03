@@ -170,7 +170,7 @@ async function DealsProducts() {
               aria-label={`View ${product.name}`}
               className="block"
             >
-              <div className="relative aspect-square overflow-hidden bg-slate-50">
+              <div className="relative aspect-square overflow-hidden bg-white">
                 {imageUrl ? (
                   <Image
                     src={imageUrl}

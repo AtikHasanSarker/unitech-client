@@ -223,7 +223,7 @@ export default function CartPage() {
                         {/* Product image */}
                         <Link
                           href={`/products/${item.id}`}
-                          className="relative h-24 w-24 shrink-0 self-start overflow-hidden rounded-xl border border-slate-100 bg-slate-50 sm:h-28 sm:w-28"
+                          className="relative h-24 w-24 shrink-0 self-start overflow-hidden rounded-xl border border-slate-100 bg-white sm:h-28 sm:w-28"
                         >
                           <Image
                             src={item.image}

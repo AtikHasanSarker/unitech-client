@@ -33,7 +33,7 @@ function ProductCard({ product, onRemove, onAddToCart, isAdded }) {
   return (
     <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-200/50">
       {/* Product Image */}
-      <div className="relative overflow-hidden bg-slate-50">
+      <div className="relative overflow-hidden bg-white">
         <Link
           href={`/products/${product.id}`}
           className="relative block aspect-square"
