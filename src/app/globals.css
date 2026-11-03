@@ -9,7 +9,7 @@
   z-index: 1;
   border-radius: 50%;
   background: #0084ff;
-  box-shadow: 0 4px 16px rgba(0, 132, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 132, 255, 0.3);
   transition: transform 0.25s ease;
 }
 

@@ -51,7 +51,7 @@ export default function StudentDiscount() {
 
               {/* CTA Button */}
               <Link
-                href="/deals?audience=nstu-students"
+                href="/deals"
                 className="mt-6 inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-300 hover:bg-blue-500 hover:shadow-blue-500/30"
               >
                 Shop Now

@@ -17,8 +17,8 @@ import {
   ShoppingBag,
   Truck,
 } from "lucide-react";
-import { submitContactMessage } from "@/lib/api/site";
 
+import { submitContactMessage } from "@/lib/api/site";
 
 const contactMethods = [
   {
@@ -43,7 +43,7 @@ const contactMethods = [
     description: "Serving students at NSTU.",
     value: "NSTU Campus, Noakhali",
     href: "https://maps.google.com/?q=Noakhali+Science+and+Technology+University",
-    color: "bg-amber-50 text-amber-600",
+    color: "bg-emerald-50 text-emerald-600",
   },
 ];
 
@@ -74,6 +74,26 @@ const faqs = [
       "Contact our support team with your order details and a description of the issue. If possible, keep the original packaging and photographs of the damaged product.",
   },
 ];
+
+const supportTips = [
+  {
+    title: "Order ID",
+    description:
+      "Keep your order number available if your question is about an order.",
+  },
+  {
+    title: "Product Details",
+    description: "Mention the product name and describe the issue clearly.",
+  },
+  {
+    title: "Delivery Information",
+    description:
+      "Provide relevant delivery details when requesting order assistance.",
+  },
+];
+
+const inputClasses =
+  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -118,7 +138,7 @@ export default function ContactPage() {
     }
 
     if (!formData.subject.trim()) {
-      newErrors.subject = "Please enter a subject.";
+      newErrors.subject = "Please select a subject.";
     }
 
     if (!formData.message.trim()) {
@@ -138,17 +158,24 @@ export default function ContactPage() {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+
     let result;
+
     try {
       result = await submitContactMessage(formData);
     } catch {
-      result = { success: false, message: "Could not connect to contact support." };
+      result = {
+        success: false,
+        message: "Could not connect to contact support.",
+      };
     } finally {
       setIsSubmitting(false);
     }
 
     if (!result?.success) {
-      setErrors({ submit: result?.message || "Your message could not be sent." });
+      setErrors({
+        submit: result?.message || "Your message could not be sent.",
+      });
       return;
     }
 
@@ -164,56 +191,48 @@ export default function ContactPage() {
     setErrors({});
   };
 
-  const inputClasses =
-    "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10";
-
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-800">
-
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#0B1739]">
-        <div className="absolute -right-24 -top-32 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="absolute -bottom-40 -left-20 h-96 w-96 rounded-full bg-violet-500/15 blur-3xl" />
-
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-blue-200">
-              <MessageCircle size={16} />
-              We are here to help
-            </div>
-
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Let&apos;s Start a{" "}
-              <span className="text-blue-400">Conversation.</span>
-            </h1>
-
-            <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base sm:leading-8">
-              Have a question about a product, an order, or our student
-              discounts? Contact the UniTech team and let us know how we can
-              help.
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <a
-                href="#contact-form"
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-500"
-              >
-                Send a Message
-                <ArrowRight size={17} />
-              </a>
-
-              <Link
-                href="/products"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                Explore Products
-                <ShoppingBag size={17} />
-              </Link>
-            </div>
+    <main className="min-h-screen bg-white text-slate-800">
+      {/* 1. Minimal Hero */}
+      <section className="border-b border-slate-100 bg-slate-50/70">
+        <div className="mx-auto max-w-7xl px-4 py-14 text-center sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+            <MessageCircle size={27} strokeWidth={1.8} />
           </div>
 
-          {/* Hero Highlights */}
-          <div className="mx-auto mt-14 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
+          <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-blue-600 sm:text-sm">
+            Contact UniTech
+          </p>
+
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+            How Can We Help You?
+          </h1>
+
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-500 sm:text-base">
+            Have a question about a product or order? Get in touch with our
+            team. We are here to help.
+          </p>
+
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            <a
+              href="#contact-form"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              Send a Message
+              <ArrowRight size={16} />
+            </a>
+
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:text-blue-600"
+            >
+              <ShoppingBag size={16} />
+              Explore Products
+            </Link>
+          </div>
+
+          {/* Small Support Highlights */}
+          <div className="mx-auto mt-10 grid max-w-3xl grid-cols-1 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             {[
               {
                 icon: Headphones,
@@ -236,17 +255,17 @@ export default function ContactPage() {
               return (
                 <div
                   key={item.title}
-                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm"
+                  className="flex items-center gap-3 px-5 py-4 text-left"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-blue-300">
-                    <Icon size={21} />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                    <Icon size={20} />
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-semibold text-white">
+                    <h3 className="text-sm font-semibold text-slate-800">
                       {item.title}
                     </h3>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-slate-500">
                       {item.description}
                     </p>
                   </div>
@@ -257,35 +276,35 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Contact Information */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-        <div className="mb-10 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
+      {/* 2. Contact Information */}
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+        <div className="mb-8">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
             Get In Touch
           </p>
 
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            We&apos;d Love to Hear From You
+          <h2 className="mt-3 text-2xl font-bold text-slate-900 sm:text-3xl">
+            Contact Information
           </h2>
 
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
+          <p className="mt-2 text-sm leading-6 text-slate-500">
             Choose a contact method that works best for you.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {contactMethods.map((method) => {
             const Icon = method.icon;
 
             const content = (
-              <div className="group h-full rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-200/50">
+              <div className="group h-full rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-blue-200 hover:shadow-md sm:p-6">
                 <div
-                  className={`flex h-14 w-14 items-center justify-center rounded-2xl ${method.color}`}
+                  className={`flex h-12 w-12 items-center justify-center rounded-xl ${method.color}`}
                 >
-                  <Icon size={25} />
+                  <Icon size={23} />
                 </div>
 
-                <h3 className="mt-5 text-lg font-bold text-slate-900">
+                <h3 className="mt-5 text-base font-bold text-slate-900">
                   {method.title}
                 </h3>
 
@@ -300,7 +319,7 @@ export default function ContactPage() {
 
                   {method.href && (
                     <ArrowRight
-                      size={18}
+                      size={17}
                       className="shrink-0 text-blue-600 transition group-hover:translate-x-1"
                     />
                   )}
@@ -324,27 +343,30 @@ export default function ContactPage() {
           })}
         </div>
 
-        <p className="mt-5 text-center text-xs leading-5 text-slate-400">
+        <p className="mt-4 text-xs text-slate-400">
           Replace the placeholder phone number and email with your actual
           customer support details before publishing.
         </p>
       </section>
 
-      {/* Contact Form and Side Panel */}
-      <section id="contact-form" className="border-y border-slate-200 bg-white">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 py-16 sm:px-6 lg:grid-cols-5 lg:gap-16 lg:px-8 lg:py-20">
+      {/* 3. Contact Form */}
+      <section
+        id="contact-form"
+        className="border-y border-slate-100 bg-slate-50/60"
+      >
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-5 lg:gap-10 lg:px-8">
           {/* Form */}
-          <div className="lg:col-span-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 lg:col-span-3">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
                 Contact Form
               </p>
 
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
+              <h2 className="mt-3 text-2xl font-bold text-slate-900 sm:text-3xl">
                 Send Us a Message
               </h2>
 
-              <p className="mt-4 text-sm leading-7 text-slate-500">
+              <p className="mt-2 text-sm leading-6 text-slate-500">
                 Fill out the form below with your question or concern.
               </p>
             </div>
@@ -373,10 +395,15 @@ export default function ContactPage() {
 
             <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
               {errors.submit && (
-                <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+                <p
+                  role="alert"
+                  className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                >
                   {errors.submit}
                 </p>
               )}
+
+              {/* Name & Email */}
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
                   <label
@@ -429,6 +456,7 @@ export default function ContactPage() {
                 </div>
               </div>
 
+              {/* Subject */}
               <div>
                 <label
                   htmlFor="subject"
@@ -466,6 +494,7 @@ export default function ContactPage() {
                 )}
               </div>
 
+              {/* Message */}
               <div>
                 <label
                   htmlFor="message"
@@ -501,12 +530,14 @@ export default function ContactPage() {
                 </div>
               </div>
 
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/20 sm:w-auto"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 {isSubmitting ? "Sending..." : "Send Message"}
+
                 <Send size={17} />
               </button>
 
@@ -517,60 +548,49 @@ export default function ContactPage() {
             </form>
           </div>
 
-          {/* Support Panel */}
+          {/* Support Information */}
           <aside className="lg:col-span-2">
-            <div className="h-full rounded-3xl bg-[#0B1739] p-7 text-white sm:p-8">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/20 text-blue-300">
-                <Headphones size={28} />
+            <div className="h-full rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                <Headphones size={25} />
               </div>
 
-              <h3 className="mt-6 text-2xl font-bold">
+              <h3 className="mt-5 text-xl font-bold text-slate-900">
                 Need Help with an Order?
               </h3>
 
-              <p className="mt-4 text-sm leading-7 text-slate-300">
+              <p className="mt-3 text-sm leading-7 text-slate-500">
                 Whether you have a question about an accessory or need help
                 understanding your order, start by checking your order details.
               </p>
 
               <Link
                 href="/my-orders"
-                className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3.5 text-sm font-semibold text-[#0B1739] transition hover:bg-blue-50"
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-700"
               >
                 View My Orders
                 <ArrowRight size={17} />
               </Link>
 
-              <div className="my-8 border-t border-white/10" />
+              <div className="my-7 border-t border-slate-100" />
 
-              <h4 className="text-base font-semibold">Before contacting us</h4>
+              <h4 className="text-sm font-bold text-slate-900">
+                Before contacting us
+              </h4>
 
               <div className="mt-5 space-y-5">
-                {[
-                  {
-                    title: "Order ID",
-                    description:
-                      "Keep your order number available if your question is about an order.",
-                  },
-                  {
-                    title: "Product Details",
-                    description:
-                      "Mention the product name and describe the issue clearly.",
-                  },
-                  {
-                    title: "Delivery Information",
-                    description:
-                      "Provide the relevant delivery details when requesting order assistance.",
-                  },
-                ].map((item, index) => (
+                {supportTips.map((item, index) => (
                   <div key={item.title} className="flex gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-sm font-semibold text-blue-300">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-bold text-blue-600">
                       {index + 1}
                     </div>
 
                     <div>
-                      <h5 className="text-sm font-semibold">{item.title}</h5>
-                      <p className="mt-1 text-xs leading-6 text-slate-400">
+                      <h5 className="text-sm font-semibold text-slate-800">
+                        {item.title}
+                      </h5>
+
+                      <p className="mt-1 text-xs leading-6 text-slate-500">
                         {item.description}
                       </p>
                     </div>
@@ -578,12 +598,12 @@ export default function ContactPage() {
                 ))}
               </div>
 
-              <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-sm font-semibold text-blue-300">
+              <div className="mt-7 rounded-xl border border-blue-100 bg-blue-50/70 p-4">
+                <p className="text-sm font-semibold text-blue-800">
                   Built for NSTU Students
                 </p>
 
-                <p className="mt-2 text-xs leading-6 text-slate-300">
+                <p className="mt-2 text-xs leading-6 text-slate-600">
                   UniTech aims to make finding and ordering mobile accessories
                   easier for the university community.
                 </p>
@@ -593,18 +613,18 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+      {/* 4. FAQ */}
+      <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
             FAQ
           </p>
 
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Frequently Asked Questions
           </h2>
 
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-500">
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-500">
             Find answers to common questions about shopping with UniTech.
           </p>
         </div>
@@ -616,10 +636,10 @@ export default function ContactPage() {
             return (
               <div
                 key={faq.question}
-                className={`overflow-hidden rounded-2xl border bg-white transition ${
+                className={`overflow-hidden rounded-xl border bg-white transition ${
                   isOpen
-                    ? "border-blue-200 shadow-sm shadow-blue-100/50"
-                    : "border-slate-200"
+                    ? "border-blue-200"
+                    : "border-slate-200 hover:border-slate-300"
                 }`}
               >
                 <button
@@ -634,7 +654,7 @@ export default function ContactPage() {
 
                   <ChevronDown
                     size={19}
-                    className={`shrink-0 text-slate-500 transition-transform ${
+                    className={`shrink-0 text-slate-400 transition-transform ${
                       isOpen ? "rotate-180 text-blue-600" : ""
                     }`}
                   />
@@ -659,7 +679,7 @@ export default function ContactPage() {
 
           <a
             href="#contact-form"
-            className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+            className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 transition hover:text-blue-700"
           >
             Send us a message
             <ArrowDown size={16} />
@@ -667,15 +687,15 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Bottom CTA */}
-      <section className="px-4 pb-16 sm:px-6 lg:px-8 lg:pb-20">
-        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 rounded-3xl bg-blue-600 p-7 sm:p-10 md:flex-row md:items-center">
+      {/* 5. Minimal Bottom CTA */}
+      <section className="px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-6 sm:p-8 md:flex-row md:items-center">
           <div>
-            <h2 className="text-2xl font-bold text-white sm:text-3xl">
+            <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
               Ready to Find Your Next Accessory?
             </h2>
 
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-blue-100">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
               Explore our collection of mobile accessories and find the products
               that fit your needs.
             </p>
@@ -683,7 +703,7 @@ export default function ContactPage() {
 
           <Link
             href="/products"
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-blue-700"
           >
             Shop Now
             <ArrowRight size={17} />
