@@ -1,6 +1,15 @@
+import { Suspense } from "react";
 import ProductsPageClient from "./ProductsPageClient";
 
-export default async function ProductsPage({ searchParams }) {
+export default function ProductsPage({ searchParams }) {
+  return (
+    <Suspense fallback={null}>
+      <ProductsContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function ProductsContent({ searchParams }) {
   const params = await searchParams;
 
   const search = Array.isArray(params?.search)
@@ -13,7 +22,6 @@ export default async function ProductsPage({ searchParams }) {
 
   return (
     <ProductsPageClient
-      key={`${search}-${category}`}
       initialSearch={search}
       initialCategory={category}
     />

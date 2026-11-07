@@ -117,7 +117,10 @@ export default function DealsPage() {
 }
 
 async function DealsProducts() {
-  const fetchProducts = await getProducts({ page: 1, limit: MAX_PRODUCTS })
+  const fetchProducts = await getProducts(
+    { page: 1, limit: MAX_PRODUCTS },
+    { next: { revalidate: 60 } },
+  );
 
   const products = fetchProducts?.data
     .filter(

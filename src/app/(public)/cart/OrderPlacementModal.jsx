@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import {
   X,
   MapPin,
@@ -595,11 +596,13 @@ export default function OrderPlacementModal({
                         key={item.id ?? item.productId ?? index}
                         className="flex gap-3"
                       >
-                        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white">
+                        <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white">
                           {item.image ? (
-                            <img
+                            <Image
                               src={item.image}
                               alt={item.name}
+                              width={64}
+                              height={64}
                               className="h-full w-full object-contain p-1"
                             />
                           ) : (

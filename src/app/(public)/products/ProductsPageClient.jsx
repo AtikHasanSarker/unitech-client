@@ -209,6 +209,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
   // -------------------------------------------
 
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [pagination, setPagination] = useState({
     totalPages: 0,
@@ -256,6 +257,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
     let active = true;
 
     const fetchProducts = async () => {
+      setLoading(true);
       try {
         const result = await getProducts({
           search,
@@ -303,6 +305,10 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
         setPagination({ totalPages: 0 });
 
         toast.error(error?.message || "Could not load products.");
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
@@ -405,6 +411,8 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
     setMobileFiltersOpen(false);
 
     if (value === category) return;
+
+    setCurrentPage(1);
 
     const params = new URLSearchParams(window.location.search);
 
@@ -626,7 +634,9 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
                 </h2>
 
                 <p className="mt-1 text-xs text-slate-500">
-                  Showing {visibleProducts.length} products
+                  {loading
+                    ? "Loading products..."
+                    : `Showing ${visibleProducts.length} products`}
                 </p>
               </div>
 
@@ -639,9 +649,20 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
               </button>
             </div>
 
-            {/* Products / Empty State */}
+            {/* Products / Loading Spinner / Empty State */}
 
-            {visibleProducts.length > 0 ? (
+            {loading ? (
+              <div className="flex min-h-[380px] flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-center">
+                <div className="relative flex h-12 w-12 items-center justify-center">
+                  <div className="absolute inset-0 rounded-full border-[3px] border-blue-100" />
+                  <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-transparent border-t-blue-600 border-r-blue-400" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-blue-600" />
+                </div>
+                <p className="mt-4 text-sm font-medium text-slate-500">
+                  Loading products...
+                </p>
+              </div>
+            ) : visibleProducts.length > 0 ? (
               <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
                 {visibleProducts.map((product) => (
                   <ProductCard
@@ -678,7 +699,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
 
             {/* Pagination */}
 
-            {filteredProducts.length > 0 && (
+            {!loading && filteredProducts.length > 0 && (
               <div className="mt-9 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 sm:flex-row">
                 <p className="text-xs text-slate-500">
                   Page {safePage} of {totalPages}

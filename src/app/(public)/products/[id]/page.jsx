@@ -132,33 +132,49 @@ export default function ProductDetailsPage() {
     if (await addToCart()) router.push("/cart");
   };
 
+  if (isLoading) {
+    return (
+      <main className="flex min-h-[65vh] items-center justify-center bg-[#f8fafc] px-5">
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="relative flex h-14 w-14 items-center justify-center">
+            <div className="absolute inset-0 rounded-full border-[3px] border-blue-100" />
+            <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-transparent border-t-blue-600 border-r-blue-400" />
+            <div className="h-3 w-3 rounded-full bg-blue-600" />
+          </div>
+          <p className="mt-5 text-sm font-semibold text-slate-700">
+            Loading product details...
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   if (!product) {
     return (
-      <>
-        <main className="flex min-h-[65vh] items-center justify-center bg-[#f8fafc] px-5">
-          <div className="max-w-md text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-              <Package size={34} />
-            </div>
-
-            <h1 className="mt-6 text-2xl font-bold text-slate-900">
-              {isLoading ? "Loading product..." : "Product not found"}
-            </h1>
-
-            <p className="mt-3 text-sm leading-6 text-slate-500">
-              {productError || "This product is not available. Try another product from the listing page."}
-            </p>
-
-            <Link
-              href="/products"
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
-            >
-              <ChevronLeft size={17} />
-              Back to Products
-            </Link>
+      <main className="flex min-h-[65vh] items-center justify-center bg-[#f8fafc] px-5">
+        <div className="max-w-md text-center">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+            <Package size={34} />
           </div>
-        </main>
-      </>
+
+          <h1 className="mt-6 text-2xl font-bold text-slate-900">
+            Product not found
+          </h1>
+
+          <p className="mt-3 text-sm leading-6 text-slate-500">
+            {productError ||
+              "This product is not available. Try another product from the listing page."}
+          </p>
+
+          <Link
+            href="/products"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+          >
+            <ChevronLeft size={17} />
+            Back to Products
+          </Link>
+        </div>
+      </main>
     );
   }
 

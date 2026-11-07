@@ -24,6 +24,7 @@ export default function NewArrivals() {
   const { items: cartItems, addItem } = useCart();
   const [products, setProducts] = useState([]);
   const [wishlist, setWishlist] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -47,6 +48,8 @@ export default function NewArrivals() {
       }
     }).catch(() => {
       if (active) toast.error("Could not connect to new products.");
+    }).finally(() => {
+      if (active) setIsLoading(false);
     });
     return () => {
       active = false;
@@ -107,7 +110,19 @@ export default function NewArrivals() {
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-          {products.map((product) => {
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="animate-pulse rounded-2xl border border-slate-100 bg-white p-3 sm:rounded-3xl sm:p-4"
+                >
+                  <div className="aspect-square w-full rounded-xl bg-slate-100 sm:rounded-2xl" />
+                  <div className="mt-4 h-4 w-3/4 rounded bg-slate-100" />
+                  <div className="mt-2 h-4 w-1/2 rounded bg-slate-100" />
+                  <div className="mt-4 h-10 w-full rounded-xl bg-slate-100" />
+                </div>
+              ))
+            : products.map((product) => {
             const isWishlisted = wishlist.includes(product.id);
             const isAdded = cartItems.some((item) => item.id === product.id);
 

@@ -21,8 +21,8 @@ const parseResponse = async (response) => {
   return response.ok ? payload : { ...payload, success: false, status: response.status };
 };
 
-export const serverFetch = async (api) => {
-  const response = await fetch(getApiUrl(api));
+export const serverFetch = async (api, options = {}) => {
+  const response = await fetch(getApiUrl(api), options);
   return parseResponse(response);
 };
 

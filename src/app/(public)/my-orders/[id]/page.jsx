@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import Navbar from "@/components/Navbar";
 import {
   ArrowLeft,
   Package,
@@ -453,8 +452,6 @@ export default function OrderDetailsPage() {
   if (!order) {
     return (
       <main className="min-h-screen bg-slate-50">
-        <Navbar />
-
         <div className="mx-auto flex max-w-xl flex-col items-center px-4 py-24 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
             <Package size={36} />
@@ -489,8 +486,6 @@ export default function OrderDetailsPage() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <Navbar />
-
       {/* Page Header */}
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8">

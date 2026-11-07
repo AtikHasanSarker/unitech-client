@@ -68,8 +68,8 @@ const categories = [
     icon: Speaker,
   },
   {
-    name: "TWS",
-    slug: "tws",
+    name: "Earbuds & TWS",
+    slug: "earbuds-tws",
     icon: Ear,
   },
   {

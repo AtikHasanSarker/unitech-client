@@ -71,10 +71,13 @@ async function TrendingProducts() {
   let response;
 
   try {
-    response = await getProducts({
-      page: 1,
-      limit: MAX_PRODUCTS,
-    });
+    response = await getProducts(
+      {
+        page: 1,
+        limit: MAX_PRODUCTS,
+      },
+      { next: { revalidate: 60 } },
+    );
   } catch (error) {
     console.error("Top trending products error:", error);
     return <ProductsError />;

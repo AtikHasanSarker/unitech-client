@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Navbar from "@/components/Navbar";
 import {
   Package,
   Search,
@@ -356,8 +355,6 @@ export default function MyOrdersPage() {
 
   return (
     <main className="min-h-screen bg-slate-50">
-      <Navbar />
-
       {/* Page Heading */}
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
