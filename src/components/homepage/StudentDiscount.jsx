@@ -44,7 +44,7 @@ export default function StudentDiscount() {
 
               {/* Description */}
               <p className="mt-4 max-w-md text-sm leading-6 text-slate-300 sm:text-base">
-                Quality Accessories. Better Student Life.
+                Quality Accessories. Better Student Life. {" "}
                 <br className="hidden sm:block" />
                 Discover great deals on your everyday tech essentials.
               </p>

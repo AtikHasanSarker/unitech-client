@@ -20,14 +20,14 @@ const contactMethods = [
     icon: Phone,
     title: "Call Us",
     description: "Speak directly with our support team.",
-    value: "Add your phone number",
+    value: "+8801604498384",
     color: "text-blue-600 bg-blue-50",
   },
   {
     icon: Mail,
     title: "Email Us",
     description: "Send us your questions anytime.",
-    value: "Add your support email",
+    value: "unitech24@gmail.com",
     color: "text-violet-600 bg-violet-50",
   },
   {

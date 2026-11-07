@@ -56,7 +56,7 @@ export default function Footer() {
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
         {/* Main Footer */}
-        <div className="grid grid-cols-2 gap-12 py-6 sm:py-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-10">
+        <div className="grid grid-cols-2 gap-8 sm:gap-12 py-6 sm:py-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-10">
           {/* Brand Information */}
           <div className="col-span-2 lg:col-span-4">
             <Link
@@ -103,7 +103,7 @@ export default function Footer() {
                 {title}
               </h3>
 
-              <ul className="mt-6 space-y-4">
+              <ul className="mt-4 space-y-3">
                 {links.map((link) => (
                   <li key={link.label}>
                     <Link
@@ -129,28 +129,36 @@ export default function Footer() {
               Get in Touch
             </h3>
 
-            <div className="mt-6 space-y-5">
+            <div className="mt-4 space-y-3">
               {/* Phone */}
               <a
                 href="tel:+8801604498384"
-                className="group flex items-center gap-3 text-sm text-slate-300 transition-colors hover:text-blue-400"
+                className="group flex items-center gap-3 text-xs text-slate-300 transition-colors hover:text-blue-400"
               >
-                <Phone size={19} className="shrink-0 text-blue-400" />
+                <Phone size={18} className="shrink-0 text-blue-400" />
                 <span>+8801604498384</span>
+              </a>
+
+              <a
+                href="tel:+8801610868752"
+                className="group flex items-center gap-3 text-xs text-slate-300 transition-colors hover:text-blue-400"
+              >
+                <Phone size={18} className="shrink-0 text-blue-400" />
+                <span>+8801610868752</span>
               </a>
 
               {/* Email */}
               <a
                 href="mailto:unitech24@gmail.com"
-                className="group flex items-center gap-3 text-sm text-slate-300 transition-colors hover:text-blue-400"
+                className="group flex items-center gap-2 text-xs text-slate-300 transition-colors hover:text-blue-400"
               >
-                <Mail size={19} className="shrink-0 text-blue-400" />
+                <Mail size={18} className="shrink-0 text-blue-400" />
                 <span>unitech24@gmail.com</span>
               </a>
 
               {/* Location */}
-              <div className="flex items-center gap-3 text-sm text-slate-300">
-                <MapPin size={19} className="shrink-0 text-blue-400" />
+              <div className="flex items-center gap-3 text-xs text-slate-300">
+                <MapPin size={18} className="shrink-0 text-blue-400" />
                 <span>Noakhali, Bangladesh</span>
               </div>
             </div>
@@ -159,11 +167,11 @@ export default function Footer() {
 
         {/* Bottom Footer */}
         <div className="flex flex-col mb-15 sm:mb-1 gap-3 border-t border-white/[0.08] py-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-center text-xs text-slate-400 sm:text-left">
+          <p className="text-center text-[10px] text-slate-400 sm:text-left">
             ©2026 UniTech | All Rights Reserved.
           </p>
 
-          <div className="flex text-slate-300 text-sm justify-center sm:justify-end">
+          <div className="flex text-slate-300 text-xs justify-center sm:justify-end">
             Design & Developed by{" "}
             <Link
               href="https://atikhasan-dev.vercel.app"
