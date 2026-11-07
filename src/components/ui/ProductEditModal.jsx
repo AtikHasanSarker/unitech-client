@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 import {
   X,
@@ -55,8 +55,7 @@ function SectionHeading({ icon, title }) {
 
 function normalizeStatus(status) {
   const value = String(status || "active").toLowerCase();
-  if (value === "inactive") return "inactive";
-  if (value === "draft") return "draft";
+  if (value === "draft" || value === "inactive") return "draft";
   return "active";
 }
 
@@ -248,7 +247,7 @@ export default function ProductEditModal({
       features: cleanedFeatures,
       specifications: cleanedSpecifications,
       warranty: form.warranty.trim(),
-      status: form.status,
+      status: form.status === "draft" ? "Draft" : "Active",
       images: form.image.trim() ? [form.image.trim()] : [],
     };
 
@@ -592,8 +591,8 @@ export default function ProductEditModal({
                     onChange={handleFormChange}
                     className={inputClass}
                   >
-                    <option value="Active">Active</option>
-                    <option value="Draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="draft">Draft</option>
                   </select>
                 </FormField>
               </div>

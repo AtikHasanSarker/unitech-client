@@ -69,6 +69,7 @@ export default function Footer() {
                   src="/logo.png"
                   alt="UniTech logo"
                   fill
+                  sizes="(max-width: 768px) 150px, 200px"
                   className="object-contain"
                 />
               </div>

@@ -384,7 +384,6 @@ export default function AdminProductsPage() {
               <thead>
                 <tr className="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500">
                   <th className="px-5 py-3.5 font-semibold">Product</th>
-                  <th className="px-5 py-3.5 font-semibold">SKU</th>
                   <th className="px-5 py-3.5 font-semibold">Category</th>
                   <th className="px-5 py-3.5 font-semibold">Price</th>
                   <th className="px-5 py-3.5 font-semibold">Stock</th>
@@ -397,7 +396,7 @@ export default function AdminProductsPage() {
 
               <tbody className="divide-y divide-slate-100">
                 {filteredProducts.map((product) => {
-                  const threshold = Number(product.lowStockThreshold ?? 5);
+                  const threshold = Number(product.lowStockThreshold ?? 2);
 
                   return (
                     <tr
@@ -416,9 +415,6 @@ export default function AdminProductsPage() {
                             </p>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-5 py-4 text-sm text-slate-500">
-                        {product.sku}
                       </td>
                       <td className="px-5 py-4 text-sm text-slate-600">
                         {product.category || "—"}
@@ -611,7 +607,7 @@ function ProductThumbnail({ product }) {
       <Image
         width={48}
         height={48}
-        src={product.image}
+        src={product?.image}
         alt={product.name || "Product"}
         className="h-12 w-12 rounded-xl border border-slate-100 object-cover"
         onError={(event) => {

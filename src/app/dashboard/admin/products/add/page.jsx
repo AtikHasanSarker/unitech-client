@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -35,6 +35,7 @@ const initialForm = {
   stock: "",
   lowStockThreshold: "2",
   warranty: "",
+  status: "Active", // Default status
 };
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -59,17 +60,19 @@ export default function AddProductPage() {
   const [specifications, setSpecifications] = useState([
     { key: "", value: "" },
   ]);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
+  const [selectedImages, setSelectedImages] = useState([]);
+  const selectedImagesRef = useRef([]);
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
   useEffect(() => {
     return () => {
-      if (imagePreview) URL.revokeObjectURL(imagePreview);
+      selectedImagesRef.current.forEach(({ previewUrl }) =>
+        URL.revokeObjectURL(previewUrl),
+      );
     };
-  }, [imagePreview]);
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -111,46 +114,56 @@ export default function AddProductPage() {
   };
 
   const handleImageChange = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
 
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      setMessage({
-        type: "error",
-        text: "Please select a JPG, PNG, WEBP, or GIF image.",
-      });
-      event.target.value = "";
-      return;
-    }
+    const validImages = [];
+    const invalidFiles = [];
 
-    if (file.size > MAX_IMAGE_SIZE) {
-      setMessage({
-        type: "error",
-        text: "Image size must be 5 MB or less.",
-      });
-      event.target.value = "";
-      return;
-    }
+    files.forEach((file) => {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        invalidFiles.push(`${file.name}: unsupported format`);
+      } else if (file.size > MAX_IMAGE_SIZE) {
+        invalidFiles.push(`${file.name}: larger than 5 MB`);
+      } else {
+        validImages.push({ file, previewUrl: URL.createObjectURL(file) });
+      }
+    });
 
-    setSelectedImage(file);
-    setImagePreview(URL.createObjectURL(file));
-    setMessage({ type: "", text: "" });
+    const nextImages = [...selectedImagesRef.current, ...validImages];
+    selectedImagesRef.current = nextImages;
+    setSelectedImages(nextImages);
+    setMessage(
+      invalidFiles.length
+        ? {
+            type: "error",
+            text: `Some images were not added: ${invalidFiles.join(", ")}.`,
+          }
+        : { type: "", text: "" },
+    );
+    event.target.value = "";
   };
 
-  const removeImage = () => {
-    setSelectedImage(null);
-    setImagePreview("");
+  const removeImage = (index) => {
+    const removedImage = selectedImagesRef.current[index];
+    if (removedImage) URL.revokeObjectURL(removedImage.previewUrl);
+    const nextImages = selectedImagesRef.current.filter((_, i) => i !== index);
+    selectedImagesRef.current = nextImages;
+    setSelectedImages(nextImages);
 
     const input = document.getElementById("imageFile");
-    if (input) input.value = "";
+    if (input && !nextImages.length) input.value = "";
   };
 
   const resetForm = () => {
     setForm(initialForm);
     setFeatures([""]);
     setSpecifications([{ key: "", value: "" }]);
-    setSelectedImage(null);
-    setImagePreview("");
+    selectedImagesRef.current.forEach(({ previewUrl }) =>
+      URL.revokeObjectURL(previewUrl),
+    );
+    selectedImagesRef.current = [];
+    setSelectedImages([]);
     setMessage({ type: "", text: "" });
 
     const input = document.getElementById("imageFile");
@@ -264,11 +277,13 @@ export default function AddProductPage() {
     setLoading(true);
 
     try {
-      let imageUrl = "";
+      let imageUrls = [];
 
-      if (selectedImage) {
+      if (selectedImages.length) {
         setImageUploading(true);
-        imageUrl = await uploadImage(selectedImage);
+        imageUrls = await Promise.all(
+          selectedImages.map(({ file }) => uploadImage(file)),
+        );
         setImageUploading(false);
       }
 
@@ -287,7 +302,8 @@ export default function AddProductPage() {
         features: cleanedFeatures,
         specifications: cleanedSpecifications,
         warranty: form.warranty.trim(),
-        images: imageUrl ? [imageUrl] : [],
+        images: imageUrls,
+        status: form.status,
       };
 
       const result = await addProduct(payload);
@@ -742,31 +758,38 @@ export default function AddProductPage() {
               <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="mb-5">
                   <h2 className="font-semibold text-slate-900">
-                    Product Image
+                    Product Images
                   </h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    Select an image from your computer.
+                    Select one or more images from your computer.
                   </p>
                 </div>
 
                 <div className="mb-4 flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50">
-                  {imagePreview ? (
-                    <div className="relative flex h-full w-full items-center justify-center">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={imagePreview}
-                        alt={form.name || "Product preview"}
-                        className="h-full w-full object-contain p-4"
-                      />
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        disabled={loading}
-                        aria-label="Remove product image"
-                        className="absolute right-3 top-3 rounded-lg bg-white p-2 text-slate-500 shadow-sm transition hover:text-red-600 disabled:opacity-50"
-                      >
-                        <X size={16} />
-                      </button>
+                  {selectedImages.length ? (
+                    <div className="grid h-full w-full grid-cols-2 gap-3 overflow-y-auto p-3">
+                      {selectedImages.map(({ file, previewUrl }, index) => (
+                        <div
+                          key={`${file.name}-${file.lastModified}-${index}`}
+                          className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-white"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={previewUrl}
+                            alt={`${form.name || "Product"} image ${index + 1}`}
+                            className="h-full w-full object-contain p-2"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            disabled={loading}
+                            aria-label={`Remove ${file.name}`}
+                            className="absolute right-2 top-2 rounded-lg bg-white p-2 text-slate-500 shadow-sm transition hover:text-red-600 disabled:opacity-50"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   ) : (
                     <div className="px-4 text-center">
@@ -783,37 +806,50 @@ export default function AddProductPage() {
                   )}
                 </div>
 
-                <label htmlFor="imageFile" className={labelClass}>
-                  Upload Image
-                </label>
                 <input
                   id="imageFile"
                   type="file"
+                  multiple
                   accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
                   onChange={handleImageChange}
                   disabled={loading}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:font-medium file:text-blue-600 disabled:opacity-60"
+                  className="peer sr-only"
                 />
+                <label
+                  htmlFor="imageFile"
+                  className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-blue-600"
+                >
+                  <ImagePlus size={17} />
+                  Choose images
+                </label>
                 <p className="mt-2 text-xs leading-5 text-slate-400">
-                  Supported formats: JPG, JPEG, PNG, WEBP, GIF. Maximum size: 5
-                  MB.
+                  Select multiple files at once. JPG, JPEG, PNG, WEBP, or GIF;
+                  maximum 5 MB each.
                 </p>
 
-                {selectedImage && (
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    <p className="truncate text-sm text-slate-600">
-                      {selectedImage.name}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      disabled={loading}
-                      className="shrink-0 text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
-                    >
-                      Remove
-                    </button>
-                  </div>
+                {selectedImages.length > 0 && (
+                  <p className="mt-3 text-sm text-slate-600">
+                    {selectedImages.length} image
+                    {selectedImages.length === 1 ? "" : "s"} selected
+                  </p>
                 )}
+              </section>
+
+              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <label htmlFor="status" className={labelClass}>
+                  Product Status
+                </label>
+                <select
+                  id="status"
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                  disabled={loading}
+                  className={inputClass}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Draft">Draft</option>
+                </select>
               </section>
 
               <section className="rounded-2xl border border-blue-100 bg-blue-50/70 p-5">

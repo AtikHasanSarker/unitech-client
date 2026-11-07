@@ -87,7 +87,7 @@ export default function ProductDetailsPage() {
               .map((item) => ({
                 ...item,
                 id: item._id,
-                image: item.images?.[0] || "/favicon.ico",
+                image: item.images?.[0],
               })),
           );
         }
@@ -275,6 +275,7 @@ export default function ProductDetailsPage() {
                       src={image}
                       alt={`${product.name} view ${index + 1}`}
                       fill
+                      loading="eager"
                       sizes="(max-width: 640px) 25vw, 150px"
                       className="object-contain p-2"
                     />
