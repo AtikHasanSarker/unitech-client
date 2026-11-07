@@ -55,11 +55,11 @@ function FilterSidebar({
   resetFilters,
 }) {
   return (
-    <div className="space-y-7">
+    <div className="space-y-5">
       {/* Categories */}
 
       <div>
-        <div className="mb-5 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="text-base font-bold text-slate-900">Filters</h2>
 
           <button
@@ -95,10 +95,10 @@ function FilterSidebar({
 
       {/* Maximum Price */}
 
-      <div className="border-t border-slate-100 pt-6">
+      <div className="border-t border-slate-100 pt-4">
         <SectionTitle>Maximum Price</SectionTitle>
 
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between">
           <span className="text-xs text-slate-500">Price range</span>
 
           <span className="text-sm font-bold text-slate-800">
@@ -125,21 +125,21 @@ function FilterSidebar({
 
       {/* Customer Rating */}
 
-      <div className="border-t border-slate-100 pt-6">
+      <div className="border-t border-slate-100 pt-4">
         <SectionTitle>Customer Rating</SectionTitle>
 
         <div className="space-y-3">
           {[4, 3, 2, 0].map((rating) => (
             <label
               key={rating}
-              className="flex cursor-pointer items-center gap-2.5 text-sm text-slate-600"
+              className="flex cursor-pointer items-center gap-2 text-sm text-slate-600"
             >
               <input
                 type="radio"
                 name="rating"
                 checked={minRating === rating}
                 onChange={() => setMinRating(rating)}
-                className="accent-blue-600"
+                className="accent-blue-600 cursor-pointer"
               />
 
               {rating === 0 ? (
@@ -157,8 +157,8 @@ function FilterSidebar({
 
       {/* Stock Filter */}
 
-      <div className="border-t border-slate-100 pt-6">
-        <label className="flex cursor-pointer items-center gap-3 text-sm text-slate-700">
+      <div className="border-t border-slate-100 pt-4">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
           <input
             type="checkbox"
             checked={inStockOnly}
@@ -171,19 +171,19 @@ function FilterSidebar({
 
       {/* Student Shopping */}
 
-      <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4">
-        <div className="flex items-center gap-2 text-sm font-bold text-slate-800">
+      <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
           <GraduationCapIcon />
-          Student-friendly shopping
+          Student-Friendly Shopping
         </div>
 
-        <p className="mt-2 text-xs leading-5 text-slate-500">
+        <p className="mt-2 text-[10px] text-slate-500">
           Explore accessories for everyday campus life.
         </p>
 
         <Link
           href="/deals?audience=nstu-students"
-          className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-800"
+          className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-800"
         >
           Student deals <ChevronRight size={14} />
         </Link>
@@ -192,10 +192,6 @@ function FilterSidebar({
   );
 }
 
-// ---------------------------------------------
-// Products Page Client
-// ---------------------------------------------
-
 export default function ProductsPageClient({ initialSearch, initialCategory }) {
   const router = useRouter();
   const productListingRef = useRef(null);
@@ -203,10 +199,6 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
   // URL values come from the Server Component.
   const search = initialSearch.trim();
   const category = initialCategory || "All";
-
-  // -------------------------------------------
-  // States
-  // -------------------------------------------
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -227,10 +219,6 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [wishListed, setWishListed] = useState([]);
 
-  // -------------------------------------------
-  // Scroll to Product Listing
-  // -------------------------------------------
-
   const scrollToProductListing = () => {
     requestAnimationFrame(() => {
       productListingRef.current?.scrollIntoView({
@@ -240,19 +228,12 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
     });
   };
 
-  // -------------------------------------------
-  // Selected Category Name
-  // -------------------------------------------
-
   const selectedCategoryName =
     categoryOptions.find(
       (item) => item.name === category || item._id === category,
     )?.name || "";
-
-  // -------------------------------------------
+ 
   // Fetch Products
-  // -------------------------------------------
-
   useEffect(() => {
     let active = true;
 
@@ -270,7 +251,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
                 ? "price_desc"
                 : "newest",
           page: currentPage,
-          limit: 8,
+          limit: 12,
         });
 
         // Ignore outdated requests.
@@ -318,10 +299,6 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
       active = false;
     };
   }, [search, category, maxPrice, sort, currentPage]);
-
-  // -------------------------------------------
-  // Fetch Categories and Wishlist
-  // -------------------------------------------
 
   useEffect(() => {
     let active = true;
@@ -403,10 +380,6 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
   const safePage = Math.min(currentPage, totalPages);
   const visibleProducts = filteredProducts;
 
-  // -------------------------------------------
-  // Update Category
-  // -------------------------------------------
-
   const updateCategory = (value) => {
     setMobileFiltersOpen(false);
 
@@ -423,18 +396,10 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
     }
 
     const query = params.toString();
-
-    // URL updates immediately.
-    // The Server Component receives the new query
-    // and sends the updated values back to this component.
     router.replace(query ? `/products?${query}` : "/products", {
       scroll: false,
     });
   };
-
-  // -------------------------------------------
-  // Reset Filters
-  // -------------------------------------------
 
   const resetFilters = () => {
     setSort("featured");
@@ -448,10 +413,6 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
       scroll: false,
     });
   };
-
-  // -------------------------------------------
-  // Wishlist
-  // -------------------------------------------
 
   const toggleWishlist = async (id) => {
     try {
@@ -475,9 +436,6 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
     }
   };
 
-  // -------------------------------------------
-  // Render
-  // -------------------------------------------
 
   return (
     <main className="min-h-screen bg-[#f8fafc] text-slate-900">
@@ -714,7 +672,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
                     }}
                     disabled={safePage === 1}
                     aria-label="Previous page"
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-10 w-10 items-center cursor-pointer justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <ChevronLeft size={18} />
                   </button>
@@ -728,7 +686,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
                           scrollToProductListing();
                         }}
                         aria-current={safePage === page ? "page" : undefined}
-                        className={`h-10 min-w-10 rounded-xl px-3 text-sm font-semibold transition ${
+                        className={`h-10 min-w-10 rounded-xl px-3 cursor-pointer text-sm font-semibold transition ${
                           safePage === page
                             ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
                             : "border border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-600"
@@ -747,7 +705,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
                     }}
                     disabled={safePage === totalPages}
                     aria-label="Next page"
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-10 w-10 items-center cursor-pointer justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <ChevronRight size={18} />
                   </button>

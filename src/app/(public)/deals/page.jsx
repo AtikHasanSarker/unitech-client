@@ -44,14 +44,14 @@ export default function DealsPage() {
               Exclusive Deals for NSTU Students
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
-              Enjoy an exclusive 10% discount on every product. Upgrade your
+              Enjoy an exclusive 5% discount on every product. Upgrade your
               everyday tech for less!
             </p>
 
             <div className="mt-7 inline-flex items-center gap-3 rounded-xl bg-blue-600 px-4 py-3 text-white shadow-sm shadow-blue-600/20">
               <BadgePercent size={27} strokeWidth={1.8} aria-hidden="true" />
               <div>
-                <p className="text-xl font-extrabold leading-none">10% OFF</p>
+                <p className="text-xl font-extrabold leading-none">5% OFF</p>
                 <p className="mt-1 text-xs font-medium text-blue-100">
                   On every product
                 </p>
@@ -88,9 +88,9 @@ export default function DealsPage() {
                 NSTU Student Deals
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                Explore our exclusive collection and save 10% on every purchase.
+                Explore our exclusive collection and save 5% on every purchase.
               </p>
-            </div>
+            </div>    
           </div>
 
             <DealsProducts />
@@ -105,7 +105,7 @@ export default function DealsPage() {
               A little more room in your student budget
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">
-              Every product in this collection is shown with a flat 10% discount
+              Every product in this collection is shown with a flat 5% discount
               from its current listed price. The discount is calculated for display;
               the original product price remains unchanged.
             </p>
@@ -158,7 +158,7 @@ async function DealsProducts() {
     <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
       {products.map((product) => {
         const originalPrice = Number(product.price);
-        const discountedPrice = Math.round(originalPrice * 0.9);
+        const discountedPrice = Math.round(originalPrice * 0.95);
         const imageUrl = Array.isArray(product.images)
           ? product.images[0]
           : null;
@@ -188,7 +188,7 @@ async function DealsProducts() {
                   </div>
                 )}
                 <span className="absolute left-2 top-2 rounded-md bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white shadow-sm sm:left-3 sm:top-3 sm:text-xs">
-                  10% OFF
+                  5% OFF
                 </span>
               </div>
 

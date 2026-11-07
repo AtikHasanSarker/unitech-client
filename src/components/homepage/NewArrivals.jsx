@@ -252,7 +252,7 @@ export default function NewArrivals() {
         <div className="mt-7 flex justify-center sm:hidden">
           <Button
             as={Link}
-            href="/products?sort=newest"
+            href="/products"
             variant="outline"
             className="rounded-full border-slate-200 bg-white px-6 text-sm font-medium text-slate-700"
           >
