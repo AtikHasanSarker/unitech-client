@@ -1,17 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Flame, ImageOff, PackageSearch } from "lucide-react";
-
+import { ArrowRight, Flame, PackageSearch } from "lucide-react";
 import { getProducts } from "@/lib/api/product";
-import ActionButton from "@/components/ui/ActionButton";
 import ProductCard from "@/components/ui/ProductCard";
 
 const MAX_PRODUCTS = 10;
-
-const formatPrice = (value) =>
-  `৳${Number(value).toLocaleString("en-BD", {
-    maximumFractionDigits: 2,
-  })}`;
 
 export default function TopTrendingPage() {
   return (
@@ -36,7 +28,7 @@ export default function TopTrendingPage() {
         <section className="relative mt-14 rounded-2xl border border-blue-200 px-3 pb-6 pt-10 sm:px-5 sm:pb-8 sm:pt-12 lg:px-9">
           {/* Section Title */}
           <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-            <div className="flex min-w-[230px] items-center justify-center gap-2 whitespace-nowrap rounded-full border-2 border-white bg-blue-600 px-6 py-3 text-white shadow-md sm:min-w-[300px] sm:px-10 sm:py-3.5">
+            <div className="flex min-w-57 items-center justify-center gap-2 whitespace-nowrap rounded-full border-2 border-white bg-blue-600 px-6 py-3 text-white shadow-md sm:min-w-[300px] sm:px-10 sm:py-3.5">
               <Flame size={21} />
               <h1 className="text-lg font-bold sm:text-2xl">
                 Top Trending Gadgets
@@ -92,8 +84,7 @@ async function TrendingProducts() {
     return <ProductsError />;
   }
 
-  const products = response.data
-    .filter(
+  const products = response.data.filter(
       (product) =>
         product?._id &&
         product.name &&

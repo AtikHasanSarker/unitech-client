@@ -22,7 +22,7 @@ const parseResponse = async (response) => {
 };
 
 export const serverFetch = async (api) => {
-  const response = await fetch(getApiUrl(api), { cache: "no-store" });
+  const response = await fetch(getApiUrl(api));
   return parseResponse(response);
 };
 
