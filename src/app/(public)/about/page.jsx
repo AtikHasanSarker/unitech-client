@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import {
   ArrowRight,
   CheckCircle2,
@@ -13,7 +14,11 @@ import {
   Headphones,
   Cable,
   BatteryCharging,
+  Users,
+  Mail,
+  BriefcaseBusiness,
 } from "lucide-react";
+import Image from "next/image";
 
 const values = [
   {
@@ -53,15 +58,138 @@ const highlights = [
   "A simple ordering experience",
 ];
 
+const founders = [
+  {
+    name: "Atik Hasan Sarker",
+    image: "/images/founder/Atik.jpeg",
+    department: "ISLM / NSTU",
+    responsibility: "Product, Operations & Technology",
+    description:
+      "Responsible for product planning, operations, technology, and overall business development.",
+    avatarColor: "from-blue-100 to-indigo-100",
+    textColor: "text-blue-700",
+  },
+  {
+    name: "Fardin Rahman",
+    image: "/images/founder/Fardin.png",
+    department: "ISLM / NSTU",
+    responsibility: "Business, Marketing & Partnerships",
+    description:
+      "Responsible for business strategy, marketing, customer relationships, and partnership development.",
+    avatarColor: "from-indigo-100 to-blue-100",
+    textColor: "text-indigo-700",
+  },
+];
+
 export default function AboutPage() {
   return (
     <main className="min-h-screen overflow-hidden bg-white text-slate-800">
+      {/* 5. Meet the Founders */}
+      <section className="border-t border-slate-100 bg-slate-50/70 py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Section Heading */}
+          <div className="mx-auto max-w-4xl text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm">
+              <Users size={17} />
+              The People Behind UniTech
+            </div>
+
+            <h2 className="mt-5 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              Meet Our Founders
+            </h2>
+
+            <p className="mt-4 text-sm leading-7 text-slate-500 sm:text-base">
+              UniTech is built through the shared vision, dedication, and
+              collaboration of two co-founders.
+            </p>
+          </div>
+
+          {/* Founder Cards */}
+          <div className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-2">
+            {founders.map((founder) => (
+              <article
+                key={founder.name}
+                className="group rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-900/5 sm:p-7"
+              >
+                <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
+                  {/* Profile Image Placeholder */}
+                  <div
+                    className={`flex h-36 w-36 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br ${founder.avatarColor} text-4xl font-bold ${founder.textColor}`}
+                  >
+                    <Image
+                      width={144}
+                      height={144}
+                      src={founder.image}
+                      alt="Founder-Image"
+                    />
+                  </div>
+
+                  {/* Founder Information */}
+                  <div className="min-w-0 flex-1 text-center sm:text-left">
+                    <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+                      Co-Founder
+                    </span>
+
+                    <h3 className="mt-3 text-xl font-bold text-slate-900">
+                      {founder.name}
+                    </h3>
+
+                    <div className="mt-4 space-y-3 text-sm text-slate-500">
+                      <div className="flex items-center justify-center gap-2 sm:justify-start">
+                        <GraduationCap
+                          size={17}
+                          className="shrink-0 text-blue-600"
+                        />
+                        <span>{founder.department}</span>
+                      </div>
+
+                      <div className="flex items-start justify-center gap-2 sm:justify-start">
+                        <BriefcaseBusiness
+                          size={17}
+                          className="mt-0.5 shrink-0 text-blue-600"
+                        />
+                        <span>{founder.responsibility}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 border-t border-slate-100 pt-5">
+                  <p className="text-sm leading-7 text-slate-500">
+                    {founder.description}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {/* Shared Mission */}
+          <div className="mx-auto mt-8 flex max-w-5xl flex-col items-center gap-4 rounded-2xl border border-blue-100 bg-blue-50/70 p-6 text-center sm:flex-row sm:text-left">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm">
+              <Users size={27} />
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">
+                Our Shared Mission
+              </h3>
+
+              <p className="mt-2 text-sm leading-7 text-slate-600">
+                To build a trusted, student-friendly tech store that makes
+                quality mobile accessories more accessible, affordable, and
+                convenient for everyone.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 1. Hero Section */}
       <section className="relative overflow-hidden bg-linear-to-br from-blue-50 via-white to-indigo-50">
         <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-indigo-200/30 blur-3xl" />
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:px-8 lg:py-24">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:px-8">
           {/* Hero Content */}
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm">
@@ -106,9 +234,11 @@ export default function AboutPage() {
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
                     Welcome to
                   </p>
+
                   <h2 className="mt-2 text-3xl font-bold text-slate-900">
                     Uni<span className="text-blue-600">Tech</span>
                   </h2>
+
                   <p className="mt-1 text-xs text-slate-500">
                     Your Campus Tech Store
                   </p>
@@ -168,6 +298,7 @@ export default function AboutPage() {
                   <p className="text-sm font-bold text-slate-800">
                     Technology Made Convenient
                   </p>
+
                   <p className="mt-1 text-xs text-slate-500">
                     Discover, choose, and order with ease.
                   </p>
@@ -176,19 +307,18 @@ export default function AboutPage() {
             </div>
 
             {/* Floating Labels */}
-            <div className="absolute right-0 -top-6 hidden items-center gap-2 rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-lg sm:flex">
+            <div className="absolute -right-0 -top-6 hidden items-center gap-2 rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-lg sm:flex">
               <CheckCircle2 size={19} className="text-emerald-500" />
               <span className="text-xs font-semibold text-slate-700">
                 Student Focused
               </span>
             </div>
-
           </div>
         </div>
       </section>
 
       {/* 2. Our Story */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
           {/* Story Content */}
           <div>
@@ -264,6 +394,7 @@ export default function AboutPage() {
                 <p className="text-sm font-bold text-blue-900">
                   Our Philosophy
                 </p>
+
                 <p className="mt-2 text-sm leading-7 text-slate-600">
                   Useful technology, a convenient experience, and a focus on the
                   people who use it every day.
@@ -275,7 +406,7 @@ export default function AboutPage() {
       </section>
 
       {/* 3. Mission & Vision */}
-      <section className="border-y border-slate-100 bg-slate-50/70 py-16 sm:py-20">
+      <section className="border-y border-slate-100 bg-slate-50/70 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600">

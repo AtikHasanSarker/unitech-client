@@ -185,10 +185,6 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   };
 
-  // ============================================
-  // MOBILE MENU HANDLERS
-  // ============================================
-
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
     setMobileActiveTab("menu");
@@ -199,10 +195,6 @@ export default function Navbar() {
     setMobileActiveTab("menu");
   };
 
-  // ============================================
-  // ACTIVE ROUTE CHECK
-  // ============================================
-
   const isActiveRoute = (href) => {
     const route = href.split("?")[0];
 
@@ -212,10 +204,6 @@ export default function Navbar() {
 
     return pathname === route || pathname.startsWith(`${route}/`);
   };
-
-  // ============================================
-  // MAIN UI
-  // ============================================
 
   return (
     <>

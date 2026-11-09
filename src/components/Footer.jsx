@@ -5,14 +5,13 @@ import {
   Mail,
   Phone,
   ArrowUpRight,
-  ArrowRight,
 } from "lucide-react";
-import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaWhatsapp, FaYoutube } from "react-icons/fa";
 
 const footerLinks = {
   Shop: [
     { label: "All Products", href: "/products" },
-    { label: "Categories", href: "/categories" },
+    { label: "Top Trending", href: "/trending" },
     { label: "Special Deals", href: "/deals" },
     { label: "New Arrivals", href: "/products?sort=newest" },
   ],
@@ -33,8 +32,13 @@ const footerLinks = {
 const socialLinks = [
   {
     icon: FaFacebook,
-    href: "#",
+    href: "https://www.facebook.com/unitechfa",
     label: "Facebook",
+  },
+  {
+    icon: FaWhatsapp,
+    href: "https://wa.me/+8801604498384",
+    label: "Whatsapp",
   },
   {
     icon: FaInstagram,
@@ -62,7 +66,7 @@ export default function Footer() {
             <Link
               href="/"
               aria-label="UniTech homepage"
-              className="inline-flex items-center gap-3"
+              className="inline-flex items-center gap-2"
             >
               <div className="relative h-20 w-50 shrink-0 overflow-hidden rounded-xl">
                 <Image
@@ -75,14 +79,14 @@ export default function Footer() {
               </div>
             </Link>
 
-            <p className="max-w-sm text-sm leading-5 text-slate-300">
+            <p className="max-w-sm text-sm text-slate-300">
               Your trusted destination for quality mobile accessories. Discover
               useful gadgets, explore great deals, and upgrade your everyday
               tech experience with UniTech.
             </p>
 
             {/* Social Links */}
-            <div className="mt-6 flex items-center gap-3">
+            <div className="mt-5 flex items-center gap-3">
               {socialLinks.map(({ icon: Icon, href, label }) => (
                 <a
                   key={label}
@@ -98,7 +102,7 @@ export default function Footer() {
 
           {/* Footer Link Groups */}
           {Object.entries(footerLinks).map(([title, links]) => (
-            <div key={title} className="lg:col-span-2">
+            <div key={title} className="lg:col-span-2 mt-3 sm:mt-0">
               <h3 className="text-sm font-semibold tracking-wide text-white">
                 {title}
               </h3>
@@ -124,7 +128,7 @@ export default function Footer() {
           ))}
 
           {/* Contact Card */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 mt-3 sm:mt-0">
             <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-white">
               Get in Touch
             </h3>
@@ -133,7 +137,7 @@ export default function Footer() {
               {/* Phone */}
               <a
                 href="tel:+8801604498384"
-                className="group flex items-center gap-3 text-xs text-slate-300 transition-colors hover:text-blue-400"
+                className="group flex items-center gap-2 text-xs text-slate-300 transition-colors hover:text-blue-400"
               >
                 <Phone size={18} className="shrink-0 text-blue-400" />
                 <span>+8801604498384</span>
@@ -141,7 +145,7 @@ export default function Footer() {
 
               <a
                 href="tel:+8801610868752"
-                className="group flex items-center gap-3 text-xs text-slate-300 transition-colors hover:text-blue-400"
+                className="group flex items-center gap-2 text-xs text-slate-300 transition-colors hover:text-blue-400"
               >
                 <Phone size={18} className="shrink-0 text-blue-400" />
                 <span>+8801610868752</span>
@@ -157,7 +161,7 @@ export default function Footer() {
               </a>
 
               {/* Location */}
-              <div className="flex items-center gap-3 text-xs text-slate-300">
+              <div className="flex items-center gap-2 text-xs text-slate-300">
                 <MapPin size={18} className="shrink-0 text-blue-400" />
                 <span>Noakhali, Bangladesh</span>
               </div>
@@ -167,11 +171,11 @@ export default function Footer() {
 
         {/* Bottom Footer */}
         <div className="flex flex-col mb-15 sm:mb-1 gap-3 border-t border-white/[0.08] py-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-center text-[10px] text-slate-400 sm:text-left">
+          <p className="text-center text-[10px] sm:text-xs text-slate-400 sm:text-left">
             ©2026 UniTech | All Rights Reserved.
           </p>
 
-          <div className="flex text-slate-300 text-xs justify-center sm:justify-end">
+          <div className="flex text-slate-300 text-xs sm:text-sm justify-center sm:justify-end">
             Design & Developed by{" "}
             <Link
               href="https://atikhasan-dev.vercel.app"

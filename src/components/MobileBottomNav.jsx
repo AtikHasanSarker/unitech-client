@@ -14,7 +14,7 @@ const navItems = [
   },
   {
     label: "WhatsApp",
-    href: "https://wa.me/01604498384",
+    href: "https://wa.me/+8801604498384",
     icon: FaWhatsapp,
     type: "external",
   },
