@@ -442,7 +442,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
       {/* Page Heading */}
 
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
+        <div className="mx-auto container px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
           <nav className="mb-5 flex items-center gap-2 text-xs text-slate-400">
             <Link href="/" className="transition hover:text-blue-600">
               Home
@@ -506,7 +506,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
 
       <section
         ref={productListingRef}
-        className="mx-auto max-w-[1440px] scroll-mt-36 px-5 py-8 sm:px-8 lg:px-10 lg:py-10"
+        className="mx-auto container scroll-mt-36 px-5 py-8 sm:px-8 lg:px-10 lg:py-10"
       >
         <div className="grid grid-cols-1 gap-7 lg:grid-cols-[245px_minmax(0,1fr)] lg:gap-8">
           {/* Desktop Sidebar */}

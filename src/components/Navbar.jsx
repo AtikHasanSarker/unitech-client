@@ -238,7 +238,7 @@ export default function Navbar() {
           MAIN NAVBAR
       ======================================== */}
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#07111e] text-white shadow-xl shadow-black/10">
-        <div className="mx-auto max-w-[1440px] px-4 backdrop-blur-xl sm:px-6 xl:px-10">
+        <div className="mx-auto container px-4 backdrop-blur-xl sm:px-6 xl:px-10">
           <div className="flex h-[76px] items-center justify-between gap-4 lg:gap-6">
             {/* Logo */}
             <Link

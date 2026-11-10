@@ -187,7 +187,7 @@ export default function ProductDetailsPage() {
       <main className="min-h-screen bg-[#f8fafc] text-slate-900">
         {/* Breadcrumb */}
         <div className="border-b border-slate-200 bg-white">
-          <div className="mx-auto max-w-[1440px] px-5 py-4 sm:px-8 lg:px-10">
+          <div className="mx-auto container px-5 py-4 sm:px-8 lg:px-10">
             <nav className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <Link href="/" className="hover:text-blue-600">
                 Home
@@ -212,7 +212,7 @@ export default function ProductDetailsPage() {
         </div>
 
         {/* Main Product */}
-        <section className="mx-auto max-w-[1440px] px-5 py-7 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+        <section className="mx-auto container px-5 py-7 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-14">
             {/* Gallery */}
             <div>
@@ -315,7 +315,9 @@ export default function ProductDetailsPage() {
                     </span>
                   )}
                   {product.sku && (
-                    <span className="text-xs text-slate-500">SKU: {product.sku}</span>
+                    <span className="text-xs text-slate-500">
+                      SKU: {product.sku}
+                    </span>
                   )}
                 </div>
               )}
@@ -479,9 +481,7 @@ export default function ProductDetailsPage() {
               <p className="mt-4 text-xs text-slate-400">
                 Share this product
                 <button
-                  onClick={() =>
-                    toast("Product sharing is not available yet.")
-                  }
+                  onClick={() => toast("Product sharing is not available yet.")}
                   className="ml-2 inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-blue-600"
                 >
                   <Share2 size={13} />
@@ -498,7 +498,12 @@ export default function ProductDetailsPage() {
                 { id: "description", label: "Description" },
                 { id: "specifications", label: "Specifications" },
                 ...(product.rating !== undefined
-                  ? [{ id: "reviews", label: `Reviews (${product.reviews || 0})` }]
+                  ? [
+                      {
+                        id: "reviews",
+                        label: `Reviews (${product.reviews || 0})`,
+                      },
+                    ]
                   : []),
               ].map((tab) => (
                 <button
@@ -534,19 +539,23 @@ export default function ProductDetailsPage() {
                   </h3>
 
                   <ul className="mt-4 space-y-3">
-                    {product.features.length > 0 ? product.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-start gap-3 text-sm text-slate-600"
-                      >
-                        <Check
-                          size={17}
-                          className="mt-0.5 shrink-0 text-emerald-600"
-                        />
-                        {feature}
+                    {product.features.length > 0 ? (
+                      product.features.map((feature) => (
+                        <li
+                          key={feature}
+                          className="flex items-start gap-3 text-sm text-slate-600"
+                        >
+                          <Check
+                            size={17}
+                            className="mt-0.5 shrink-0 text-emerald-600"
+                          />
+                          {feature}
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-sm text-slate-500">
+                        No additional features listed.
                       </li>
-                    )) : (
-                      <li className="text-sm text-slate-500">No additional features listed.</li>
                     )}
                   </ul>
                 </div>
@@ -676,7 +685,6 @@ export default function ProductDetailsPage() {
             </div>
           </section>
         </section>
-
       </main>
     </>
   );

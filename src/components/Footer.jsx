@@ -54,11 +54,11 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-white/[0.08] bg-[#060d18] text-white">
+    <footer className="relative overflow-hidden border-t border-white/0.08 bg-[#060d18] text-white">
       {/* Background Glow */}
-      <div className="pointer-events-none absolute -top-40 left-1/4 h-80 w-80 rounded-full bg-blue-600/[0.08] blur-[120px]" />
+      <div className="pointer-events-none absolute -top-40 left-1/4 h-80 w-80 rounded-full bg-blue-600/0.08 blur-[120px]" />
 
-      <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+      <div className="relative mx-auto container px-5 sm:px-8 lg:px-10">
         {/* Main Footer */}
         <div className="grid grid-cols-2 gap-8 sm:gap-12 py-6 sm:py-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-10">
           {/* Brand Information */}
@@ -92,7 +92,7 @@ export default function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-slate-300 transition-all duration-200 hover:border-blue-500/40 hover:bg-blue-500/10 hover:text-blue-400"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/0.03 text-slate-300 transition-all duration-200 hover:border-blue-500/40 hover:bg-blue-500/10 hover:text-blue-400"
                 >
                   <Icon size={18} />
                 </a>
@@ -170,7 +170,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Footer */}
-        <div className="flex flex-col mb-15 sm:mb-1 gap-3 border-t border-white/[0.08] py-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col mb-15 sm:mb-1 gap-3 border-t border-white/0.08 py-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-center text-[10px] sm:text-xs text-slate-400 sm:text-left">
             ©2026 UniTech | All Rights Reserved.
           </p>

@@ -80,7 +80,7 @@ export default function SpecialDeals() {
 
   return (
     <section className="bg-[#f8fafc] py-14 text-slate-900 sm:py-16">
-      <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10">
+      <div className="mx-auto container px-5 sm:px-8 lg:px-10">
         {/* Section Header */}
         <div className="mb-8 flex flex-col gap-5 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div>

@@ -318,7 +318,7 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="mx-auto container space-y-6">
         {(isLoading || loadError) && (
           <div className={`rounded-xl border px-4 py-3 text-sm ${loadError ? "border-amber-200 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600"}`}>
             {loadError || "Loading orders..."}

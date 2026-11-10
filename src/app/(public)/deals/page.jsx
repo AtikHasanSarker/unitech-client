@@ -18,7 +18,7 @@ const formatPrice = (value) =>
 export default function DealsPage() {
   return (
     <div className="bg-white text-[#0F172A]">
-      <div className="mx-auto max-w-7xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+      <div className="mx-auto container px-4 pb-16 pt-6 sm:px-6 lg:px-8">
         <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
           <ol className="flex items-center gap-2">
             <li>

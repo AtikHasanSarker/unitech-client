@@ -488,7 +488,7 @@ export default function OrderDetailsPage() {
     <main className="min-h-screen bg-slate-50">
       {/* Page Header */}
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
+        <div className="mx-auto container px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
           <Link
             href="/my-orders"
             className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-blue-600"
@@ -535,7 +535,7 @@ export default function OrderDetailsPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <section className="mx-auto container px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_360px]">
           {/* Left Column */}
           <div className="space-y-6">

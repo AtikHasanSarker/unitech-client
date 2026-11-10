@@ -38,12 +38,12 @@ export default function Newsletter() {
 
   return (
     <section className="bg-[#f8fafc] px-5 py-12 sm:px-8 sm:py-16 lg:px-10">
-      <div className="relative mx-auto max-w-[1440px] overflow-hidden rounded-3xl bg-[#07111e] px-5 py-10 text-white sm:px-10 sm:py-14 lg:px-16 lg:py-16">
+      <div className="relative mx-auto container overflow-hidden rounded-3xl bg-[#07111e] px-5 py-10 text-white sm:px-10 sm:py-14 lg:px-16 lg:py-16">
         {/* Background Effects */}
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -right-20 -top-32 h-80 w-80 rounded-full bg-blue-600/20 blur-[100px]" />
           <div className="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-cyan-500/10 blur-[100px]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(37,99,235,0.12),transparent_55%)]" />
+          <div className="absolute inset-0 bg-[radial-linear(ellipse_at_80%_50%,rgba(37,99,235,0.12),transparent_55%)]" />
         </div>
 
         <div className="relative z-10 flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-center lg:gap-12">
@@ -56,7 +56,7 @@ export default function Newsletter() {
 
             <h2 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl">
               Get the Latest
-              <span className="block bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+              <span className="block bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 Tech Updates
               </span>
             </h2>

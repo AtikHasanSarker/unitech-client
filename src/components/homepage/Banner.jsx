@@ -50,7 +50,7 @@ export default function HeroBanner() {
       </div>
 
       {/* Hero Content */}
-      <div className="mx-auto grid min-h-[490px] max-w-[1440px] items-center gap-8 px-5 py-12 sm:px-8 sm:py-16 lg:min-h-[510px] lg:grid-cols-2 lg:gap-4 lg:px-10 lg:py-14">
+      <div className="mx-auto grid min-h-[490px] container items-center gap-8 px-5 py-12 sm:px-8 sm:py-16 lg:min-h-[510px] lg:grid-cols-2 lg:gap-4 lg:px-10 lg:py-14">
         {/* Left Content */}
         <div className="relative z-10 max-w-2xl">
           {/* Badge */}
@@ -111,7 +111,7 @@ export default function HeroBanner() {
           <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/20 blur-[90px] sm:h-80 sm:w-80" />
 
           {/* Product Showcase */}
-          <div className="relative aspect-[5/4] w-full">
+          <div className="relative aspect-5/4 w-full">
             <Image
               src="/images/hero.png"
               alt="Premium mobile accessories including charger, smartphone, cables and wireless earbuds"
@@ -154,7 +154,7 @@ export default function HeroBanner() {
 
       {/* Feature Bar */}
       <div className="border-t border-white/[0.07] bg-white/[0.02]">
-        <div className="mx-auto grid max-w-[1440px] grid-cols-2 px-5 sm:px-8 md:grid-cols-4 lg:px-10">
+        <div className="mx-auto grid container grid-cols-2 px-5 sm:px-8 md:grid-cols-4 lg:px-10">
           {features.map(({ icon: Icon, title, description }, index) => (
             <div
               key={title}

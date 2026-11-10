@@ -357,7 +357,7 @@ export default function MyOrdersPage() {
     <main className="min-h-screen bg-slate-50">
       {/* Page Heading */}
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div className="mx-auto container px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
             <div>
               <div className="mb-3 flex items-center gap-2 text-sm text-slate-500">
@@ -389,7 +389,7 @@ export default function MyOrdersPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <section className="mx-auto container px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         {(isLoading || loadError) && (
           <div className={`mb-6 rounded-xl border p-4 text-sm ${loadError ? "border-amber-200 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600"}`}>
             {loadError || "Loading your orders..."}

@@ -29,7 +29,7 @@ export default function NewArrivals() {
   useEffect(() => {
     let active = true;
     Promise.all([
-      getProducts({ page: 1, limit: 6, sort: "newest", status: "Active" }),
+      getProducts({ page: 1, limit: 8, sort: "newest", status: "Active" }),
       getWishlist(),
     ]).then(([productResult, wishlistResult]) => {
       if (!active) return;
@@ -79,7 +79,7 @@ export default function NewArrivals() {
 
   return (
     <section className="bg-white py-10 text-slate-900 sm:py-16">
-      <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-10">
+      <div className="mx-auto container px-5 sm:px-8 lg:px-10">
         {/* Section Heading */}
         <div className="mb-8 flex items-end justify-between gap-4 sm:mb-10">
           <div>
@@ -131,7 +131,7 @@ export default function NewArrivals() {
                 return (
                   <article
                     key={product.id}
-                    className="group relative min-w-0 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-100 hover:shadow-xl hover:shadow-slate-900/[0.06] sm:rounded-3xl"
+                    className="group relative min-w-0 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-100 hover:shadow-xl hover:shadow-slate-900/0.06 sm:rounded-3xl"
                   >
                     {/* Product Image */}
                     <div className="relative m-2 aspect-square overflow-hidden rounded-xl bg-white sm:m-3 sm:rounded-2xl">
@@ -257,13 +257,13 @@ export default function NewArrivals() {
         {/* Mobile View All */}
         <div className="mt-7 flex justify-center sm:hidden">
           <Link href="/products">
-          <Button
-            variant="outline"
-            className="rounded-full border-slate-200 bg-white px-6 text-sm font-medium text-slate-700"
-          >
-            View All Products
-            <ArrowRight size={16} className="ml-2" />
-          </Button>
+            <Button
+              variant="outline"
+              className="rounded-full border-slate-200 bg-white px-6 text-sm font-medium text-slate-700"
+            >
+              View All Products
+              <ArrowRight size={16} className="ml-2" />
+            </Button>
           </Link>
         </div>
       </div>

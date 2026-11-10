@@ -251,7 +251,7 @@ export default function WishlistPage() {
 
       {/* Page Header */}
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div className="mx-auto container px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
           <div className="mb-4 flex items-center gap-2 text-sm text-slate-500">
             <Link href="/" className="transition hover:text-blue-600">
               Home
@@ -291,7 +291,7 @@ export default function WishlistPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <section className="mx-auto container px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         {isLoading && (
           <div className="mb-7 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
             Loading your saved products...

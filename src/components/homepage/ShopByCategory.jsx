@@ -82,7 +82,7 @@ const categories = [
 export default function ShopByCategory() {
   return (
     <section className="bg-white py-14 text-slate-900 sm:py-16">
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-10">
+      <div className="mx-auto container px-4 sm:px-6 lg:px-10">
         {/* Section Heading */}
         <div className="mb-8 flex items-end justify-between gap-4 sm:mb-10">
           <div>
