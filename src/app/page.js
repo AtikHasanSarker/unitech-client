@@ -14,7 +14,7 @@ const page = () => {
       <HeroBanner/>
       <ShopByCategory/>
       <NewArrivals/>
-      <SpecialDeals/>
+      {/* <SpecialDeals/> */}
       <WhyChooseUs/>
       <StudentDiscount/>
       <Newsletter/>

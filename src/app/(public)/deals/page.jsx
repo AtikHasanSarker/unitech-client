@@ -191,6 +191,13 @@ async function DealsProducts() {
                     <ImageOff size={32} aria-hidden="true" />
                   </div>
                 )}
+                {!product.stock && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/65">
+                    <span className="rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white">
+                      Out of stock
+                    </span>
+                  </div>
+                )}
                 <span className="absolute left-2 top-2 rounded-md bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white shadow-sm sm:left-3 sm:top-3 sm:text-xs">
                   5% OFF
                 </span>
@@ -213,7 +220,7 @@ async function DealsProducts() {
                     {formatPrice(originalPrice)}
                   </span>
                 </div>
-              <ActionButton product={product} />
+                <ActionButton product={product} />
               </div>
             </Link>
           </article>

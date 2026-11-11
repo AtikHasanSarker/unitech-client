@@ -289,7 +289,7 @@ export default function ProductEditModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-950/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-100 flex items-center justify-center overflow-y-auto bg-slate-950/50 p-4 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) handleClose();
       }}
@@ -298,7 +298,7 @@ export default function ProductEditModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="edit-product-modal-title"
-        className="my-auto max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="my-auto max-h-[85vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl"
       >
         <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
           <div>
@@ -324,7 +324,7 @@ export default function ProductEditModal({
         </div>
 
         <form onSubmit={handleUpdate}>
-          <div className="max-h-[calc(92vh-145px)] space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
+          <div className="max-h-[calc(85vh-145px)] space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
             <section>
               <SectionHeading
                 icon={<Package size={18} />}
@@ -608,7 +608,7 @@ export default function ProductEditModal({
             )}
           </div>
 
-          <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+          <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-3 sm:flex-row sm:justify-end sm:px-6">
             <button
               type="button"
               onClick={handleClose}

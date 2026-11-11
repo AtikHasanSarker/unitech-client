@@ -25,7 +25,7 @@ const ActionButton = ({ product }) => {
     <div>
       <Button
         onClick={handleAdd}
-        disabled={!product.stock || isAdded || isAdding}
+        isDisabled={!product.stock || isAdded || isAdding}
         aria-label={
           !product.stock
             ? "Unavailable"

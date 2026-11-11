@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function FloatingChat() {
   const messengerUrl = "https://m.me/unitechfa";
 
@@ -8,17 +10,17 @@ export default function FloatingChat() {
       {/* Messenger Button Wrapper */}
       <div className="group relative flex items-center">
         {/* Chat With Us Label */}
-        <a
+        <Link
           href={messengerUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="pointer-events-none absolute right-full mr-3 whitespace-nowrap rounded-full border border-blue-200 bg-white px-5 py-3 text-sm font-medium text-gray-800 opacity-0 invisible translate-x-2 shadow-md transition-all duration-300 group-hover:pointer-events-auto group-hover:visible group-hover:translate-x-0 group-hover:opacity-100"
         >
           Chat With Us 👋
-        </a>
+        </Link>
 
         {/* Messenger Button */}
-        <a
+        <Link
           href={messengerUrl}
           target="_blank"
           rel="noopener noreferrer"
@@ -47,7 +49,7 @@ export default function FloatingChat() {
           <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#FF3B30] text-[10px] font-bold text-white">
             1
           </span>
-        </a>
+        </Link>
       </div>
     </div>
   );
