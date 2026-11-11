@@ -4,9 +4,9 @@ import { ArrowRight, GraduationCap, BadgePercent } from "lucide-react";
 
 export default function StudentDiscount() {
   return (
-    <section className="bg-[#f8fafc] px-5 py-8 sm:px-8 lg:px-10">
-      <div className="mx-auto container">
-        <div className="group relative isolate overflow-hidden rounded-2xl bg-[#07111f] shadow-sm">
+    <section className="bg-[#f8fafc] py-8 sm:py-10">
+      <div className="mx-auto container px-5 sm:px-8 lg:px-10">
+        <div className="group relative isolate overflow-hidden rounded-[28px] bg-[#07111f] shadow-sm">
           {/* Background Image */}
           <div className="absolute inset-0 -z-20">
             <Image

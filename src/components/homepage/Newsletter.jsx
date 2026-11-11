@@ -37,8 +37,9 @@ export default function Newsletter() {
   };
 
   return (
-    <section className="bg-[#f8fafc] px-5 py-12 sm:px-8 sm:py-16 lg:px-10">
-      <div className="relative mx-auto container overflow-hidden rounded-3xl bg-[#07111e] px-5 py-10 text-white sm:px-10 sm:py-14 lg:px-16 lg:py-16">
+    <section className="bg-[#f8fafc] py-12 sm:py-16">
+      <div className="mx-auto container px-5 sm:px-8 lg:px-10">
+        <div className="relative overflow-hidden rounded-3xl bg-[#07111e] px-5 py-10 text-white sm:px-10 sm:py-14 lg:px-16 lg:py-16">
         {/* Background Effects */}
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -right-20 -top-32 h-80 w-80 rounded-full bg-blue-600/20 blur-[100px]" />
@@ -128,6 +129,7 @@ export default function Newsletter() {
               </form>
             )}
           </div>
+        </div>
         </div>
       </div>
     </section>
