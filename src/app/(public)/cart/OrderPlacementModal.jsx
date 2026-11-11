@@ -23,14 +23,14 @@ const DELIVERY_OPTIONS = [
     id: "campus",
     title: "NSTU Campus Delivery",
     description: "Delivery within NSTU campus",
-    fee: 30,
+    fee: 0,
     estimatedTime: "1–2 days",
   },
   {
     id: "outside",
     title: "Outside Campus",
     description: "Delivery outside NSTU campus",
-    fee: 100,
+    fee: 60,
     estimatedTime: "2–4 days",
   },
 ];
@@ -61,12 +61,18 @@ export default function OrderPlacementModal({
   );
 
   const deliveryFee = selectedDelivery?.fee ?? 0;
-  const discount = couponCode === "NSTU10"
+  const studentDiscount = Math.round(subtotal * 0.05);
+  const requestedCouponDiscount = couponCode === "NSTU10"
     ? Math.round(subtotal * 0.1)
     : couponCode === "SAVE50"
       ? Math.min(subtotal, 50)
       : 0;
-  const total = subtotal - discount + deliveryFee;
+  const couponDiscount = Math.min(
+    requestedCouponDiscount,
+    Math.max(0, subtotal - studentDiscount),
+  );
+  const discount = studentDiscount + couponDiscount;
+  const total = Math.max(0, subtotal - discount + deliveryFee);
 
   const itemCount = useMemo(
     () =>
@@ -137,6 +143,7 @@ export default function OrderPlacementModal({
           quantity: Number(item.quantity || 1),
         })),
         shippingFee: deliveryFee,
+        studentDiscountAmount: studentDiscount,
         paymentMethod: "Cash on Delivery",
         deliveryAddress: [
           `Name: ${formData.name.trim()}`,
@@ -169,6 +176,7 @@ export default function OrderPlacementModal({
         },
         paymentMethod: savedOrder.paymentMethod,
         subtotal: savedOrder.subtotal,
+        studentDiscount,
         total: savedOrder.total,
         note: formData.note.trim(),
         status: savedOrder.status,
@@ -331,7 +339,17 @@ export default function OrderPlacementModal({
                     <div className="flex justify-between gap-4">
                       <span className="text-slate-500">Delivery</span>
                       <span className="text-right font-medium text-slate-900">
-                        {selectedDelivery.title}
+                        {selectedDelivery.title} ·{" "}
+                        {deliveryFee === 0 ? "Free" : `৳${deliveryFee}`}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between gap-4">
+                      <span className="text-slate-500">
+                        NSTU student discount (5%)
+                      </span>
+                      <span className="text-right font-medium text-emerald-700">
+                        -৳{confirmedOrder.studentDiscount.toLocaleString("en-BD")}
                       </span>
                     </div>
 
@@ -527,7 +545,7 @@ export default function OrderPlacementModal({
                                 </p>
 
                                 <p className="text-sm font-bold text-blue-600">
-                                  ৳{option.fee}
+                                  {option.fee === 0 ? "Free" : `৳${option.fee}`}
                                 </p>
                               </div>
 
@@ -641,9 +659,29 @@ export default function OrderPlacementModal({
                     </div>
 
                     <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">
+                        NSTU student discount (5%)
+                      </span>
+                      <span className="font-medium text-emerald-700">
+                        -৳{studentDiscount.toLocaleString("en-BD")}
+                      </span>
+                    </div>
+
+                    {couponDiscount > 0 && (
+                      <div className="flex justify-between gap-3">
+                        <span className="text-slate-500">Coupon discount</span>
+                        <span className="font-medium text-emerald-700">
+                          -৳{couponDiscount.toLocaleString("en-BD")}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between gap-3">
                       <span className="text-slate-500">Delivery Fee</span>
                       <span className="font-medium text-slate-900">
-                        ৳{deliveryFee.toLocaleString("en-BD")}
+                        {deliveryFee === 0
+                          ? "Free"
+                          : `৳${deliveryFee.toLocaleString("en-BD")}`}
                       </span>
                     </div>
 

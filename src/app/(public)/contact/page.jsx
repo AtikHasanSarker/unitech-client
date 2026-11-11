@@ -185,7 +185,7 @@ export default function ContactPage() {
 
   return (
     <main className="min-h-screen bg-white text-slate-800">
-      <div className="mx-auto container px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto container py-10 px-5 sm:px-8 lg:px-10">
         {/* Page Heading */}
         <div className="mb-10">
           <nav className="mb-5 text-sm text-slate-500">

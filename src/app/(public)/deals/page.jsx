@@ -18,7 +18,7 @@ const formatPrice = (value) =>
 export default function DealsPage() {
   return (
     <div className="bg-white text-[#0F172A]">
-      <div className="mx-auto container px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+      <div className="mx-auto container pb-16 pt-6 px-5 sm:px-8 lg:px-10">
         <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
           <ol className="flex items-center gap-2">
             <li>
@@ -69,7 +69,11 @@ export default function DealsPage() {
               className="object-cover object-center"
             />
             <div className="absolute bottom-4 right-4 flex items-center gap-2 rounded-lg border border-white/80 bg-white/95 px-3 py-2 text-xs font-semibold text-slate-800 shadow-sm backdrop-blur-sm sm:bottom-6 sm:right-6 sm:px-4 sm:py-3 sm:text-sm">
-              <ShieldCheck size={17} className="text-blue-600" aria-hidden="true" />
+              <ShieldCheck
+                size={17}
+                className="text-blue-600"
+                aria-hidden="true"
+              />
               Flat savings across the collection
             </div>
           </div>
@@ -90,10 +94,10 @@ export default function DealsPage() {
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
                 Explore our exclusive collection and save 5% on every purchase.
               </p>
-            </div>    
+            </div>
           </div>
 
-            <DealsProducts />
+          <DealsProducts />
         </section>
 
         <aside className="mt-12 flex flex-col gap-4 rounded-xl border border-blue-100 bg-blue-50/70 p-5 sm:flex-row sm:items-center sm:gap-5 sm:p-6">
@@ -106,8 +110,8 @@ export default function DealsPage() {
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">
               Every product in this collection is shown with a flat 5% discount
-              from its current listed price. The discount is calculated for display;
-              the original product price remains unchanged.
+              from its current listed price. The discount is calculated for
+              display; the original product price remains unchanged.
             </p>
           </div>
         </aside>

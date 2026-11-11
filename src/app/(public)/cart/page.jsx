@@ -64,10 +64,12 @@ export default function CartPage() {
       : Math.min(appliedCoupon.flat || 0, subtotal)
     : 0;
 
-  // Demo delivery policy: free shipping on orders of ৳2,000 or more.
-  const deliveryCharge = subtotal === 0 || subtotal >= 2000 ? 0 : 80;
-
-  const total = Math.max(0, subtotal - couponDiscount + deliveryCharge);
+  const studentDiscount = Math.round(subtotal * 0.05);
+  const effectiveCouponDiscount = Math.min(
+    couponDiscount,
+    Math.max(0, subtotal - studentDiscount),
+  );
+  const total = Math.max(0, subtotal - studentDiscount - effectiveCouponDiscount);
 
   const totalQuantity = cart.reduce((total, item) => total + item.quantity, 0);
 
@@ -475,31 +477,34 @@ export default function CartPage() {
                       )}
 
                       <div className="flex items-center justify-between gap-3 text-sm">
-                        <span className="text-slate-500">Delivery charge</span>
-                        {deliveryCharge === 0 ? (
-                          <span className="font-semibold text-emerald-600">
-                            Free
-                          </span>
-                        ) : (
-                          <span className="font-semibold text-slate-800">
-                            {formatPrice(deliveryCharge)}
-                          </span>
-                        )}
+                        <span className="text-slate-500">
+                          NSTU student discount (5%)
+                        </span>
+                        <span className="font-semibold text-emerald-600">
+                          -{formatPrice(studentDiscount)}
+                        </span>
                       </div>
 
-                      {couponDiscount > 0 && (
+                      <div className="flex items-center justify-between gap-3 text-sm">
+                        <span className="text-slate-500">Delivery charge</span>
+                        <span className="font-semibold text-slate-800">
+                          Based on delivery location
+                        </span>
+                      </div>
+
+                      {effectiveCouponDiscount > 0 && (
                         <div className="flex items-center justify-between gap-3 text-sm">
                           <span className="text-slate-500">
                             Coupon discount
                           </span>
                           <span className="font-semibold text-emerald-600">
-                            -{formatPrice(couponDiscount)}
+                            -{formatPrice(effectiveCouponDiscount)}
                           </span>
                         </div>
                       )}
                     </div>
 
-                    {subtotal > 0 && subtotal < 2000 && (
+                    {subtotal > 0 && (
                       <div className="rounded-xl bg-blue-50 p-3">
                         <div className="flex items-start gap-2">
                           <Truck
@@ -507,11 +512,8 @@ export default function CartPage() {
                             className="mt-0.5 shrink-0 text-blue-600"
                           />
                           <p className="text-xs leading-5 text-slate-600">
-                            Add{" "}
-                            <span className="font-bold text-blue-700">
-                              {formatPrice(2000 - subtotal)}
-                            </span>{" "}
-                            more to unlock demo free delivery.
+                            NSTU students get 5% off. Campus delivery is free;
+                            outside-campus delivery costs ৳60.
                           </p>
                         </div>
                       </div>
@@ -529,8 +531,8 @@ export default function CartPage() {
                     </div>
 
                     <p className="text-[10px] leading-5 text-slate-400">
-                      Delivery policy and discounts are placeholders and may
-                      change when the real checkout is implemented.
+                      Delivery charge is finalized based on your selected
+                      location at checkout.
                     </p>
 
                     <button
@@ -557,16 +559,16 @@ export default function CartPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-900">
-                        NSTU Student Deals
+                        NSTU Student Discount
                       </p>
                       <p className="mt-1 text-[10px] text-slate-500">
-                        Explore campus offers
+                        5% off your order
                       </p>
                     </div>
                   </div>
 
                   <p className="mt-3 text-xs leading-5 text-slate-600">
-                    Check the student offers page for available promotions.
+                    A 5% discount is automatically applied to your order total.
                   </p>
 
                   <Link

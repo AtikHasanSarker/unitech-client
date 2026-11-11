@@ -86,10 +86,10 @@ export default function AboutPage() {
     <main className="min-h-screen overflow-hidden bg-white text-slate-800">
       {/* 5. Meet the Founders */}
       <section className="border-t border-slate-100 bg-slate-50/70 py-16">
-        <div className="mx-auto container px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto container px-5 sm:px-8 lg:px-10">
           {/* Section Heading */}
           <div className="mx-auto max-w-4xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white py-2 text-sm font-semibold text-blue-700 shadow-sm">
               <Users size={17} />
               The People Behind UniTech
             </div>
@@ -189,10 +189,10 @@ export default function AboutPage() {
         <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-indigo-200/30 blur-3xl" />
 
-        <div className="relative mx-auto grid container items-center gap-14 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:px-8">
+        <div className="relative mx-auto grid container items-center gap-14 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-2 lg:px-10">
           {/* Hero Content */}
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white py-2 text-sm font-semibold text-blue-700 shadow-sm">
               <GraduationCap size={17} />
               Made with students in mind
             </div>
@@ -307,7 +307,7 @@ export default function AboutPage() {
             </div>
 
             {/* Floating Labels */}
-            <div className="absolute -right-0 -top-6 hidden items-center gap-2 rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-lg sm:flex">
+            <div className="absolute right-0 -top-6 hidden items-center gap-2 rounded-xl border border-slate-100 bg-white py-3 shadow-lg sm:flex">
               <CheckCircle2 size={19} className="text-emerald-500" />
               <span className="text-xs font-semibold text-slate-700">
                 Student Focused
@@ -318,7 +318,7 @@ export default function AboutPage() {
       </section>
 
       {/* 2. Our Story */}
-      <section className="mx-auto container px-4 py-16 sm:px-6 lg:px-8">
+      <section className="mx-auto container py-16 px-5 sm:px-8 lg:px-10">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
           {/* Story Content */}
           <div>
@@ -407,7 +407,7 @@ export default function AboutPage() {
 
       {/* 3. Mission & Vision */}
       <section className="border-y border-slate-100 bg-slate-50/70 py-16">
-        <div className="mx-auto container px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto container px-5 sm:px-8 lg:px-10">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600">
               Our Direction
@@ -465,7 +465,7 @@ export default function AboutPage() {
       </section>
 
       {/* 4. Core Values */}
-      <section className="mx-auto container px-4 py-16 sm:px-6 lg:px-8">
+      <section className="mx-auto container py-16 px-5 sm:px-8 lg:px-10">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600">
             What Matters to Us

@@ -47,7 +47,7 @@ const brands = [
 
 export default function BrandsPage() {
   return (
-    <section className="mx-auto w-full container px-4 py-8 sm:px-6 lg:px-8">
+    <section className="mx-auto min-h-full w-full container py-8 px-5 sm:px-8 lg:px-10">
       {/* Breadcrumb */}
       <nav
         aria-label="Breadcrumb"
@@ -84,14 +84,14 @@ export default function BrandsPage() {
             href={`/products?brand=${brand.slug}`}
             className="group flex h-20 flex-col items-center justify-center gap-4 rounded-xl border border-default-200 bg-content1 p-4 transition-all duration-200 hover:-translate-y-1 hover:border-primary hover:shadow-md"
           >
-              <Image
-                width={100}
-                height={80}
-                src={brand.logo}
-                alt={`${brand.name} logo`}
-                unoptimized
-                className="object-contain w-full transition-transform duration-200 group-hover:scale-110"
-              />
+            <Image
+              width={100}
+              height={80}
+              src={brand.logo}
+              alt={`${brand.name} logo`}
+              unoptimized
+              className="object-contain w-full transition-transform duration-200 group-hover:scale-110"
+            />
           </Link>
         ))}
       </div>
