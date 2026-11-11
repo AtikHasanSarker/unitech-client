@@ -142,12 +142,37 @@ function formatPrice(value) {
   }).format(Number(value) || 0);
 }
 
+function safeDateValue(value) {
+  if (!value) return null;
+
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function formatDate(dateString) {
+  const date = safeDateValue(dateString);
+  if (!date) return "N/A";
+
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  }).format(new Date(`${dateString}T00:00:00`));
+  }).format(date);
+}
+
+function getPhoneFromDeliveryAddress(deliveryAddress) {
+  if (typeof deliveryAddress !== "string") return "";
+
+  const match = deliveryAddress.match(/Phone:\s*([^\n]+)/i);
+  return match ? match[1].trim() : "";
+}
+
+function isSameCalendarDay(dateA, dateB) {
+  return (
+    dateA.getFullYear() === dateB.getFullYear() &&
+    dateA.getMonth() === dateB.getMonth() &&
+    dateA.getDate() === dateB.getDate()
+  );
 }
 
 function statusClasses(status) {
@@ -191,11 +216,14 @@ export default function AdminOrdersPage() {
         setOrders(
           ordersResult.data.map((order) => {
             const user = usersById.get(order.userId);
+            const rawAddress = order.deliveryAddress || "";
+            const mappedPhone = getPhoneFromDeliveryAddress(rawAddress) || user?.phone || "";
+
             return {
               id: order._id,
               customer: user?.name || order.userEmail || order.userId,
               email: order.userEmail || user?.email || "",
-              phone: "",
+              phone: mappedPhone,
               date: order.createdAt,
               items: order.items,
               subtotal: order.subtotal,
@@ -204,7 +232,7 @@ export default function AdminOrdersPage() {
               paymentMethod: order.paymentMethod,
               paymentStatus: order.paymentStatus || "Pending",
               status: order.status,
-              address: order.deliveryAddress,
+              address: rawAddress,
             };
           }),
         );
@@ -223,6 +251,10 @@ export default function AdminOrdersPage() {
 
   const filteredOrders = useMemo(() => {
     const query = search.trim().toLowerCase();
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const lastSevenDaysStart = new Date(todayStart);
+    lastSevenDaysStart.setDate(todayStart.getDate() - 6);
 
     return orders.filter((order) => {
       const matchesSearch =
@@ -239,12 +271,15 @@ export default function AdminOrdersPage() {
         paymentFilter === "All Payments" ||
         order.paymentStatus === paymentFilter;
 
+      const orderDate = safeDateValue(order.date);
       const matchesDate =
         dateFilter === "All Dates" ||
-        (dateFilter === "Today" && order.date === "2026-10-24") ||
-        (dateFilter === "Last 7 Days" &&
-          new Date(`${order.date}T00:00:00`) >=
-            new Date("2026-10-18T00:00:00"));
+        (!orderDate
+          ? false
+          : (dateFilter === "Today" && isSameCalendarDay(orderDate, now)) ||
+            (dateFilter === "Last 7 Days" &&
+              orderDate >= lastSevenDaysStart &&
+              orderDate <= todayStart));
 
       return matchesSearch && matchesStatus && matchesPayment && matchesDate;
     });
