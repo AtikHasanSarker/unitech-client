@@ -103,9 +103,9 @@ const navigationLinks = [
     icon: TrendingUp,
   },
   {
-    name: "Budget Deals",
-    href: "/deals",
-    icon: Tag,
+    name: "My Orders",
+    href: "/orders",
+    icon: Van,
   },
   {
     name: "About Us",
