@@ -12,7 +12,6 @@ import {
   Plus,
   ArrowLeft,
   ArrowRight,
-  Tag,
   Truck,
   ShieldCheck,
   PackageCheck,
@@ -64,12 +63,8 @@ export default function CartPage() {
       : Math.min(appliedCoupon.flat || 0, subtotal)
     : 0;
 
-  const studentDiscount = Math.round(subtotal * 0.05);
-  const effectiveCouponDiscount = Math.min(
-    couponDiscount,
-    Math.max(0, subtotal - studentDiscount),
-  );
-  const total = Math.max(0, subtotal - studentDiscount - effectiveCouponDiscount);
+  const effectiveCouponDiscount = Math.min(couponDiscount, subtotal);
+  const total = Math.max(0, subtotal - effectiveCouponDiscount);
 
   const totalQuantity = cart.reduce((total, item) => total + item.quantity, 0);
 
@@ -477,15 +472,6 @@ export default function CartPage() {
                       )}
 
                       <div className="flex items-center justify-between gap-3 text-sm">
-                        <span className="text-slate-500">
-                          NSTU student discount (5%)
-                        </span>
-                        <span className="font-semibold text-emerald-600">
-                          -{formatPrice(studentDiscount)}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-3 text-sm">
                         <span className="text-slate-500">Delivery charge</span>
                         <span className="font-semibold text-slate-800">
                           Based on delivery location
@@ -512,8 +498,8 @@ export default function CartPage() {
                             className="mt-0.5 shrink-0 text-blue-600"
                           />
                           <p className="text-xs leading-5 text-slate-600">
-                            NSTU students get 5% off. Campus delivery is free;
-                            outside-campus delivery costs ৳60.
+                            Campus delivery is free; outside-campus delivery
+                            costs ৳60.
                           </p>
                         </div>
                       </div>
@@ -551,34 +537,6 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                {/* Student discount card */}
-                <div className="mt-4 overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white">
-                      <Tag size={17} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-900">
-                        NSTU Student Discount
-                      </p>
-                      <p className="mt-1 text-[10px] text-slate-500">
-                        5% off your order
-                      </p>
-                    </div>
-                  </div>
-
-                  <p className="mt-3 text-xs leading-5 text-slate-600">
-                    A 5% discount is automatically applied to your order total.
-                  </p>
-
-                  <Link
-                    href="/deals?audience=nstu-students"
-                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-800"
-                  >
-                    Explore student deals
-                    <ArrowRight size={14} />
-                  </Link>
-                </div>
               </aside>
             </div>
           )}

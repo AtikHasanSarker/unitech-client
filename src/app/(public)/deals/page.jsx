@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  BadgePercent,
   GraduationCap,
   ImageOff,
   PackageSearch,
@@ -41,22 +40,11 @@ export default function DealsPage() {
             </div>
 
             <h1 className="max-w-2xl text-3xl font-bold leading-tight text-[#0F172A] sm:text-4xl lg:text-[42px]">
-              Exclusive Deals for NSTU Students
+              Products for NSTU Students
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
-              Enjoy an exclusive 5% discount on every product. Upgrade your
-              everyday tech for less!
+              Explore tech and accessories selected for campus life.
             </p>
-
-            <div className="mt-7 inline-flex items-center gap-3 rounded-xl bg-blue-600 px-4 py-3 text-white shadow-sm shadow-blue-600/20">
-              <BadgePercent size={27} strokeWidth={1.8} aria-hidden="true" />
-              <div>
-                <p className="text-xl font-extrabold leading-none">5% OFF</p>
-                <p className="mt-1 text-xs font-medium text-blue-100">
-                  On every product
-                </p>
-              </div>
-            </div>
           </div>
 
           <div className="relative min-h-64 border-t border-slate-200 bg-slate-100 sm:min-h-80 lg:min-h-95 lg:border-l lg:border-t-0">
@@ -74,7 +62,7 @@ export default function DealsPage() {
                 className="text-blue-600"
                 aria-hidden="true"
               />
-              Flat savings across the collection
+              Products at listed prices
             </div>
           </div>
         </section>
@@ -92,7 +80,7 @@ export default function DealsPage() {
                 NSTU Student Deals
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                Explore our exclusive collection and save 5% on every purchase.
+                Explore our collection of products for campus life.
               </p>
             </div>
           </div>
@@ -106,12 +94,10 @@ export default function DealsPage() {
           </div>
           <div>
             <h2 className="font-semibold text-slate-900">
-              A little more room in your student budget
+              Tech picks for campus life
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">
-              Every product in this collection is shown with a flat 5% discount
-              from its current listed price. The discount is calculated for
-              display; the original product price remains unchanged.
+              Product prices are shown as listed.
             </p>
           </div>
         </aside>
@@ -162,7 +148,6 @@ async function DealsProducts() {
     <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
       {products.map((product) => {
         const originalPrice = Number(product.price);
-        const discountedPrice = Math.round(originalPrice * 0.95);
         const imageUrl = Array.isArray(product.images)
           ? product.images[0]
           : null;
@@ -198,9 +183,6 @@ async function DealsProducts() {
                     </span>
                   </div>
                 )}
-                <span className="absolute left-2 top-2 rounded-md bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white shadow-sm sm:left-3 sm:top-3 sm:text-xs">
-                  5% OFF
-                </span>
               </div>
 
               <div className="p-3 sm:p-4">
@@ -214,9 +196,6 @@ async function DealsProducts() {
                 </h3>
                 <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                   <span className="text-base font-bold text-blue-700 sm:text-lg">
-                    {formatPrice(discountedPrice)}
-                  </span>
-                  <span className="text-xs text-slate-400 line-through">
                     {formatPrice(originalPrice)}
                   </span>
                 </div>

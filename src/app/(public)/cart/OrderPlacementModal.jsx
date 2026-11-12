@@ -61,18 +61,13 @@ export default function OrderPlacementModal({
   );
 
   const deliveryFee = selectedDelivery?.fee ?? 0;
-  const studentDiscount = Math.round(subtotal * 0.05);
   const requestedCouponDiscount = couponCode === "NSTU10"
     ? Math.round(subtotal * 0.1)
     : couponCode === "SAVE50"
       ? Math.min(subtotal, 50)
       : 0;
-  const couponDiscount = Math.min(
-    requestedCouponDiscount,
-    Math.max(0, subtotal - studentDiscount),
-  );
-  const discount = studentDiscount + couponDiscount;
-  const total = Math.max(0, subtotal - discount + deliveryFee);
+  const couponDiscount = Math.min(requestedCouponDiscount, subtotal);
+  const total = Math.max(0, subtotal - couponDiscount + deliveryFee);
 
   const itemCount = useMemo(
     () =>
@@ -143,7 +138,6 @@ export default function OrderPlacementModal({
           quantity: Number(item.quantity || 1),
         })),
         shippingFee: deliveryFee,
-        studentDiscountAmount: studentDiscount,
         paymentMethod: "Cash on Delivery",
         deliveryAddress: [
           `Name: ${formData.name.trim()}`,
@@ -176,7 +170,7 @@ export default function OrderPlacementModal({
         },
         paymentMethod: savedOrder.paymentMethod,
         subtotal: savedOrder.subtotal,
-        studentDiscount,
+        couponDiscount,
         total: savedOrder.total,
         note: formData.note.trim(),
         status: savedOrder.status,
@@ -344,14 +338,14 @@ export default function OrderPlacementModal({
                       </span>
                     </div>
 
-                    <div className="flex justify-between gap-4">
-                      <span className="text-slate-500">
-                        NSTU student discount (5%)
-                      </span>
-                      <span className="text-right font-medium text-emerald-700">
-                        -৳{confirmedOrder.studentDiscount.toLocaleString("en-BD")}
-                      </span>
-                    </div>
+                    {confirmedOrder.couponDiscount > 0 && (
+                      <div className="flex justify-between gap-4">
+                        <span className="text-slate-500">Coupon discount</span>
+                        <span className="text-right font-medium text-emerald-700">
+                          -৳{confirmedOrder.couponDiscount.toLocaleString("en-BD")}
+                        </span>
+                      </div>
+                    )}
 
                     <div className="flex justify-between gap-4 border-t border-slate-200 pt-3">
                       <span className="font-semibold text-slate-700">
@@ -655,15 +649,6 @@ export default function OrderPlacementModal({
                       <span className="text-slate-500">Subtotal</span>
                       <span className="font-medium text-slate-900">
                         ৳{subtotal.toLocaleString("en-BD")}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between gap-3">
-                      <span className="text-slate-500">
-                        NSTU student discount (5%)
-                      </span>
-                      <span className="font-medium text-emerald-700">
-                        -৳{studentDiscount.toLocaleString("en-BD")}
                       </span>
                     </div>
 
