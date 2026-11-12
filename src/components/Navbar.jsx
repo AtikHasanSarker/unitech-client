@@ -104,7 +104,7 @@ const navigationLinks = [
   },
   {
     name: "My Orders",
-    href: "/orders",
+    href: "/my-orders",
     icon: Van,
   },
   {

@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PhoneCall, House, Store, Tag } from "lucide-react";
+import { PhoneCall, House, Store, ShoppingCart } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
-import { BiCart } from "react-icons/bi";
 
 const navItems = [
   {
@@ -32,7 +31,7 @@ const navItems = [
   {
     label: "Cart",
     href: "/cart",
-    icon: BiCart,
+    icon: ShoppingCart,
   },
 ];
 

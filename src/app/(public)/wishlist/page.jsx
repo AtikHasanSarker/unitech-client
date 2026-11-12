@@ -134,6 +134,7 @@ export default function WishlistPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [addedItems, setAddedItems] = useState([]);
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -146,19 +147,36 @@ export default function WishlistPage() {
           return;
         }
 
+        if (!Array.isArray(result.data?.items)) {
+          toast.error("Your wishlist response was invalid. Please try again.");
+          return;
+        }
+
         const products = await Promise.all(
           result.data.items.map(async (savedItem) => {
-            const productResult = await getProductById(savedItem.productId);
+            const productId =
+              typeof savedItem.productId === "object"
+                ? savedItem.productId?._id || savedItem.productId?.id
+                : savedItem.productId;
+            const productResult = productId
+              ? await getProductById(productId)
+              : null;
             const product = productResult?.success ? productResult.data : null;
             return {
-              id: savedItem.productId,
-              name: product?.name || savedItem.name,
-              category: product?.category || "Products",
-              price: product?.price ?? savedItem.price,
+              id: String(productId || savedItem._id),
+              name: product?.name || savedItem.name || "Product",
+              category:
+                typeof product?.category === "string"
+                  ? product.category
+                  : product?.category?.name || "Products",
+              price: Number(product?.price ?? savedItem.price) || 0,
               oldPrice: product?.oldPrice,
               rating: product?.rating,
               reviews: product?.reviews,
-              image: product?.images?.[0] || savedItem.image || "/images/product-placeholder.png",
+              image:
+                product?.images?.[0] ||
+                savedItem.image ||
+                "/images/product-placeholder.png",
               stock: product && Number(product.stock) > 0 ? "In Stock" : "Out of Stock",
             };
           }),
@@ -229,20 +247,48 @@ export default function WishlistPage() {
   };
 
   const clearWishlist = async () => {
+    setIsClearing(true);
+
     try {
       const results = await Promise.all(
-        wishlist.map((product) => removeWishlistItem(product.id)),
+        wishlist.map(async (product) => {
+          try {
+            return {
+              productId: product.id,
+              result: await removeWishlistItem(product.id),
+            };
+          } catch (error) {
+            console.error("Wishlist item removal failed:", error);
+            return { productId: product.id, result: null };
+          }
+        }),
       );
-      if (results.some((result) => !result?.success)) {
+
+      const removedIds = new Set(
+        results
+          .filter(({ result }) => result?.success)
+          .map(({ productId }) => productId),
+      );
+      const failedCount = results.length - removedIds.size;
+
+      setWishlist((current) =>
+        current.filter((product) => !removedIds.has(product.id)),
+      );
+      setAddedItems((current) =>
+        current.filter((productId) => !removedIds.has(productId)),
+      );
+
+      if (failedCount > 0) {
         toast.error("Some wishlist items could not be removed.");
         return;
       }
-      setWishlist([]);
-      setAddedItems([]);
+
       setShowClearConfirmation(false);
       toast.success("Wishlist cleared.");
     } catch {
       toast.error("Some wishlist items could not be removed.");
+    } finally {
+      setIsClearing(false);
     }
   };
 
@@ -411,9 +457,10 @@ export default function WishlistPage() {
                   <button
                     type="button"
                     onClick={clearWishlist}
-                    className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                    disabled={isClearing}
+                    className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    Yes, Clear All
+                    {isClearing ? "Clearing..." : "Yes, Clear All"}
                   </button>
                 </div>
               </div>

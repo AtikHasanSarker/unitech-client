@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Flame, PackageSearch } from "lucide-react";
 import { getProducts } from "@/lib/api/product";
-import ProductCard from "@/components/ui/ProductCard";
+import TrendingProductsClient from "./TrendingProductsClient";
 
 const MAX_PRODUCTS = 10;
 
@@ -111,18 +111,19 @@ async function TrendingProducts() {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
-      {products.map((product) => {
-        return (
-          <ProductCard
-            key={product._id}
-            product={product}
-            isWishListed={false}
-            onWishlist={[]}
-          />
-        );
-      })}
-    </div>
+    <TrendingProductsClient
+      products={products.map((product) => ({
+        ...product,
+        id: String(product._id),
+        images: [
+          product.images?.[0] || "/images/product-placeholder.png",
+        ],
+        price: Number(product.price),
+        oldPrice: Number(product.oldPrice) || 0,
+        stock: Number(product.stock) || 0,
+        color: "bg-slate-50",
+      }))}
+    />
   );
 }
 
