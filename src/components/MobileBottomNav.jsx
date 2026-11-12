@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PhoneCall, House, Store, Tag } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
+import { BiCart } from "react-icons/bi";
 
 const navItems = [
   {
@@ -29,9 +30,9 @@ const navItems = [
     icon: Store,
   },
   {
-    label: "Deals",
-    href: "/deals",
-    icon: Tag,
+    label: "Cart",
+    href: "/cart",
+    icon: BiCart,
   },
 ];
 

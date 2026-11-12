@@ -16,7 +16,7 @@ const page = () => {
       <NewArrivals/>
       {/* <SpecialDeals/> */}
       <WhyChooseUs/>
-      <StudentDiscount/>
+      {/* <StudentDiscount/> */}
       <Newsletter/>
     </div>
   );
