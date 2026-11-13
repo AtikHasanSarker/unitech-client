@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PhoneCall, House, Store, ShoppingCart } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
+import { useCart } from "@/components/cart/CartProvider";
 
 const navItems = [
   {
@@ -35,8 +36,9 @@ const navItems = [
   },
 ];
 
-export default function MobileBottomNav({ cartCount = 0 }) {
+export default function MobileBottomNav() {
   const pathname = usePathname();
+  const { itemCount: cartCount } = useCart();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-200 bg-white md:hidden">
@@ -57,6 +59,11 @@ export default function MobileBottomNav({ cartCount = 0 }) {
             >
               <div className="relative">
                 <Icon size={20} strokeWidth={2} />
+                {item.label === "Cart" && cartCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-bold text-white">
+                    {cartCount}
+                  </span>
+                )}
               </div>
 
               <span className="text-[10px] font-medium">{item.label}</span>
@@ -73,7 +80,15 @@ export default function MobileBottomNav({ cartCount = 0 }) {
               {content}
             </a>
           ) : (
-            <Link key={item.label} href={item.href}>
+            <Link
+              key={item.label}
+              href={item.href}
+              aria-label={
+                item.label === "Cart"
+                  ? `Shopping cart, ${cartCount} items`
+                  : item.label
+              }
+            >
               {content}
             </Link>
           );

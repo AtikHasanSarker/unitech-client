@@ -14,11 +14,7 @@ import { Button } from "@heroui/react";
 import toast from "react-hot-toast";
 import { useCart } from "@/components/cart/CartProvider";
 import { getProducts } from "@/lib/api/product";
-import {
-  addToWishlist,
-  getWishlist,
-  removeFromWishlist,
-} from "@/lib/api/wishlist";
+import { useWishlist } from "@/components/wishlist/useWishlist";
 
 function formatPrice(price) {
   return `৳${price.toLocaleString("en-US")}`;
@@ -26,8 +22,8 @@ function formatPrice(price) {
 
 export default function SpecialDeals() {
   const { items: cartItems, addItem } = useCart();
+  const { productIds: wishlist, toggleProduct: toggleWishlist } = useWishlist();
   const [deals, setDeals] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
     let active = true;
@@ -66,47 +62,10 @@ export default function SpecialDeals() {
         if (active) toast.error("Could not load featured products.");
       });
 
-    getWishlist()
-      .then((result) => {
-        if (
-          active &&
-          result?.success &&
-          Array.isArray(result.data?.items)
-        ) {
-          setWishlist(
-            result.data.items.map((item) => String(item.productId)),
-          );
-        }
-      })
-      .catch(() => {
-        if (active) toast.error("Could not load your saved wishlist.");
-      });
-
     return () => {
       active = false;
     };
   }, []);
-
-  const toggleWishlist = async (id) => {
-    try {
-      const result = wishlist.includes(id)
-        ? await removeFromWishlist(id)
-        : await addToWishlist(id);
-
-      if (!result?.success) {
-        toast.error(result?.message || "Sign in to update your wishlist.");
-        return;
-      }
-
-      setWishlist((prev) =>
-        prev.includes(id)
-          ? prev.filter((item) => item !== id)
-          : [...prev, id],
-      );
-    } catch {
-      toast.error("Could not update your wishlist.");
-    }
-  };
 
   const addToCart = async (product) => {
     await addItem(product.id);

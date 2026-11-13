@@ -22,13 +22,8 @@ import {
 import { getCategories } from "@/lib/api/category";
 import { getProducts } from "@/lib/api/product";
 
-import {
-  addToWishlist,
-  getWishlist,
-  removeFromWishlist,
-} from "@/lib/api/wishlist";
-
 import ProductCard from "@/components/ui/ProductCard";
+import { useWishlist } from "@/components/wishlist/useWishlist";
 
 // ---------------------------------------------
 // Section Title
@@ -217,7 +212,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
   const [minRating, setMinRating] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [wishListed, setWishListed] = useState([]);
+  const { productIds: wishListed, toggleProduct: toggleWishlist } = useWishlist();
 
   const scrollToProductListing = () => {
     requestAnimationFrame(() => {
@@ -305,10 +300,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
 
     const fetchInitialData = async () => {
       try {
-        const [categoryResult, wishlistResult] = await Promise.all([
-          getCategories(),
-          getWishlist(),
-        ]);
+        const categoryResult = await getCategories();
 
         if (!active) return;
 
@@ -323,14 +315,6 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
           ]);
         }
 
-        if (
-          wishlistResult?.success &&
-          Array.isArray(wishlistResult.data?.items)
-        ) {
-          setWishListed(
-            wishlistResult.data.items.map((item) => item.productId),
-          );
-        }
       } catch (error) {
         console.error("Failed to load categories or wishlist:", error);
       }
@@ -413,29 +397,6 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
       scroll: false,
     });
   };
-
-  const toggleWishlist = async (id) => {
-    try {
-      const result = wishListed.includes(id)
-        ? await removeFromWishlist(id)
-        : await addToWishlist(id);
-
-      if (!result?.success) {
-        toast.error(result?.message || "Sign in to update your wishlist.");
-
-        return;
-      }
-
-      setWishListed((current) =>
-        current.includes(id)
-          ? current.filter((item) => item !== id)
-          : [...current, id],
-      );
-    } catch {
-      toast.error("Could not update your wishlist.");
-    }
-  };
-
 
   return (
     <main className="min-h-screen bg-[#f8fafc] text-slate-900">

@@ -18,10 +18,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/components/cart/CartProvider";
 import { getProductById } from "@/lib/api/product";
-import {
-  getWishlist,
-  removeFromWishlist as removeWishlistItem,
-} from "@/lib/api/wishlist";
+import { useWishlist } from "@/components/wishlist/useWishlist";
 
 function ProductCard({ product, onRemove, onAddToCart, isAdded }) {
   const discount = product.oldPrice
@@ -129,6 +126,11 @@ function ProductCard({ product, onRemove, onAddToCart, isAdded }) {
 
 export default function WishlistPage() {
   const { addItem } = useCart();
+  const {
+    productIds,
+    isLoading: isWishlistLoading,
+    removeProduct,
+  } = useWishlist();
   const [wishlist, setWishlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -137,52 +139,34 @@ export default function WishlistPage() {
   const [isClearing, setIsClearing] = useState(false);
 
   useEffect(() => {
+    if (isWishlistLoading) return undefined;
+
     let active = true;
 
-    getWishlist()
-      .then(async (result) => {
-        if (!active) return;
-        if (!result?.success) {
-          toast.error(result?.message || "Sign in to load your wishlist.");
-          return;
-        }
+    Promise.all(
+      productIds.map(async (productId) => {
+        const result = await getProductById(productId);
+        if (!result?.success) return null;
 
-        if (!Array.isArray(result.data?.items)) {
-          toast.error("Your wishlist response was invalid. Please try again.");
-          return;
-        }
-
-        const products = await Promise.all(
-          result.data.items.map(async (savedItem) => {
-            const productId =
-              typeof savedItem.productId === "object"
-                ? savedItem.productId?._id || savedItem.productId?.id
-                : savedItem.productId;
-            const productResult = productId
-              ? await getProductById(productId)
-              : null;
-            const product = productResult?.success ? productResult.data : null;
-            return {
-              id: String(productId || savedItem._id),
-              name: product?.name || savedItem.name || "Product",
-              category:
-                typeof product?.category === "string"
-                  ? product.category
-                  : product?.category?.name || "Products",
-              price: Number(product?.price ?? savedItem.price) || 0,
-              oldPrice: product?.oldPrice,
-              rating: product?.rating,
-              reviews: product?.reviews,
-              image:
-                product?.images?.[0] ||
-                savedItem.image ||
-                "/images/product-placeholder.png",
-              stock: product && Number(product.stock) > 0 ? "In Stock" : "Out of Stock",
-            };
-          }),
-        );
-
-        if (active) setWishlist(products);
+        const product = result.data;
+        return {
+          id: String(product._id),
+          name: product.name,
+          category:
+            typeof product.category === "string"
+              ? product.category
+              : product.category?.name || "Products",
+          price: Number(product.price) || 0,
+          oldPrice: product.oldPrice,
+          rating: product.rating,
+          reviews: product.reviews,
+          image: product.images?.[0] || "/images/product-placeholder.png",
+          stock: Number(product.stock) > 0 ? "In Stock" : "Out of Stock",
+        };
+      }),
+    )
+      .then((products) => {
+        if (active) setWishlist(products.filter(Boolean));
       })
       .catch(() => {
         if (active) toast.error("Could not connect to your wishlist.");
@@ -194,7 +178,7 @@ export default function WishlistPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isWishlistLoading, productIds]);
 
   const filteredWishlist = wishlist.filter((product) => {
     const query = searchQuery.trim().toLowerCase();
@@ -213,28 +197,17 @@ export default function WishlistPage() {
   );
 
   const removeFromWishlist = async (productId) => {
-    try {
-      const product = wishlist.find((item) => item.id === productId);
-      const result = await removeWishlistItem(productId);
-      if (!result?.success) {
-        toast.error(result?.message || "Could not remove this product.");
-        return;
-      }
+    const product = wishlist.find((item) => item.id === productId);
+    if (!(await removeProduct(productId))) return;
 
-      setWishlist((previous) =>
-        previous.filter((item) => item.id !== productId)
-      );
+    setWishlist((previous) =>
+      previous.filter((item) => item.id !== productId)
+    );
+    setAddedItems((previous) =>
+      previous.filter((item) => item !== productId)
+    );
 
-      setAddedItems((previous) =>
-        previous.filter((item) => item !== productId)
-      );
-
-      if (product) {
-        toast.success(`${product.name} removed from wishlist.`);
-      }
-    } catch {
-      toast.error("Could not remove this product.");
-    }
+    if (product) toast.success(`${product.name} removed from wishlist.`);
   };
 
   const addToCart = async (product) => {
@@ -250,33 +223,19 @@ export default function WishlistPage() {
     setIsClearing(true);
 
     try {
-      const results = await Promise.all(
-        wishlist.map(async (product) => {
-          try {
-            return {
-              productId: product.id,
-              result: await removeWishlistItem(product.id),
-            };
-          } catch (error) {
-            console.error("Wishlist item removal failed:", error);
-            return { productId: product.id, result: null };
-          }
-        }),
-      );
-
-      const removedIds = new Set(
-        results
-          .filter(({ result }) => result?.success)
-          .map(({ productId }) => productId),
-      );
-      const failedCount = results.length - removedIds.size;
-
-      setWishlist((current) =>
-        current.filter((product) => !removedIds.has(product.id)),
-      );
-      setAddedItems((current) =>
-        current.filter((productId) => !removedIds.has(productId)),
-      );
+      let failedCount = 0;
+      for (const product of wishlist) {
+        if (await removeProduct(product.id)) {
+          setWishlist((current) =>
+            current.filter((item) => item.id !== product.id),
+          );
+          setAddedItems((current) =>
+            current.filter((productId) => productId !== product.id),
+          );
+        } else {
+          failedCount += 1;
+        }
+      }
 
       if (failedCount > 0) {
         toast.error("Some wishlist items could not be removed.");
@@ -338,7 +297,7 @@ export default function WishlistPage() {
       </section>
 
       <section className="mx-auto container px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        {isLoading && (
+        {(isLoading || isWishlistLoading) && (
           <div className="mb-7 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
             Loading your saved products...
           </div>

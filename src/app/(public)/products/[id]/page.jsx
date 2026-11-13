@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 import {
   ChevronRight,
   ChevronLeft,
@@ -24,16 +23,14 @@ import {
 } from "lucide-react";
 import { useCart } from "@/components/cart/CartProvider";
 import { getProductById, getProducts } from "@/lib/api/product";
-import {
-  addToWishlist,
-  getWishlist,
-  removeFromWishlist,
-} from "@/lib/api/wishlist";
+import { useWishlist } from "@/components/wishlist/useWishlist";
 
 const formatPrice = (price) => `৳${price.toLocaleString("en-BD")}`;
 
 export default function ProductDetailsPage() {
   const { addItem } = useCart();
+  const { productIds: wishlistedProductIds, toggleProduct: toggleWishlist } =
+    useWishlist();
   const params = useParams();
   const router = useRouter();
   const productId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -42,9 +39,9 @@ export default function ProductDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
   const [productError, setProductError] = useState("");
+  const isWishlisted = wishlistedProductIds.includes(String(productId));
 
   useEffect(() => {
     let active = true;
@@ -74,10 +71,11 @@ export default function ProductDetailsPage() {
         setProduct(normalizedProduct);
         setActiveImage(0);
 
-        const [relatedResult, wishlistResult] = await Promise.all([
-          getProducts({ category: currentProduct.category, page: 1, limit: 5 }),
-          getWishlist(),
-        ]);
+        const relatedResult = await getProducts({
+          category: currentProduct.category,
+          page: 1,
+          limit: 5,
+        });
 
         if (!active) return;
         if (relatedResult?.success) {
@@ -89,11 +87,6 @@ export default function ProductDetailsPage() {
                 id: item._id,
                 image: item.images?.[0],
               })),
-          );
-        }
-        if (wishlistResult?.success) {
-          setIsWishlisted(
-            wishlistResult.data.items.some((item) => item.productId === currentProduct._id),
           );
         }
       })
@@ -111,21 +104,6 @@ export default function ProductDetailsPage() {
 
   const addToCart = async () => {
     return addItem(productId, quantity);
-  };
-
-  const toggleWishlist = async () => {
-    try {
-      const result = isWishlisted
-        ? await removeFromWishlist(productId)
-        : await addToWishlist(productId);
-      if (!result?.success) {
-        toast.error(result?.message || "Sign in to update your wishlist.");
-        return;
-      }
-      setIsWishlisted((value) => !value);
-    } catch {
-      toast.error("Could not update your wishlist.");
-    }
   };
 
   const buyNow = async () => {
@@ -240,7 +218,7 @@ export default function ProductDetailsPage() {
                   )}
 
                   <button
-                    onClick={toggleWishlist}
+                    onClick={() => toggleWishlist(productId)}
                     aria-label={
                       isWishlisted ? "Remove from wishlist" : "Add to wishlist"
                     }
@@ -427,7 +405,7 @@ export default function ProductDetailsPage() {
               </div>
 
               <button
-                onClick={toggleWishlist}
+                onClick={() => toggleWishlist(productId)}
                 className="mt-4 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium text-slate-500 transition hover:text-red-500"
               >
                 <Heart

@@ -32,6 +32,7 @@ import { Button } from "@heroui/react";
 import { FaFacebook, FaYoutube } from "react-icons/fa";
 import { BsInstagram } from "react-icons/bs";
 import { useCart } from "@/components/cart/CartProvider";
+import { useWishlist } from "@/components/wishlist/useWishlist";
 
 const productCategories = [
   {
@@ -149,6 +150,8 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { itemCount: cartCount } = useCart();
+  const { productIds: wishlistedProductIds } = useWishlist();
+  const wishlistCount = wishlistedProductIds.length;
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileActiveTab, setMobileActiveTab] = useState("menu");
@@ -298,10 +301,16 @@ export default function Navbar() {
 
               <Link
                 href="/wishlist"
-                aria-label="Wishlist"
-                className="text-slate-200 transition-colors hover:text-blue-400"
+                aria-label={`Wishlist, ${wishlistCount} items`}
+                className="relative text-slate-200 transition-colors hover:text-blue-400"
               >
                 <Heart size={25} strokeWidth={1.7} />
+
+                {wishlistCount > 0 && (
+                  <span className="absolute -right-3 -top-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white ring-2 ring-[#07111e]">
+                    {wishlistCount}
+                  </span>
+                )}
               </Link>
 
               <Link
@@ -323,10 +332,16 @@ export default function Navbar() {
             <div className="flex shrink-0 items-center gap-4 lg:hidden">
               <Link
                 href="/wishlist"
-                aria-label="Wishlist"
-                className="text-slate-200 transition-colors hover:text-blue-400 sm:hidden"
+                aria-label={`Wishlist, ${wishlistCount} items`}
+                className="relative text-slate-200 transition-colors hover:text-blue-400 sm:hidden"
               >
                 <Heart size={22} />
+
+                {wishlistCount > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-bold text-white">
+                    {wishlistCount}
+                  </span>
+                )}
               </Link>
 
               <Link

@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 import { Button } from "@heroui/react";
 import { getProducts } from "@/lib/api/product";
-import { addToWishlist, getWishlist, removeFromWishlist } from "@/lib/api/wishlist";
 import { useCart } from "@/components/cart/CartProvider";
+import { useWishlist } from "@/components/wishlist/useWishlist";
 
 function formatPrice(price) {
   return `৳${price.toLocaleString("en-US")}`;
@@ -22,56 +22,36 @@ function formatPrice(price) {
 
 export default function NewArrivals() {
   const { items: cartItems, addItem } = useCart();
+  const { productIds: wishlist, toggleProduct: toggleWishlist } = useWishlist();
   const [products, setProducts] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
-    Promise.all([
-      getProducts({ page: 1, limit: 8, sort: "newest", status: "Active" }),
-      getWishlist(),
-    ]).then(([productResult, wishlistResult]) => {
-      if (!active) return;
-      if (productResult?.success) {
-        setProducts(productResult.data.map((product) => ({
-          ...product,
-          id: product._id,
-          image: product.images?.[0],
-          badge: "NEW",
-        })));
-      } else {
-        toast.error(productResult?.message || "Could not load new products.");
-      }
-      if (wishlistResult?.success) {
-        setWishlist(wishlistResult.data.items.map((item) => item.productId));
-      }
-    }).catch(() => {
-      if (active) toast.error("Could not connect to new products.");
-    }).finally(() => {
-      if (active) setIsLoading(false);
-    });
+    getProducts({ page: 1, limit: 8, sort: "newest", status: "Active" })
+      .then((productResult) => {
+        if (!active) return;
+        if (productResult?.success) {
+          setProducts(productResult.data.map((product) => ({
+            ...product,
+            id: product._id,
+            image: product.images?.[0],
+            badge: "NEW",
+          })));
+        } else {
+          toast.error(productResult?.message || "Could not load new products.");
+        }
+      })
+      .catch(() => {
+        if (active) toast.error("Could not connect to new products.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
     return () => {
       active = false;
     };
   }, []);
-
-  const toggleWishlist = async (productId) => {
-    try {
-      const result = wishlist.includes(productId)
-        ? await removeFromWishlist(productId)
-        : await addToWishlist(productId);
-      if (!result?.success) {
-        toast.error(result?.message || "Sign in to update your wishlist.");
-        return;
-      }
-      setWishlist((prev) => prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]);
-    } catch {
-      toast.error("Could not update your wishlist.");
-    }
-  };
 
   const addToCart = async (productId) => {
     await addItem(productId);
