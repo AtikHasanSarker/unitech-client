@@ -23,11 +23,15 @@ const brands = [
     logo: "/images/brand/htc.webp",
   },
   {
+    name: "AWEI",
+    slug: "awei",
+    logo: "/images/brand/awei.png",
+  },
+  {
     name: "Oraimo",
     slug: "oraimo",
     logo: "/images/brand/oraimo.png",
   },
-
   {
     name: "Baseus",
     slug: "baseus",
