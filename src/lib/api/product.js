@@ -1,8 +1,9 @@
 'use server'
 
+import { cacheLife, cacheTag, updateTag } from "next/cache";
 import { serverFetch, serverMutation } from "./core/server";
 
-export const getProducts = async (filters = {}, options = {}) => {
+const getProductsPath = (filters = {}) => {
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(filters)) {
         if (value !== undefined && value !== null && value !== "") {
@@ -10,7 +11,22 @@ export const getProducts = async (filters = {}, options = {}) => {
         }
     }
     const suffix = query.size ? `?${query.toString()}` : "";
-    return serverFetch(`products${suffix}`, options);
+    return `products${suffix}`;
+};
+
+export const getProducts = async (filters = {}, options = {}) => {
+    return serverFetch(getProductsPath(filters), options);
+};
+
+const getCachedProductsData = async (filters) => {
+    "use cache";
+    cacheLife({ stale: 30, revalidate: 30, expire: 300 });
+    cacheTag("products");
+    return serverFetch(getProductsPath(filters));
+};
+
+export const getCachedProducts = async (filters = {}) => {
+    return getCachedProductsData(filters);
 };
 
 export const getProductById = async (productId, options = {}) => {
@@ -18,14 +34,20 @@ export const getProductById = async (productId, options = {}) => {
 }
 
 export const addProduct = async (productData) => {
-    return serverMutation('products', productData, 'POST');
+    const result = await serverMutation('products', productData, 'POST');
+    if (result?.success) updateTag("products");
+    return result;
 }
 
 export const updateProduct = async (productId, productData) => {
-    return serverMutation(`products/${productId}`, productData, 'PATCH');
+    const result = await serverMutation(`products/${productId}`, productData, 'PATCH');
+    if (result?.success) updateTag("products");
+    return result;
 }
 
 export const deleteProduct = async (productId) => {
-    return serverMutation(`products/${productId}`, {}, 'DELETE');
+    const result = await serverMutation(`products/${productId}`, {}, 'DELETE');
+    if (result?.success) updateTag("products");
+    return result;
 }
 

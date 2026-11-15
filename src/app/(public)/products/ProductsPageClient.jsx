@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 import { getCategories } from "@/lib/api/category";
-import { getProducts } from "@/lib/api/product";
+import { getCachedProducts } from "@/lib/api/product";
 
 import ProductCard from "@/components/ui/ProductCard";
 import { useWishlist } from "@/components/wishlist/useWishlist";
@@ -187,7 +187,15 @@ function FilterSidebar({
   );
 }
 
-export default function ProductsPageClient({ initialSearch, initialCategory }) {
+export default function ProductsPageClient({
+  initialSearch,
+  initialCategory,
+  initialProducts = [],
+  initialPagination,
+  initialProductsLoaded = false,
+  initialCategories = [],
+  initialCategoriesLoaded = false,
+}) {
   const router = useRouter();
   const productListingRef = useRef(null);
 
@@ -195,24 +203,39 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
   const search = initialSearch.trim();
   const category = initialCategory || "All";
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(() =>
+    initialProducts.map((product) => ({
+      ...product,
+      id: product._id,
+      image: product?.images,
+      color: "bg-slate-50",
+      inStock: Number(product.stock) > 0,
+    })),
+  );
+  const [loading, setLoading] = useState(!initialProductsLoaded);
 
-  const [pagination, setPagination] = useState({
-    totalPages: 0,
-  });
+  const [pagination, setPagination] = useState(
+    initialPagination || { totalPages: 0 },
+  );
 
-  const [categoryOptions, setCategoryOptions] = useState([
+  const [categoryOptions, setCategoryOptions] = useState(() => [
     { name: "All Products", slug: "all" },
+    ...initialCategories.map((item) => ({
+      _id: item._id,
+      name: item.name,
+      slug: item.slug,
+    })),
   ]);
 
   const [sort, setSort] = useState("featured");
   const [maxPrice, setMaxPrice] = useState(5000);
+  const [debouncedMaxPrice, setDebouncedMaxPrice] = useState(5000);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [minRating, setMinRating] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const { productIds: wishListed, toggleProduct: toggleWishlist } = useWishlist();
+  const skipInitialProductFetch = useRef(initialProductsLoaded);
 
   const scrollToProductListing = () => {
     requestAnimationFrame(() => {
@@ -228,17 +251,30 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
       (item) => item.name === category || item._id === category,
     )?.name || "";
  
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedMaxPrice(maxPrice);
+    }, 250);
+
+    return () => clearTimeout(timeoutId);
+  }, [maxPrice]);
+
   // Fetch Products
   useEffect(() => {
+    if (skipInitialProductFetch.current) {
+      skipInitialProductFetch.current = false;
+      return;
+    }
+
     let active = true;
 
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const result = await getProducts({
+        const result = await getCachedProducts({
           search,
           category: category === "All" ? undefined : category,
-          maxPrice,
+          maxPrice: debouncedMaxPrice,
           sort:
             sort === "price-low"
               ? "price_asc"
@@ -293,9 +329,11 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
     return () => {
       active = false;
     };
-  }, [search, category, maxPrice, sort, currentPage]);
+  }, [search, category, debouncedMaxPrice, sort, currentPage]);
 
   useEffect(() => {
+    if (initialCategoriesLoaded) return;
+
     let active = true;
 
     const fetchInitialData = async () => {
@@ -325,7 +363,7 @@ export default function ProductsPageClient({ initialSearch, initialCategory }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [initialCategoriesLoaded]);
 
   // -------------------------------------------
   // Filter and Sort Products Locally
