@@ -2,16 +2,50 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button, TextField, Label, Input } from "@heroui/react";
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { TextField, Label, Input } from "@heroui/react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, LoaderCircle } from "lucide-react";
+import toast from "react-hot-toast";
+import { signIn } from "@/lib/auth-client";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // UI only — no API integration
+
+    const formData = new FormData(e.currentTarget);
+    const email = String(formData.get("email") || "").trim();
+    const password = String(formData.get("password") || "");
+
+    setIsSubmitting(true);
+
+    try {
+      const { data, error } = await signIn.email({
+        email,
+        password,
+        rememberMe,
+      });
+
+      if (error || !data) {
+        toast.error(error?.message || "Email or password is incorrect.");
+        return;
+      }
+
+      toast.success("Sign in successful.");
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.replace(next === "/cart" ? "/cart" : "/my-orders");
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Sign in failed. Try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -34,7 +68,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <TextField name="email" type="email" isRequired>
-              <Label className="text-sm font-medium text-gray-700">
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email Address
               </Label>
 
@@ -44,7 +78,11 @@ export default function LoginPage() {
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
                 />
                 <Input
+                  id="email"
+                  name="email"
+                  required
                   placeholder="Enter your email"
+                  autoComplete="email"
                   className="h-12 w-full rounded-xl border border-gray-200 pl-10 pr-4 text-sm outline-none focus:border-blue-500"
                 />
               </div>
@@ -53,7 +91,7 @@ export default function LoginPage() {
             {/* Password */}
             <TextField name="password" isRequired>
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                   Password
                 </Label>
 
@@ -72,8 +110,12 @@ export default function LoginPage() {
                 />
 
                 <Input
+                  id="password"
+                  name="password"
+                  required
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
+                  autoComplete="current-password"
                   className="h-12 w-full rounded-xl border border-gray-200 pl-10 pr-12 text-sm outline-none focus:border-blue-500"
                 />
 
@@ -100,13 +142,23 @@ export default function LoginPage() {
             </label>
 
             {/* Submit */}
-            <Button
+            <button
               type="submit"
-              className="w-full h-12 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700"
+              disabled={isSubmitting}
+              className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Sign In
-              <ArrowRight size={18} />
-            </Button>
+              {isSubmitting ? (
+                <>
+                  <LoaderCircle size={18} className="animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
           </form>
 
           {/* Register Link */}
@@ -114,7 +166,7 @@ export default function LoginPage() {
             <p className="text-sm text-gray-500">
               Don&apos;t have an account?{" "}
               <Link
-                href="/register"
+                href="/account"
                 className="font-semibold text-blue-600 hover:text-blue-700"
               >
                 Create Account

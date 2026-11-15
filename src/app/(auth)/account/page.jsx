@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button, Input, Checkbox } from "@heroui/react";
+import { useRouter } from "next/navigation";
+import { Input, Checkbox } from "@heroui/react";
 import {
   User,
   Mail,
@@ -13,14 +14,77 @@ import {
   ArrowRight,
   ShieldCheck,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import { signUp, useSession } from "@/lib/auth-client";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const { data: session, isPending } = useSession();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // UI only - no API or database connection
+
+    const formData = new FormData(e.currentTarget);
+    const name = String(formData.get("name") || "").trim();
+    const email = String(formData.get("email") || "").trim();
+    const password = String(formData.get("password") || "");
+
+    setIsSubmitting(true);
+
+    try {
+      const { data, error } = await signUp.email({ name, email, password });
+
+      if (error || !data) {
+        toast.error(error?.message || "Could not create your account.");
+        return;
+      }
+
+      toast.success("Account created successfully.");
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.replace(next === "/cart" ? "/cart" : "/my-orders");
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Registration failed. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (!isPending && session?.user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-white px-4 py-12">
+        <div className="w-full max-w-md rounded-2xl border border-slate-200 p-8 text-center shadow-sm">
+          <ShieldCheck className="mx-auto h-12 w-12 text-emerald-500" />
+          <h1 className="mt-4 text-2xl font-bold text-slate-900">
+            You&apos;re signed in
+          </h1>
+          <p className="mt-2 text-sm text-slate-500">
+            View your orders or continue shopping.
+          </p>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              href="/my-orders"
+              className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+            >
+              My Orders
+            </Link>
+            <Link
+              href="/products"
+              className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Continue Shopping
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-white px-4 py-12">
@@ -164,14 +228,20 @@ export default function RegisterPage() {
             </div>
 
             {/* Submit */}
-            <Button
+            <button
               type="submit"
-              variant="primary"
-              className="h-12 w-full rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+              disabled={isSubmitting}
+              className="h-12 w-full cursor-pointer rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Create Account
-              <ArrowRight size={17} />
-            </Button>
+              {isSubmitting ? (
+                "Creating account..."
+              ) : (
+                <>
+                  Create Account
+                  <ArrowRight size={17} />
+                </>
+              )}
+            </button>
           </form>
 
           {/* Divider */}

@@ -18,84 +18,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { getMyOrders } from "@/lib/api/order";
-
-const demoOrders = [
-  {
-    id: "UT-10245831",
-    date: "2026-10-22T10:30:00",
-    status: "Delivered",
-    paymentMethod: "Cash on Delivery",
-    deliveryType: "NSTU Campus",
-    total: 1250,
-    items: [
-      {
-        id: "p1",
-        name: "Wireless Bluetooth Earbuds",
-        image: "https://placehold.co/100x100/DBEAFE/1D4ED8?text=Earbuds",
-        price: 950,
-        quantity: 1,
-      },
-      {
-        id: "p3",
-        name: "Fast Charging USB-C Cable",
-        image: "https://placehold.co/100x100/EDE9FE/6D28D9?text=Cable",
-        price: 300,
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "UT-10245719",
-    date: "2026-10-20T15:45:00",
-    status: "Processing",
-    paymentMethod: "Cash on Delivery",
-    deliveryType: "NSTU Campus",
-    total: 1650,
-    items: [
-      {
-        id: "p4",
-        name: "20000mAh Power Bank",
-        image: "https://placehold.co/100x100/DCFCE7/15803D?text=Power+Bank",
-        price: 1650,
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "UT-10245602",
-    date: "2026-10-18T12:15:00",
-    status: "Pending",
-    paymentMethod: "Cash on Delivery",
-    deliveryType: "Outside Campus",
-    total: 750,
-    items: [
-      {
-        id: "p2",
-        name: "20W Fast Charger",
-        image: "https://placehold.co/100x100/FEE2E2/B91C1C?text=Charger",
-        price: 750,
-        quantity: 1,
-      },
-    ],
-  },
-  {
-    id: "UT-10245540",
-    date: "2026-10-15T09:00:00",
-    status: "Cancelled",
-    paymentMethod: "Cash on Delivery",
-    deliveryType: "NSTU Campus",
-    total: 450,
-    items: [
-      {
-        id: "p3",
-        name: "Fast Charging USB-C Cable",
-        image: "https://placehold.co/100x100/EDE9FE/6D28D9?text=Cable",
-        price: 450,
-        quantity: 1,
-      },
-    ],
-  },
-];
+import { useSession } from "@/lib/auth-client";
 
 const statusConfig = {
   Pending: {
@@ -271,48 +194,116 @@ function OrderCard({ order }) {
 }
 
 export default function MyOrdersPage() {
-  const [orders, setOrders] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  const [orderState, setOrderState] = useState({
+    userId: null,
+    orders: [],
+    error: "",
+    authRequired: false,
+  });
   const [activeFilter, setActiveFilter] = useState("All Orders");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
+  const { data: session, isPending: isSessionPending } = useSession();
+  const userId = session?.user?.id;
+  const isLoading =
+    isSessionPending || (Boolean(userId) && orderState.userId !== userId);
+  const orders = useMemo(
+    () => (orderState.userId === userId ? orderState.orders : []),
+    [orderState, userId],
+  );
+  const loadError =
+    orderState.userId === userId ? orderState.error : "";
+  const authRequired =
+    (!isSessionPending && !userId) ||
+    (orderState.userId === userId && orderState.authRequired);
 
   useEffect(() => {
+    if (isSessionPending || !userId) return;
+
     let active = true;
+
     getMyOrders()
       .then((result) => {
         if (!active) return;
         if (!result?.success) {
-          setLoadError(result?.message || "Sign in to view your orders.");
+          setOrderState({
+            userId,
+            orders: [],
+            error:
+              result?.status === 401
+                ? ""
+                : result?.message || "Could not load your orders.",
+            authRequired: result?.status === 401,
+          });
           return;
         }
-        setOrders(
-          result.data.map((order) => ({
-            id: order._id,
-            date: order.createdAt,
+
+        if (!Array.isArray(result.data)) {
+          setOrderState({
+            userId,
+            orders: [],
+            error: "The order service returned invalid data.",
+            authRequired: false,
+          });
+          return;
+        }
+
+        setOrderState({
+          userId,
+          error: "",
+          authRequired: false,
+          orders: result.data.map((order) => ({
+            id: String(order._id || order.id),
+            date: order.createdAt || order.date,
             status: order.status,
             paymentMethod: order.paymentMethod,
             deliveryType: order.deliveryAddress,
-            total: order.total,
-            items: order.items.map((item) => ({
-              id: item.productId,
-              ...item,
-            })),
+            total: Number(order.total) || 0,
+            items: (Array.isArray(order.items) ? order.items : []).map(
+              (item, index) => ({
+                ...item,
+                id: String(
+                  item._id ||
+                    item.productId?._id ||
+                    item.productId ||
+                    item.id ||
+                    index,
+                ),
+                name:
+                  item.name ||
+                  item.product?.name ||
+                  item.productId?.name ||
+                  "Product",
+                image:
+                  item.image ||
+                  item.product?.images?.[0] ||
+                  item.productId?.images?.[0] ||
+                  "/logo.png",
+                price: Number(item.price || item.product?.price) || 0,
+                quantity: Number(item.quantity) || 1,
+              }),
+            ),
           })),
-        );
+        });
       })
-      .catch(() => {
-        if (active) setLoadError("Could not connect to your orders.");
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
+      .catch((error) => {
+        if (active) {
+          setOrderState({
+            userId,
+            orders: [],
+            error:
+              error instanceof Error
+                ? error.message
+                : "Could not connect to your orders.",
+            authRequired: false,
+          });
+        }
       });
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [isSessionPending, userId]);
 
   const filteredOrders = useMemo(() => {
     let result = [...orders];
@@ -352,6 +343,8 @@ export default function MyOrdersPage() {
 
     return counts;
   }, [orders]);
+  const showOrders =
+    !isLoading && !loadError && !authRequired && orders.length > 0;
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -390,14 +383,75 @@ export default function MyOrdersPage() {
       </section>
 
       <section className="mx-auto container px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        {(isLoading || loadError) && (
-          <div className={`mb-6 rounded-xl border p-4 text-sm ${loadError ? "border-amber-200 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600"}`}>
-            {loadError || "Loading your orders..."}
+        {isLoading && (
+          <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+            Loading your orders...
           </div>
         )}
 
-        {/* Summary Cards */}
-        <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {loadError && (
+          <div
+            role="alert"
+            className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
+          >
+            {loadError}
+          </div>
+        )}
+
+        {authRequired && (
+          <div className="rounded-2xl border border-slate-200 bg-white px-5 py-14 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+              <Package size={30} />
+            </div>
+            <h2 className="mt-5 text-lg font-bold text-slate-900">
+              Sign in to view your orders
+            </h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+              Sign in to see your order history, or create an account before
+              placing an order.
+            </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-3">
+              <Link
+                href="/login"
+                className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/account"
+                className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Create Account
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {!isLoading && !loadError && !authRequired && orders.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-16 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+              <ShoppingBag size={30} />
+            </div>
+            <h2 className="mt-5 text-lg font-bold text-slate-900">
+              You haven&apos;t ordered any products yet
+            </h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+              Your orders will appear here after you place one while signed in.
+            </p>
+            <Link
+              href="/products"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              Browse Products
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        )}
+
+        {showOrders && (
+          <>
+            {/* Summary Cards */}
+            <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-5">
             <p className="text-sm text-slate-500">Total Orders</p>
             <p className="mt-2 text-3xl font-extrabold text-slate-900">
@@ -554,6 +608,8 @@ export default function MyOrdersPage() {
             <ArrowRight size={16} />
           </Link>
         </div>
+          </>
+        )}
       </section>
     </main>
   );
