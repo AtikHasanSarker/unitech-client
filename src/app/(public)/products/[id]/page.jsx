@@ -27,6 +27,59 @@ import { useWishlist } from "@/components/wishlist/useWishlist";
 
 const formatPrice = (price) => `৳${price.toLocaleString("en-BD")}`;
 
+const formatSpecificationValue = (value) => {
+  if (value === null || value === undefined || value === "") {
+    return "Not specified";
+  }
+
+  return typeof value === "object" ? JSON.stringify(value) : String(value);
+};
+
+const normalizeSpecifications = (specifications, product) => {
+  const fallback = {
+    Brand: product.brand || "Not specified",
+    Category: product.category || "Not specified",
+    Stock: Number(product.stock) > 0 ? product.stock : "Out of stock",
+  };
+
+  if (Array.isArray(specifications)) {
+    const entries = specifications
+      .map((specification) => {
+        if (Array.isArray(specification)) return specification;
+        if (specification && typeof specification === "object") {
+          return [
+            specification.key ?? specification.label,
+            specification.value,
+          ];
+        }
+        return [];
+      })
+      .filter(
+        ([key]) => key !== null && key !== undefined && String(key).trim(),
+      );
+
+    if (entries.length > 0) {
+      return entries.map(([key, value]) => [
+        String(key),
+        formatSpecificationValue(value),
+      ]);
+    }
+  } else if (specifications && typeof specifications === "object") {
+    const entries = Object.entries(specifications);
+    if (entries.length > 0) {
+      return entries.map(([key, value]) => [
+        key,
+        formatSpecificationValue(value),
+      ]);
+    }
+  }
+
+  return Object.entries(fallback).map(([key, value]) => [
+    key,
+    formatSpecificationValue(value),
+  ]);
+};
+
 export default function ProductDetailsPage() {
   const { addItem } = useCart();
   const { productIds: wishlistedProductIds, toggleProduct: toggleWishlist } =
@@ -61,11 +114,10 @@ export default function ProductDetailsPage() {
           id: currentProduct._id,
           images: currentProduct.images?.length ? currentProduct.images : ["/favicon.ico"],
           features: Array.isArray(currentProduct.features) ? currentProduct.features : [],
-          specifications: Object.entries(currentProduct.specifications || {
-            Brand: currentProduct.brand || "Not specified",
-            Category: currentProduct.category || "Not specified",
-            Stock: Number(currentProduct.stock) > 0 ? currentProduct.stock : "Out of stock",
-          }),
+          specifications: normalizeSpecifications(
+            currentProduct.specifications,
+            currentProduct,
+          ),
         };
 
         setProduct(normalizedProduct);
@@ -545,20 +597,31 @@ export default function ProductDetailsPage() {
                     Technical specifications
                   </h2>
 
-                  <div className="overflow-hidden rounded-xl border border-slate-200">
-                    {product.specifications.map(([label, value], index) => (
-                      <div
-                        key={label}
-                        className={`grid grid-cols-1 gap-1 px-4 py-3.5 sm:grid-cols-[180px_1fr] sm:gap-4 ${
-                          index % 2 === 0 ? "bg-slate-50" : "bg-white"
-                        }`}
-                      >
-                        <span className="text-xs font-semibold text-slate-500">
-                          {label}
-                        </span>
-                        <span className="text-sm text-slate-800">{value}</span>
-                      </div>
-                    ))}
+                  <div className="overflow-x-auto rounded-xl border border-slate-200">
+                    <table className="w-full border-collapse text-left">
+                      <tbody className="divide-y divide-slate-200">
+                        {product.specifications.map(
+                          ([label, value], index) => (
+                            <tr
+                              key={`${label}-${index}`}
+                              className={
+                                index % 2 === 0 ? "bg-slate-50" : "bg-white"
+                              }
+                            >
+                              <th
+                                scope="row"
+                                className="w-[38%] px-4 py-3.5 text-xs font-semibold text-slate-500 sm:w-[220px] sm:px-5"
+                              >
+                                {label}
+                              </th>
+                              <td className="px-4 py-3.5 text-sm text-slate-800 sm:px-5">
+                                {value}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
