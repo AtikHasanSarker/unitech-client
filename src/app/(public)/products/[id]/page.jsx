@@ -274,7 +274,7 @@ export default function ProductDetailsPage() {
                     aria-label={
                       isWishlisted ? "Remove from wishlist" : "Add to wishlist"
                     }
-                    className={`absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-full border transition ${
+                    className={`absolute right-5 top-5 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition ${
                       isWishlisted
                         ? "border-red-100 bg-red-50 text-red-500"
                         : "border-slate-200 bg-white text-slate-500 hover:text-red-500"
@@ -295,7 +295,7 @@ export default function ProductDetailsPage() {
                     key={image}
                     onClick={() => setActiveImage(index)}
                     aria-label={`View product image ${index + 1}`}
-                    className={`relative aspect-square overflow-hidden rounded-xl border bg-white transition ${
+                    className={`relative aspect-square cursor-pointer overflow-hidden rounded-xl border bg-white transition ${
                       activeImage === index
                         ? "border-blue-600 ring-2 ring-blue-600/15"
                         : "border-slate-200 hover:border-blue-300"
@@ -403,7 +403,7 @@ export default function ProductDetailsPage() {
                       }
                       disabled={quantity <= 1}
                       aria-label="Decrease quantity"
-                      className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:text-blue-600 disabled:opacity-30"
+                      className="flex h-11 w-11 cursor-pointer items-center justify-center text-slate-600 transition hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       <Minus size={16} />
                     </button>
@@ -420,7 +420,7 @@ export default function ProductDetailsPage() {
                       }
                       disabled={quantity >= product.stock}
                       aria-label="Increase quantity"
-                      className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:text-blue-600 disabled:opacity-30"
+                      className="flex h-11 w-11 cursor-pointer items-center justify-center text-slate-600 transition hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-30"
                     >
                       <Plus size={16} />
                     </button>
@@ -440,7 +440,7 @@ export default function ProductDetailsPage() {
                 <button
                   onClick={addToCart}
                   disabled={product.stock <= 0}
-                  className="flex h-13 min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="flex h-13 min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                 >
                   <ShoppingCart size={18} />
                   Add to Cart
@@ -449,7 +449,7 @@ export default function ProductDetailsPage() {
                 <button
                   onClick={buyNow}
                   disabled={product.stock <= 0}
-                  className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-800 transition hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-800 transition hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Buy Now
                   <ChevronRight size={17} />
@@ -458,7 +458,7 @@ export default function ProductDetailsPage() {
 
               <button
                 onClick={() => toggleWishlist(productId)}
-                className="mt-4 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium text-slate-500 transition hover:text-red-500"
+                className="mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium text-slate-500 transition hover:text-red-500"
               >
                 <Heart
                   size={17}
@@ -512,7 +512,7 @@ export default function ProductDetailsPage() {
                 Share this product
                 <button
                   onClick={() => toast("Product sharing is not available yet.")}
-                  className="ml-2 inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-blue-600"
+                  className="ml-2 inline-flex cursor-pointer items-center gap-1.5 font-semibold text-slate-600 hover:text-blue-600"
                 >
                   <Share2 size={13} />
                   Share
@@ -539,7 +539,7 @@ export default function ProductDetailsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative shrink-0 py-5 text-sm font-semibold transition ${
+                  className={`relative shrink-0 cursor-pointer py-5 text-sm font-semibold transition ${
                     activeTab === tab.id
                       ? "text-blue-600"
                       : "text-slate-500 hover:text-slate-800"
