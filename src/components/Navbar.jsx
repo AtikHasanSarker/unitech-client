@@ -212,7 +212,7 @@ export default function Navbar() {
     <>
       {/* TOP INFORMATION BAR */}
       <div className="hidden border-b border bg-white text-black lg:block">
-        <div className="mx-auto flex h-7 container items-center justify-between px-5">
+        <div className="mx-auto flex h-7 container items-center justify-between px-5 sm:px-10">
           {/* Location */}
           <div className="flex items-center gap-2 text-xs font-bold">
             Welcome to Your Trusted Mobile Accessories Store!

@@ -48,12 +48,12 @@ export default function HeroBanner() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white my-8">
+    <section className="relative overflow-hidden bg-white my-6">
       <div className="mx-auto container px-4 sm:px-8 lg:px-10">
         <div
           aria-label="Featured product banners"
           aria-roledescription="carousel"
-          className="group relative aspect-[2/1] overflow-hidden rounded-2xl border border-white bg-white shadow-[0_24px_70px_-30px_rgba(15,23,42,0.42)] ring-1 ring-slate-900/5 sm:rounded-3xl"
+          className="group relative aspect-2/1 overflow-hidden rounded-2xl border border-white bg-white shadow-[0_24px_70px_-30px_rgba(15,23,42,0.42)] ring-1 ring-slate-900/5 sm:rounded-3xl"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onFocusCapture={() => setIsPaused(true)}
@@ -77,7 +77,7 @@ export default function HeroBanner() {
               sizes="(max-width: 640px) 100vw, (max-width: 1280px) 92vw, 1280px"
               loading={activeIndex === 0 ? "eager" : "lazy"}
               fetchPriority={activeIndex === 0 ? "high" : "auto"}
-              className="object-contain transition-transform duration-700 group-hover:scale-[1.01]"
+              className="object-contain"
             />
             <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/10 via-transparent to-white/5" />
           </Link>
