@@ -115,10 +115,9 @@ export default function Newsletter() {
                   <Button
                     type="submit"
                     isDisabled={isSubmitting}
-                    className="h-12 shrink-0 rounded-full bg-blue-600 px-6 font-semibold text-white transition-colors hover:bg-blue-500"
-                  >
+                    className="h-12 shrink-0 rounded-full bg-blue-600 px-6 font-semibold text-white transition-colors duration-300 ease-in-out hover:bg-blue-500"                  >
                     {isSubmitting ? "Subscribing..." : "Subscribe"}
-                    <ArrowRight size={17} className="ml-2" />
+                    <ArrowRight size={17} className="ml-2 " />
                   </Button>
                 </div>
 

@@ -161,7 +161,7 @@ export default function WhyChooseUs() {
             </div>
 
             <Link href="/products">
-              <Button className="group h-12 shrink-0 rounded-full bg-blue-600 px-7 font-semibold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-blue-600/30">
+              <Button className="group h-12 shrink-0 rounded-full bg-blue-600 px-7 font-semibold text-white shadow-lg transition-colors duration-300 ease-in-out shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-blue-600/30">
                 Explore Products
                 <ArrowRight
                   size={17}
