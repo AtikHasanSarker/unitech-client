@@ -367,7 +367,7 @@ export default function Navbar() {
       ======================================== */}
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#07111e] text-white shadow-xl shadow-black/10">
         <div className="mx-auto container px-4 backdrop-blur-xl sm:px-6 xl:px-10">
-          <div className="flex h-[76px] items-center justify-between gap-4 lg:gap-6">
+          <div className="flex h-14 sm:h-16 items-center justify-between gap-4 lg:gap-6">
             {/* Logo */}
             <Link
               href="/"
@@ -394,9 +394,9 @@ export default function Navbar() {
               }}
               className="relative hidden min-w-0 flex-1 lg:block lg:max-w-[650px]"
             >
-              <div className="flex h-12 overflow-hidden rounded-full border border-white/10 bg-[#101f32] transition-all focus-within:border-blue-500/60 focus-within:ring-2 focus-within:ring-blue-500/10">
-                <div className="flex items-center pl-5">
-                  <Search size={19} />
+              <div className="flex h-9 overflow-hidden rounded-full border border-white/10 bg-[#101f32] transition-all focus-within:border-blue-500/60 focus-within:ring-2 focus-within:ring-blue-500/10">
+                <div className="flex items-center pl-3">
+                  <Search size={15} />
                 </div>
 
                 <input
@@ -413,7 +413,7 @@ export default function Navbar() {
                     searchQuery.trim().length >= 2
                   }
                   aria-controls="desktop-product-suggestions"
-                  className="min-w-0 flex-1 bg-transparent px-4 text-sm text-white outline-none placeholder:text-slate-500"
+                  className="min-w-0 flex-1 bg-transparent px-4 text-xs text-white outline-none placeholder:text-slate-500"
                 />
 
                 <Button
@@ -422,7 +422,7 @@ export default function Navbar() {
                   aria-label="Search"
                   className="h-full w-14 min-w-14 rounded-none rounded-r-full bg-blue-600 text-white transition-colors hover:bg-blue-500"
                 >
-                  <Search size={22} />
+                  <Search />
                 </Button>
               </div>
               <div id="desktop-product-suggestions">
@@ -437,7 +437,7 @@ export default function Navbar() {
                 aria-label="My account"
                 className="text-slate-200 transition-colors hover:text-blue-400"
               >
-                <UserRound size={23} strokeWidth={1.7} />
+                <UserRound size={22} strokeWidth={1.7} />
               </Link>
 
               <Link
@@ -445,7 +445,7 @@ export default function Navbar() {
                 aria-label={`Wishlist, ${wishlistCount} items`}
                 className="relative text-slate-200 transition-colors hover:text-blue-400"
               >
-                <Heart size={25} strokeWidth={1.7} />
+                <Heart size={22} strokeWidth={1.7} />
 
                 {wishlistCount > 0 && (
                   <span className="absolute -right-3 -top-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white ring-2 ring-[#07111e]">
@@ -459,7 +459,7 @@ export default function Navbar() {
                 aria-label={`Shopping cart, ${cartCount} items`}
                 className="relative text-slate-200 transition-colors hover:text-blue-400"
               >
-                <ShoppingCart size={25} strokeWidth={1.7} />
+                <ShoppingCart size={22} strokeWidth={1.7} />
 
                 {cartCount > 0 && (
                   <span className="absolute -right-3 -top-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white ring-2 ring-[#07111e]">
@@ -476,7 +476,7 @@ export default function Navbar() {
                 aria-label={`Wishlist, ${wishlistCount} items`}
                 className="relative text-slate-200 transition-colors hover:text-blue-400 sm:hidden"
               >
-                <Heart size={22} />
+                <Heart size={20} />
 
                 {wishlistCount > 0 && (
                   <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-bold text-white">
@@ -490,7 +490,7 @@ export default function Navbar() {
                 aria-label="Shopping cart"
                 className="relative text-slate-200 transition-colors hover:text-blue-400"
               >
-                <ShoppingCart size={23} />
+                <ShoppingCart size={20} />
 
                 {cartCount > 0 && (
                   <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-bold text-white">
@@ -504,9 +504,9 @@ export default function Navbar() {
                 onClick={openMobileMenu}
                 aria-label="Open navigation menu"
                 aria-expanded={mobileMenuOpen}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 transition-colors hover:bg-white/10 cursor-pointer"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-colors hover:bg-white/10 cursor-pointer"
               >
-                <Menu size={23} />
+                <Menu size={19} />
               </button>
             </div>
           </div>
@@ -519,11 +519,11 @@ export default function Navbar() {
                 setActiveSearchBox(null);
               }
             }}
-            className="relative pb-4 lg:hidden"
+            className="relative pb-2 lg:hidden"
           >
-            <div className="flex h-11 overflow-hidden rounded-full border border-white/10 bg-[#101f32] focus-within:border-blue-500/60">
-              <div className="flex items-center pl-4 text-slate-400">
-                <Search size={17} />
+            <div className="flex h-9 overflow-hidden rounded-full border border-white/10 bg-[#101f32] focus-within:border-blue-500/60">
+              <div className="flex items-center pl-3 text-slate-400">
+                <Search size={16} />
               </div>
 
               <input
@@ -539,7 +539,7 @@ export default function Navbar() {
                   activeSearchBox === "mobile" && searchQuery.trim().length >= 2
                 }
                 aria-controls="mobile-product-suggestions"
-                className="min-w-0 flex-1 bg-transparent px-3 text-sm text-white outline-none placeholder:text-slate-500"
+                className="min-w-0 flex-1 bg-transparent px-2 text-xs text-white outline-none placeholder:text-slate-500"
               />
 
               <Button
@@ -548,7 +548,7 @@ export default function Navbar() {
                 aria-label="Search"
                 className="h-full w-12 min-w-12 rounded-none rounded-r-full bg-blue-600 text-white hover:bg-blue-500"
               >
-                <Search size={19} />
+                <Search size={16} />
               </Button>
             </div>
             <div id="mobile-product-suggestions">
