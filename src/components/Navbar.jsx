@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -33,6 +33,7 @@ import { FaFacebook, FaYoutube } from "react-icons/fa";
 import { BsInstagram } from "react-icons/bs";
 import { useCart } from "@/components/cart/CartProvider";
 import { useWishlist } from "@/components/wishlist/useWishlist";
+import { getProducts } from "@/lib/api/product";
 
 const productCategories = [
   {
@@ -156,6 +157,67 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileActiveTab, setMobileActiveTab] = useState("menu");
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [suggestionError, setSuggestionError] = useState("");
+  const [activeSearchBox, setActiveSearchBox] = useState(null);
+  const searchRequestRef = useRef(0);
+
+  const updateSearchQuery = (query) => {
+    setSearchQuery(query);
+
+    if (query.trim().length < 2) {
+      setSearchSuggestions([]);
+      setIsLoadingSuggestions(false);
+      setSuggestionError("");
+      return;
+    }
+
+    setIsLoadingSuggestions(true);
+    setSuggestionError("");
+    setSearchSuggestions([]);
+  };
+
+  useEffect(() => {
+    const query = searchQuery.trim();
+    const requestId = ++searchRequestRef.current;
+
+    if (query.length < 2) return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const result = await getProducts({
+          search: query,
+          page: 1,
+          limit: 5,
+          sort: "newest",
+        });
+
+        if (requestId !== searchRequestRef.current) return;
+
+        if (!result?.success) {
+          setSearchSuggestions([]);
+          setSuggestionError(
+            result?.message || "Could not load product suggestions.",
+          );
+          return;
+        }
+
+        setSearchSuggestions(Array.isArray(result.data) ? result.data : []);
+      } catch {
+        if (requestId !== searchRequestRef.current) return;
+
+        setSearchSuggestions([]);
+        setSuggestionError("Could not load product suggestions.");
+      } finally {
+        if (requestId === searchRequestRef.current) {
+          setIsLoadingSuggestions(false);
+        }
+      }
+    }, 250);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   // Lock background scroll while mobile menu is open
   useEffect(() => {
@@ -183,9 +245,72 @@ export default function Navbar() {
 
     if (!query) return;
 
+    setActiveSearchBox(null);
     router.push(`/products?search=${encodeURIComponent(query)}`);
 
     setMobileMenuOpen(false);
+  };
+
+  const handleSuggestionSelect = (productId) => {
+    setActiveSearchBox(null);
+    setMobileMenuOpen(false);
+    router.push(`/products/${productId}`);
+  };
+
+  const renderSearchSuggestions = (searchBox) => {
+    if (activeSearchBox !== searchBox || searchQuery.trim().length < 2) {
+      return null;
+    }
+
+    return (
+      <div
+        className="absolute left-0 right-0 top-full z-[70] mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white text-slate-900 shadow-xl"
+        role="listbox"
+        aria-label="Product suggestions"
+      >
+        {isLoadingSuggestions ? (
+          <p className="px-4 py-3 text-sm text-slate-500" aria-live="polite">
+            Searching products...
+          </p>
+        ) : suggestionError ? (
+          <p className="px-4 py-3 text-sm text-red-600" role="status">
+            {suggestionError}
+          </p>
+        ) : searchSuggestions.length === 0 ? (
+          <p className="px-4 py-3 text-sm text-slate-500" role="status">
+            No matching products found.
+          </p>
+        ) : (
+          searchSuggestions.map((product) => (
+            <button
+              key={product._id}
+              type="button"
+              role="option"
+              aria-selected="false"
+              onClick={() => handleSuggestionSelect(product._id)}
+              className="flex w-full items-center gap-3 border-b border-slate-100 px-3 py-2.5 text-left transition-colors last:border-b-0 hover:bg-blue-50"
+            >
+              <Image
+                src={product.images?.[0] || "/favicon.ico"}
+                alt=""
+                width={40}
+                height={40}
+                className="h-10 w-10 shrink-0 rounded-lg bg-slate-50 object-contain p-1"
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium text-slate-800">
+                  {product.name}
+                </span>
+                <span className="mt-0.5 block text-xs text-slate-500">
+                  {product.brand ? `${product.brand} · ` : ""}৳
+                  {Number(product.price || 0).toLocaleString("en-BD")}
+                </span>
+              </span>
+            </button>
+          ))
+        )}
+      </div>
+    );
   };
 
   const closeMobileMenu = () => {
@@ -262,7 +387,12 @@ export default function Navbar() {
             {/* Desktop Search */}
             <form
               onSubmit={handleSearch}
-              className="hidden min-w-0 flex-1 lg:block lg:max-w-[650px]"
+              onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget)) {
+                  setActiveSearchBox(null);
+                }
+              }}
+              className="relative hidden min-w-0 flex-1 lg:block lg:max-w-[650px]"
             >
               <div className="flex h-12 overflow-hidden rounded-full border border-white/10 bg-[#101f32] transition-all focus-within:border-blue-500/60 focus-within:ring-2 focus-within:ring-blue-500/10">
                 <div className="flex items-center pl-5">
@@ -272,9 +402,17 @@ export default function Navbar() {
                 <input
                   type="search"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => updateSearchQuery(e.target.value)}
+                  onFocus={() => setActiveSearchBox("desktop")}
                   placeholder="Search for accessories (e.g. charger, case, earphone...)"
                   aria-label="Search products"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={
+                    activeSearchBox === "desktop" &&
+                    searchQuery.trim().length >= 2
+                  }
+                  aria-controls="desktop-product-suggestions"
                   className="min-w-0 flex-1 bg-transparent px-4 text-sm text-white outline-none placeholder:text-slate-500"
                 />
 
@@ -286,6 +424,9 @@ export default function Navbar() {
                 >
                   <Search size={22} />
                 </Button>
+              </div>
+              <div id="desktop-product-suggestions">
+                {renderSearchSuggestions("desktop")}
               </div>
             </form>
 
@@ -371,7 +512,15 @@ export default function Navbar() {
           </div>
 
           {/* MOBILE SEARCH */}
-          <form onSubmit={handleSearch} className="pb-4 lg:hidden">
+          <form
+            onSubmit={handleSearch}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget)) {
+                setActiveSearchBox(null);
+              }
+            }}
+            className="relative pb-4 lg:hidden"
+          >
             <div className="flex h-11 overflow-hidden rounded-full border border-white/10 bg-[#101f32] focus-within:border-blue-500/60">
               <div className="flex items-center pl-4 text-slate-400">
                 <Search size={17} />
@@ -380,9 +529,16 @@ export default function Navbar() {
               <input
                 type="search"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => updateSearchQuery(e.target.value)}
+                onFocus={() => setActiveSearchBox("mobile")}
                 placeholder="Search mobile accessories..."
                 aria-label="Search products"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded={
+                  activeSearchBox === "mobile" && searchQuery.trim().length >= 2
+                }
+                aria-controls="mobile-product-suggestions"
                 className="min-w-0 flex-1 bg-transparent px-3 text-sm text-white outline-none placeholder:text-slate-500"
               />
 
@@ -394,6 +550,9 @@ export default function Navbar() {
               >
                 <Search size={19} />
               </Button>
+            </div>
+            <div id="mobile-product-suggestions">
+              {renderSearchSuggestions("mobile")}
             </div>
           </form>
 
@@ -527,22 +686,41 @@ export default function Navbar() {
             </div>
 
             {/* Drawer Search */}
-            <form onSubmit={handleSearch} className="shrink-0 px-5 py-4">
+            <form
+              onSubmit={handleSearch}
+              onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget)) {
+                  setActiveSearchBox(null);
+                }
+              }}
+              className="relative shrink-0 px-5 py-4"
+            >
               <div className="flex h-11 items-center gap-3 rounded-full border border-white/10 bg-[#101f32] px-4 focus-within:border-blue-500/60">
                 <Search size={17} className="shrink-0 text-slate-400" />
 
                 <input
                   type="search"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => updateSearchQuery(e.target.value)}
+                  onFocus={() => setActiveSearchBox("drawer")}
                   placeholder="Search accessories..."
                   aria-label="Search products"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={
+                    activeSearchBox === "drawer" &&
+                    searchQuery.trim().length >= 2
+                  }
+                  aria-controls="drawer-product-suggestions"
                   className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
                 />
 
                 <button type="submit" aria-label="Search">
                   <Search size={17} className="text-blue-400" />
                 </button>
+              </div>
+              <div id="drawer-product-suggestions">
+                {renderSearchSuggestions("drawer")}
               </div>
             </form>
 
