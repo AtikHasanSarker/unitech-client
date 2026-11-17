@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# UniTech
 
-## Getting Started
+### Mobile accessories, made easier to discover and shop.
 
-First, run the development server:
+UniTech is an online storefront for mobile accessories, created for people who want a simpler way to find the everyday tech essentials they need. It brings products from different categories and brands into one place, with clear product information and a straightforward path from browsing to ordering.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The experience is designed with students and the NSTU community in mind, while remaining useful to anyone shopping for mobile accessories.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Live website:** [https://unitech24.vercel.app](https://unitech24.vercel.app)
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Website Preview
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
 
-## Learn More
+## What UniTech Helps With
 
-To learn more about Next.js, take a look at the following resources:
+Finding the right accessory can mean searching across many stores, comparing scattered product details, and contacting sellers just to understand basic availability. UniTech makes that process more convenient by bringing product discovery and shopping tools together:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Find products more easily:** browse by category or brand, or search and see relevant suggestions while typing.
+- **Understand what you are considering:** product pages bring together images, descriptions, specifications, prices, and stock information.
+- **Keep shopping organized:** save products to a wishlist and collect selected items in a cart.
+- **Follow up after ordering:** customers can view their orders and use the order-tracking page.
+- **Discover student-oriented picks:** explore new arrivals, trending items, and deals in one storefront.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Main Features
 
-## Deploy on Vercel
+- Product catalog with category and brand browsing
+- Search with live product suggestions
+- Product details, specifications, stock, and related products
+- Shopping cart and wishlist
+- Customer accounts and order history
+- Order placement and delivery tracking
+- New arrivals, trending products, and deals
+- Responsive layout for desktop and mobile
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Technology Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Area | Technologies |
+| --- | --- |
+| Web framework | Next.js 16 (App Router) |
+| UI | React 19, JavaScript, JSX |
+| Styling | Tailwind CSS 4, HeroUI |
+| Icons | Lucide React, React Icons |
+| Authentication | Better Auth |
+| Data and services | MongoDB adapter and backend API integration |
+| Hosting | Vercel |
+
+## Contact
+
+- Email: [unitech24@gmail.com](mailto:unitech24@gmail.com)
+- Phone: [01604498384](tel:01604498384)
