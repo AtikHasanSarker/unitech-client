@@ -113,11 +113,24 @@ function formatPrice(value) {
 }
 
 function formatDate(dateString) {
+  if (!dateString) return "N/A";
+
+  const date =
+    dateString instanceof Date
+      ? dateString
+      : new Date(
+          /^\d{4}-\d{2}-\d{2}$/.test(String(dateString))
+            ? `${dateString}T00:00:00`
+            : dateString,
+        );
+
+  if (Number.isNaN(date.getTime())) return "N/A";
+
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  }).format(new Date(`${dateString}T00:00:00`));
+  }).format(date);
 }
 
 export default function AdminCustomersPage() {
