@@ -1,5 +1,6 @@
 import HeroBanner from '@/components/homepage/Banner';
 import NewArrivals from '@/components/homepage/NewArrivals';
+import CampusDelivery from '@/components/homepage/CampusDelivery';
 import SpecialDeals from '@/components/homepage/SpecialDeals';
 import Newsletter from '@/components/homepage/Newsletter';
 import ShopByCategory from '@/components/homepage/ShopByCategory';
@@ -14,6 +15,7 @@ const page = () => {
       <HeroBanner/>
       <ShopByCategory/>
       <NewArrivals/>
+      <CampusDelivery/>
       {/* <SpecialDeals/> */}
       <WhyChooseUs/>
       {/* <StudentDiscount/> */}

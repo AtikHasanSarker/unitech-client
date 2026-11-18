@@ -7,13 +7,12 @@ import Link from "next/link";
 import {
   ArrowRight,
   Heart,
-  ShoppingCart,
   Star,
   Sparkles,
 } from "lucide-react";
 import { Button } from "@heroui/react";
 import { getProducts } from "@/lib/api/product";
-import { useCart } from "@/components/cart/CartProvider";
+import ActionButton from "@/components/ui/ActionButton";
 import { useWishlist } from "@/components/wishlist/useWishlist";
 
 function formatPrice(price) {
@@ -21,7 +20,6 @@ function formatPrice(price) {
 }
 
 export default function NewArrivals() {
-  const { items: cartItems, addItem } = useCart();
   const { productIds: wishlist, toggleProduct: toggleWishlist } = useWishlist();
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,10 +50,6 @@ export default function NewArrivals() {
       active = false;
     };
   }, []);
-
-  const addToCart = async (productId) => {
-    await addItem(productId);
-  };
 
   return (
     <section className="bg-white py-10 text-slate-900 sm:py-16">
@@ -104,9 +98,6 @@ export default function NewArrivals() {
               ))
             : products.map((product) => {
                 const isWishlisted = wishlist.includes(product.id);
-                const isAdded = cartItems.some(
-                  (item) => item.id === product.id,
-                );
 
                 return (
                   <article
@@ -198,35 +189,18 @@ export default function NewArrivals() {
                       )}
 
                       {/* Price & Cart */}
-                      <div className="mt-3 flex items-end justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-slate-900 sm:text-base">
-                            {formatPrice(product.price)}
+                      <div className="mt-3">
+                        <p className="text-sm font-bold text-slate-900 sm:text-base">
+                          {formatPrice(product.price)}
+                        </p>
+
+                        {product.oldPrice && (
+                          <p className="mt-0.5 text-[10px] text-slate-400 line-through sm:text-xs">
+                            {formatPrice(product.oldPrice)}
                           </p>
+                        )}
 
-                          {product.oldPrice && (
-                            <p className="mt-0.5 text-[10px] text-slate-400 line-through sm:text-xs">
-                              {formatPrice(product.oldPrice)}
-                            </p>
-                          )}
-                        </div>
-
-                        <Button
-                          isIconOnly
-                          aria-label={
-                            isAdded
-                              ? `${product.name} added to cart`
-                              : `Add ${product.name} to cart`
-                          }
-                          onPress={() => addToCart(product.id)}
-                          className={`h-9 w-9 min-w-9 shrink-0 rounded-xl text-white transition-colors ${
-                            isAdded
-                              ? "bg-emerald-600 hover:bg-emerald-500"
-                              : "bg-blue-600 hover:bg-blue-500"
-                          }`}
-                        >
-                          <ShoppingCart size={17} />
-                        </Button>
+                        <ActionButton product={product} />
                       </div>
                     </div>
                   </article>
