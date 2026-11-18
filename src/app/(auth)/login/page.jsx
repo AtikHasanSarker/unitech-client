@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { TextField, Label, Input } from "@heroui/react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, LoaderCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { FcGoogle } from "react-icons/fc";
 import { signIn } from "@/lib/auth-client";
 
 export default function LoginPage() {
@@ -13,6 +14,33 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    const next = new URLSearchParams(window.location.search).get("next");
+    const callbackURL = next === "/cart" ? "/cart" : "/my-orders";
+
+    setIsGoogleSubmitting(true);
+    try {
+      const { error } = await signIn.social({
+        provider: "google",
+        callbackURL,
+        newUserCallbackURL: callbackURL,
+      });
+
+      if (error) {
+        toast.error(error.message || "Could not continue with Google.");
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not continue with Google.",
+      );
+    } finally {
+      setIsGoogleSubmitting(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -144,7 +172,7 @@ export default function LoginPage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isGoogleSubmitting}
               className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
@@ -160,6 +188,28 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          <div className="my-6 flex items-center gap-4">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-xs text-slate-400">OR</span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={isSubmitting || isGoogleSubmitting}
+            className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isGoogleSubmitting ? (
+              <LoaderCircle size={18} className="animate-spin" />
+            ) : (
+              <FcGoogle size={20} />
+            )}
+            {isGoogleSubmitting
+              ? "Connecting to Google..."
+              : "Continue with Google"}
+          </button>
 
           {/* Register Link */}
           <div className="mt-6 text-center">
