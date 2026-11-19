@@ -173,14 +173,6 @@ export default function AdminSidebar({ isOpen, onClose }) {
 
             <span>Visit Store</span>
           </Link>
-
-          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-            <p className="text-xs font-semibold text-white">UniTech Admin</p>
-
-            <p className="mt-1 text-xs leading-5 text-slate-500">
-              Manage products, orders and customers from one place.
-            </p>
-          </div>
         </div>
       </aside>
     </>

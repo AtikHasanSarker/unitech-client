@@ -8,7 +8,6 @@ import {
   EyeOff,
   Globe,
   LockKeyhole,
-  Mail,
   MapPin,
   Save,
   ShieldCheck,
@@ -222,6 +221,7 @@ export default function AdminSettingsPage() {
           <button
             type="button"
             onClick={resetSettings}
+            disabled={isLoading || isSaving}
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             <RotateCcw size={16} />
@@ -230,6 +230,7 @@ export default function AdminSettingsPage() {
           <button
             type="submit"
             form="settings-form"
+            disabled={isLoading || isSaving}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
           >
             <Save size={17} />
@@ -305,9 +306,9 @@ export default function AdminSettingsPage() {
                 onChange={(e) => updateSetting("currency", e.target.value)}
                 className={inputClass}
               >
-                <option value="BDT">BDT — Bangladeshi Taka</option>
-                <option value="USD">USD — US Dollar</option>
-                <option value="INR">INR — Indian Rupee</option>
+                <option value="BDT">BDT - Bangladeshi Taka</option>
+                <option value="USD">USD - US Dollar</option>
+                <option value="INR">INR - Indian Rupee</option>
               </select>
             </FormField>
             <FormField label="Time Zone">
@@ -355,7 +356,6 @@ export default function AdminSettingsPage() {
             </FormField>
           </div>
         </SettingSection>
-
         <SettingSection
           icon={Bell}
           title="Notification Preferences"
@@ -409,13 +409,14 @@ export default function AdminSettingsPage() {
             ))}
           </div>
         </SettingSection>
+      </form>
 
-        <SettingSection
-          icon={ShieldCheck}
-          title="Security"
-          description="Password-change form UI. Actual password updates require your authentication backend."
-        >
-          <form onSubmit={handlePasswordSubmit} className="space-y-5">
+      <SettingSection
+        icon={ShieldCheck}
+        title="Security"
+        description="Change the password used to sign in to the admin panel."
+      >
+        <form onSubmit={handlePasswordSubmit} className="space-y-5">
             <div className="grid gap-5 md:grid-cols-3">
               {[
                 {
@@ -484,22 +485,21 @@ export default function AdminSettingsPage() {
                 {passwordMessage}
               </p>
             )}
-          </form>
-        </SettingSection>
-
-        <div className="flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs leading-5 text-slate-500">
-            Settings are saved to the UniTech server.
-          </p>
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-          >
-            <Save size={17} /> {isSaving ? "Saving..." : "Save Settings"}
-          </button>
-        </div>
-      </form>
+        </form>
+      </SettingSection>
+      <div className="flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs leading-5 text-slate-500">
+          Settings are saved to the UniTech server.
+        </p>
+        <button
+          type="submit"
+          form="settings-form"
+          disabled={isLoading || isSaving}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+        >
+          <Save size={17} /> {isSaving ? "Saving..." : "Save Settings"}
+        </button>
+      </div>
     </main>
   );
 }

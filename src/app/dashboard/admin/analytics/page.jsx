@@ -295,7 +295,7 @@ export default function AdminAnalyticsPage() {
   };
 
   return (
-    <main className="space-y-6">
+    <main className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
       <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2 text-sm font-medium text-blue-600">
@@ -334,7 +334,10 @@ export default function AdminAnalyticsPage() {
       </section>
 
       {loadError && (
-        <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div
+          role="alert"
+          className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+        >
           {loadError}
         </div>
       )}
@@ -424,12 +427,16 @@ export default function AdminAnalyticsPage() {
             <div
               className="relative grid h-44 w-44 place-items-center rounded-full"
               style={{
-                background: orderBreakdown.length ? `conic-gradient(${statusGradient})` : "#e2e8f0",
+                background: orderBreakdown.length
+                  ? `conic-gradient(${statusGradient})`
+                  : "#e2e8f0",
               }}
             >
               <div className="grid h-28 w-28 place-items-center rounded-full bg-white text-center">
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">{orders.length}</p>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {orders.length}
+                  </p>
                   <p className="text-xs text-slate-500">All orders</p>
                 </div>
               </div>
@@ -575,7 +582,9 @@ export default function AdminAnalyticsPage() {
         </article>
       </section>
 
-      <p className="text-xs text-slate-400">Analytics reflect recorded order data available to your admin account.</p>
+      <p className="text-xs text-slate-400">
+        Analytics reflect recorded order data available to your admin account.
+      </p>
     </main>
   );
 }
