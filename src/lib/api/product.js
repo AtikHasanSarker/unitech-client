@@ -2,6 +2,7 @@
 
 import { cacheLife, cacheTag, updateTag } from "next/cache";
 import { serverFetch, serverMutation } from "./core/server";
+import { requireAdmin } from "@/lib/session";
 
 const getProductsPath = (filters = {}) => {
     const query = new URLSearchParams();
@@ -34,18 +35,21 @@ export const getProductById = async (productId, options = {}) => {
 }
 
 export const addProduct = async (productData) => {
+    await requireAdmin();
     const result = await serverMutation('products', productData, 'POST');
     if (result?.success) updateTag("products");
     return result;
 }
 
 export const updateProduct = async (productId, productData) => {
+    await requireAdmin();
     const result = await serverMutation(`products/${productId}`, productData, 'PATCH');
     if (result?.success) updateTag("products");
     return result;
 }
 
 export const deleteProduct = async (productId) => {
+    await requireAdmin();
     const result = await serverMutation(`products/${productId}`, {}, 'DELETE');
     if (result?.success) updateTag("products");
     return result;

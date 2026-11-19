@@ -345,7 +345,10 @@ export default function AdminSettingsPage() {
                 autoComplete="name"
               />
             </FormField>
-            <FormField label="Admin Email">
+            <FormField
+              label="Admin Email"
+              hint="Admin access is restricted to the ADMIN_EMAIL value configured on the server."
+            >
               <TextInput
                 type="email"
                 value={settings.adminEmail}

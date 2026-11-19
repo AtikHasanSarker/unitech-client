@@ -18,12 +18,17 @@ export const getUserToken = async () => {
 
 export async function requireAdmin() {
   const user = await getUserSession();
+  const allowedAdminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
 
   if (!user) {
     redirect("/dashboard/login");
   }
 
-  if (user?.role !== "admin") {
+  if (
+    !allowedAdminEmail ||
+    user.role !== "admin" ||
+    user.email?.trim().toLowerCase() !== allowedAdminEmail
+  ) {
     redirect("/");
   }
 }

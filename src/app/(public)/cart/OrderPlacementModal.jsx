@@ -187,6 +187,7 @@ export default function OrderPlacementModal({
         note: formData.note.trim(),
         status: savedOrder.status,
         createdAt: savedOrder.createdAt,
+        emailStatus: result.emailStatus,
       };
 
       setConfirmedOrder(order);
@@ -335,9 +336,25 @@ export default function OrderPlacementModal({
                 </h3>
 
                 <p className="mt-2 text-sm leading-6 text-slate-500">
-                  Your order has been prepared in this demo. In production, you
-                  should receive confirmation after the backend saves the order
-                  successfully.
+                  Your order has been saved successfully.
+                </p>
+                <p
+                  className={`mt-2 text-sm leading-6 ${
+                    confirmedOrder.emailStatus?.admin &&
+                    confirmedOrder.emailStatus?.customer
+                      ? "text-emerald-700"
+                      : "text-amber-700"
+                  }`}
+                >
+                  {confirmedOrder.emailStatus?.customer
+                    ? `The email provider accepted a confirmation for ${session?.user?.email || "your account email"}.`
+                    : "The email provider did not accept the customer confirmation."}{" "}
+                  {confirmedOrder.emailStatus?.admin
+                    ? "The store notification was also accepted."
+                    : "The store notification was not accepted."}{" "}
+                  {confirmedOrder.emailStatus?.admin &&
+                    confirmedOrder.emailStatus?.customer &&
+                    "If it is not in your inbox, check Spam or Promotions."}
                 </p>
 
                 <div className="mt-7 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-left">
