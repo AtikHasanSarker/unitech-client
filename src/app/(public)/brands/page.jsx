@@ -28,6 +28,11 @@ const brands = [
     logo: "/images/brand/awei.png",
   },
   {
+    name: "QCY",
+    slug: "qcy",
+    logo: "/images/brand/qcy.png",
+  },
+  {
     name: "Oraimo",
     slug: "oraimo",
     logo: "/images/brand/oraimo.png",

@@ -109,7 +109,6 @@ export default function RegisterPage() {
       <div className="w-full max-w-[480px]">
         {/* Header */}
         <div className="mb-8 text-center">
-
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             Create your account
           </h1>
@@ -249,14 +248,14 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isSubmitting || isGoogleSubmitting}
-              className="h-12 w-full cursor-pointer rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 "Creating account..."
               ) : (
                 <>
                   Create Account
-                  <ArrowRight size={17} />
+                  <ArrowRight size={18} />
                 </>
               )}
             </button>

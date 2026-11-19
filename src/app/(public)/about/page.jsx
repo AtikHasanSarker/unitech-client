@@ -89,7 +89,7 @@ export default function AboutPage() {
         <div className="mx-auto container px-5 sm:px-8 lg:px-10">
           {/* Section Heading */}
           <div className="mx-auto max-w-4xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white py-2 text-sm font-semibold text-blue-700 shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white py-2 px-3 text-sm font-semibold text-blue-700 shadow-sm">
               <Users size={17} />
               The People Behind UniTech
             </div>
@@ -192,7 +192,7 @@ export default function AboutPage() {
         <div className="relative mx-auto grid container items-center gap-14 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-2 lg:px-10">
           {/* Hero Content */}
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white py-2 text-sm font-semibold text-blue-700 shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white py-2 px-3 text-sm font-semibold text-blue-700 shadow-sm">
               <GraduationCap size={17} />
               Made with students in mind
             </div>
@@ -307,7 +307,7 @@ export default function AboutPage() {
             </div>
 
             {/* Floating Labels */}
-            <div className="absolute right-0 -top-6 hidden items-center gap-2 rounded-xl border border-slate-100 bg-white py-3 shadow-lg sm:flex">
+            <div className="absolute right-0 -top-6 hidden items-center gap-2 rounded-xl border border-slate-100 bg-white py-3 px-2 shadow-lg sm:flex">
               <CheckCircle2 size={19} className="text-emerald-500" />
               <span className="text-xs font-semibold text-slate-700">
                 Student Focused
