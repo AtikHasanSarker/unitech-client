@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { Avatar as HeroAvatar } from "@heroui/react";
 import {
   Search,
   Users,
@@ -165,8 +166,9 @@ export default function AdminCustomersPage() {
             const activity = activityByUser.get(user._id) || { orders: 0, spent: 0 };
             return {
               id: user._id,
-              name: user.name || user.email,
+              name: user.name || user.email || "Customer",
               email: user.email || "",
+              image: user.image || "",
               phone: user.phone || "Not provided",
               location: user.location || "Not provided",
               joinedAt: user.createdAt,
@@ -446,7 +448,7 @@ export default function AdminCustomersPage() {
                   >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <Avatar name={customer.name} />
+                        <Avatar name={customer.name} image={customer.image} />
                         <div>
                           <p className="font-semibold text-slate-800">
                             {customer.name}
@@ -576,7 +578,11 @@ export default function AdminCustomersPage() {
 
             <div className="space-y-5 px-5 py-5 sm:px-6">
               <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-4">
-                <Avatar name={selectedCustomer.name} large />
+                <Avatar
+                  name={selectedCustomer.name}
+                  image={selectedCustomer.image}
+                  large
+                />
                 <div className="min-w-0">
                   <p className="font-semibold text-slate-900">
                     {selectedCustomer.name}
@@ -716,23 +722,36 @@ function FilterSelect({ value, onChange, options, ariaLabel }) {
   );
 }
 
-function Avatar({ name, large = false }) {
-  const initials = name
-    .split(" ")
+function Avatar({ name, image, large = false }) {
+  const initials = (name || "Customer")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
     .map((part) => part[0])
     .slice(0, 2)
     .join("")
     .toUpperCase();
 
   return (
-    <div
-      className={`flex shrink-0 items-center justify-center rounded-full bg-blue-50 font-bold text-blue-700 ${
+    <HeroAvatar
+      size={large ? "lg" : "md"}
+      color="accent"
+      variant="soft"
+      className={`shrink-0 rounded-full font-bold ${
         large ? "h-14 w-14 text-lg" : "h-11 w-11 text-sm"
       }`}
-      aria-label={`${name} initials`}
+      aria-label={`${name || "Customer"} profile image`}
     >
-      {initials}
-    </div>
+      {image && (
+        <HeroAvatar.Image
+          src={image}
+          alt={`${name || "Customer"} profile picture`}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+        />
+      )}
+      <HeroAvatar.Fallback>{initials || "?"}</HeroAvatar.Fallback>
+    </HeroAvatar>
   );
 }
 

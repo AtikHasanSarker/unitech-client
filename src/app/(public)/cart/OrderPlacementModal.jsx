@@ -4,6 +4,10 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  getAllDistricts,
+  getUpazilasByDistrict,
+} from "bangladesh-districts-upazilas";
+import {
   X,
   MapPin,
   Phone,
@@ -37,6 +41,10 @@ const DELIVERY_OPTIONS = [
   },
 ];
 
+const DISTRICT_OPTIONS = getAllDistricts().sort((left, right) =>
+  left.name.localeCompare(right.name),
+);
+
 export default function OrderPlacementModal({
   isOpen,
   onClose,
@@ -49,6 +57,8 @@ export default function OrderPlacementModal({
     name: "",
     phone: "",
     address: "",
+    district: "",
+    upazila: "",
     deliveryOption: "campus",
     note: "",
   });
@@ -61,6 +71,13 @@ export default function OrderPlacementModal({
 
   const selectedDelivery = DELIVERY_OPTIONS.find(
     (option) => option.id === formData.deliveryOption,
+  );
+  const upazilaOptions = useMemo(
+    () =>
+      formData.district
+        ? getUpazilasByDistrict(formData.district) || []
+        : [],
+    [formData.district],
   );
 
   const deliveryFee = selectedDelivery?.fee ?? 0;
@@ -86,6 +103,20 @@ export default function OrderPlacementModal({
   const handleChange = (event) => {
     const { name, value } = event.target;
 
+    if (name === "district") {
+      setFormData((previous) => ({
+        ...previous,
+        district: value,
+        upazila: "",
+      }));
+      setErrors((previous) => ({
+        ...previous,
+        district: "",
+        upazila: "",
+      }));
+      return;
+    }
+
     setFormData((previous) => ({
       ...previous,
       [name]: value,
@@ -94,6 +125,9 @@ export default function OrderPlacementModal({
     setErrors((previous) => ({
       ...previous,
       [name]: "",
+      ...(name === "deliveryOption"
+        ? { address: "", district: "", upazila: "" }
+        : {}),
     }));
   };
 
@@ -112,6 +146,20 @@ export default function OrderPlacementModal({
       newErrors.phone = "Please enter your mobile number.";
     } else if (!phoneRegex.test(normalizedPhone)) {
       newErrors.phone = "Enter a valid Bangladeshi mobile number.";
+    }
+
+    if (
+      formData.deliveryOption === "outside" &&
+      !formData.district
+    ) {
+      newErrors.district = "Please select a district.";
+    }
+
+    if (
+      formData.deliveryOption === "outside" &&
+      !formData.upazila
+    ) {
+      newErrors.upazila = "Please select a thana or upazila.";
     }
 
     if (!formData.address.trim()) {
@@ -137,6 +185,15 @@ export default function OrderPlacementModal({
 
     if (!validateForm()) return;
 
+    const fullAddress =
+      formData.deliveryOption === "outside"
+        ? [
+            formData.district,
+            formData.upazila,
+            formData.address.trim(),
+          ].join(", ")
+        : formData.address.trim();
+
     setIsSubmitting(true);
 
     try {
@@ -150,7 +207,7 @@ export default function OrderPlacementModal({
         deliveryAddress: [
           `Name: ${formData.name.trim()}`,
           `Phone: ${formData.phone.trim()}`,
-          `Address: ${formData.address.trim()}`,
+          `Address: ${fullAddress}`,
           `Delivery: ${selectedDelivery.title}`,
           formData.note.trim() ? `Note: ${formData.note.trim()}` : "",
         ].filter(Boolean).join("\n"),
@@ -172,7 +229,7 @@ export default function OrderPlacementModal({
         customer: {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
-          address: formData.address.trim(),
+          address: fullAddress,
         },
         items: savedOrder.items,
         delivery: {
@@ -224,6 +281,8 @@ export default function OrderPlacementModal({
       name: "",
       phone: "",
       address: "",
+      district: "",
+      upazila: "",
       deliveryOption: "campus",
       note: "",
     });
@@ -523,45 +582,6 @@ export default function OrderPlacementModal({
                     </div>
                   </section>
 
-                  {/* Delivery Address */}
-                  <section>
-                    <div className="mb-5 flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
-                        <MapPin size={20} />
-                      </div>
-
-                      <div>
-                        <h3 className="font-bold text-slate-900">
-                          Delivery Address
-                        </h3>
-                        <p className="text-xs text-slate-500">
-                          Where should we deliver your order?
-                        </p>
-                      </div>
-                    </div>
-
-                    <label htmlFor="delivery-address" className={labelClass}>
-                      Complete Address <span className="text-red-500">*</span>
-                    </label>
-
-                    <textarea
-                      id="delivery-address"
-                      name="address"
-                      rows={3}
-                      autoComplete="street-address"
-                      placeholder="Hall name, room number, department, area..."
-                      value={formData.address}
-                      onChange={handleChange}
-                      className={`${inputClass} resize-y`}
-                    />
-
-                    {errors.address && (
-                      <p className="mt-1.5 text-xs text-red-500">
-                        {errors.address}
-                      </p>
-                    )}
-                  </section>
-
                   {/* Delivery Options */}
                   <section>
                     <div className="mb-4 flex items-center gap-3">
@@ -624,6 +644,120 @@ export default function OrderPlacementModal({
                         );
                       })}
                     </div>
+                  </section>
+
+                  {/* Delivery Address */}
+                  <section>
+                    <div className="mb-5 flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                        <MapPin size={20} />
+                      </div>
+
+                      <div>
+                        <h3 className="font-bold text-slate-900">
+                          Delivery Address
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          Where should we deliver your order?
+                        </p>
+                      </div>
+                    </div>
+
+                    {formData.deliveryOption === "outside" && (
+                      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <label
+                            htmlFor="delivery-district"
+                            className={labelClass}
+                          >
+                            District <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            id="delivery-district"
+                            name="district"
+                            value={formData.district}
+                            onChange={handleChange}
+                            required
+                            aria-invalid={Boolean(errors.district)}
+                            className={inputClass}
+                          >
+                            <option value="">Select a district</option>
+                            {DISTRICT_OPTIONS.map((district) => (
+                              <option key={district.id} value={district.name}>
+                                {district.name}
+                              </option>
+                            ))}
+                          </select>
+                          {errors.district && (
+                            <p className="mt-1.5 text-xs text-red-500">
+                              {errors.district}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="delivery-upazila"
+                            className={labelClass}
+                          >
+                            Thana - Upazila{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            id="delivery-upazila"
+                            name="upazila"
+                            value={formData.upazila}
+                            onChange={handleChange}
+                            disabled={!formData.district}
+                            required
+                            aria-invalid={Boolean(errors.upazila)}
+                            className={`${inputClass} disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400`}
+                          >
+                            <option value="">Select an upazila</option>
+                            {upazilaOptions.map((upazila) => (
+                              <option key={upazila.id} value={upazila.name}>
+                                {upazila.name}
+                              </option>
+                            ))}
+                          </select>
+                          {errors.upazila && (
+                            <p className="mt-1.5 text-xs text-red-500">
+                              {errors.upazila}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <label htmlFor="delivery-address" className={labelClass}>
+                      {formData.deliveryOption === "outside"
+                        ? "Full Address"
+                        : "Complete Address"}{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+
+                    <textarea
+                      id="delivery-address"
+                      name="address"
+                      rows={3}
+                      autoComplete="street-address"
+                      placeholder={
+                        formData.deliveryOption === "outside"
+                          ? "House, road, area..."
+                          : "Hall name, room number, department, area..."
+                      }
+                      value={formData.address}
+                      onChange={handleChange}
+                      required
+                      aria-invalid={Boolean(errors.address)}
+                      className={`${inputClass} resize-y`}
+                    />
+
+                    {errors.address && (
+                      <p className="mt-1.5 text-xs text-red-500">
+                        {errors.address}
+                      </p>
+                    )}
                   </section>
 
                   {/* Optional Note */}
