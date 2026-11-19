@@ -21,6 +21,7 @@ import {
   updatePaymentStatus as savePaymentStatus,
 } from "@/lib/api/order";
 import { getUsers } from "@/lib/api/user";
+import { parseDeliveryAddress } from "@/lib/order-address";
 
 const ORDER_STATUSES = [
   "Pending",
@@ -52,22 +53,6 @@ function formatDate(value) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);
-}
-
-function parseDeliveryAddress(value) {
-  if (typeof value !== "string") return {};
-
-  return Object.fromEntries(
-    value
-      .split("\n")
-      .map((line) => {
-        const separator = line.indexOf(":");
-        return separator === -1
-          ? null
-          : [line.slice(0, separator).trim(), line.slice(separator + 1).trim()];
-      })
-      .filter(Boolean),
-  );
 }
 
 function statusClasses(status) {

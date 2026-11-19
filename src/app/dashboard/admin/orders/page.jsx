@@ -20,6 +20,7 @@ import {
   updatePaymentStatus as savePaymentStatus,
 } from "@/lib/api/order";
 import { getUsers } from "@/lib/api/user";
+import { parseDeliveryAddress } from "@/lib/order-address";
 
 const ORDER_STATUSES = [
   "Pending",
@@ -56,13 +57,6 @@ function formatDate(dateString) {
     month: "short",
     year: "numeric",
   }).format(date);
-}
-
-function getPhoneFromDeliveryAddress(deliveryAddress) {
-  if (typeof deliveryAddress !== "string") return "";
-
-  const match = deliveryAddress.match(/Phone:\s*([^\n]+)/i);
-  return match ? match[1].trim() : "";
 }
 
 function isSameCalendarDay(dateA, dateB) {
@@ -114,7 +108,8 @@ export default function AdminOrdersPage() {
           ordersResult.data.map((order) => {
             const user = usersById.get(order.userId);
             const rawAddress = order.deliveryAddress || "";
-            const mappedPhone = getPhoneFromDeliveryAddress(rawAddress) || user?.phone || "";
+            const mappedPhone =
+              parseDeliveryAddress(rawAddress).Phone || user?.phone || "";
 
             return {
               id: order._id,

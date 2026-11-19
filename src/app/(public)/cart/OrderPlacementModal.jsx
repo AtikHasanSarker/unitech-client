@@ -408,9 +408,6 @@ export default function OrderPlacementModal({
                   {confirmedOrder.emailStatus?.customer
                     ? `The email provider accepted a confirmation for ${session?.user?.email || "your account email"}.`
                     : "The email provider did not accept the customer confirmation."}{" "}
-                  {confirmedOrder.emailStatus?.admin
-                    ? "The store notification was also accepted."
-                    : "The store notification was not accepted."}{" "}
                   {confirmedOrder.emailStatus?.admin &&
                     confirmedOrder.emailStatus?.customer &&
                     "If it is not in your inbox, check Spam or Promotions."}

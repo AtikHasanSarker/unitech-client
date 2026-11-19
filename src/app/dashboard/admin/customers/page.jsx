@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { Avatar as HeroAvatar } from "@heroui/react";
+import { getAllDistricts } from "bangladesh-districts-upazilas";
 import {
   Search,
   Users,
@@ -22,6 +23,11 @@ import {
 } from "lucide-react";
 import { getAllOrders } from "@/lib/api/order";
 import { getUsers, updateUserRole, updateUserStatus } from "@/lib/api/user";
+import { parseDeliveryAddress } from "@/lib/order-address";
+
+const DISTRICT_NAMES = new Set(
+  getAllDistricts().map((district) => district.name.toLowerCase()),
+);
 
 const INITIAL_CUSTOMERS = [
   {
@@ -134,6 +140,26 @@ function formatDate(dateString) {
   }).format(date);
 }
 
+function getCustomerLocation(orderAddress) {
+  if (orderAddress.Delivery?.toLowerCase().includes("nstu")) {
+    return "Noakhali";
+  }
+
+  const district = orderAddress.District?.trim();
+  if (district) return district;
+
+  const addressDistrict = orderAddress.Address?.split(",")[0]?.trim();
+  return addressDistrict &&
+    DISTRICT_NAMES.has(addressDistrict.toLowerCase())
+    ? addressDistrict
+    : "";
+}
+
+function getOrderTimestamp(order) {
+  const timestamp = new Date(order.createdAt).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -155,22 +181,39 @@ export default function AdminCustomersPage() {
 
         const activityByUser = new Map();
         for (const order of ordersResult?.data || []) {
-          const activity = activityByUser.get(order.userId) || { orders: 0, spent: 0 };
+          const activity = activityByUser.get(order.userId) || {
+            orders: 0,
+            spent: 0,
+            latestOrder: null,
+          };
           activity.orders += 1;
           activity.spent += Number(order.total) || 0;
+          if (
+            !activity.latestOrder ||
+            getOrderTimestamp(order) >=
+              getOrderTimestamp(activity.latestOrder)
+          ) {
+            activity.latestOrder = order;
+          }
           activityByUser.set(order.userId, activity);
         }
 
         setCustomers(
           usersResult.data.map((user) => {
             const activity = activityByUser.get(user._id) || { orders: 0, spent: 0 };
+            const orderAddress = parseDeliveryAddress(
+              activity.latestOrder?.deliveryAddress,
+            );
             return {
               id: user._id,
               name: user.name || user.email || "Customer",
               email: user.email || "",
               image: user.image || "",
-              phone: user.phone || "Not provided",
-              location: user.location || "Not provided",
+              phone: orderAddress.Phone || user.phone || "Not provided",
+              location:
+                getCustomerLocation(orderAddress) ||
+                user.location ||
+                "Not provided",
               joinedAt: user.createdAt,
               orders: activity.orders,
               spent: activity.spent,

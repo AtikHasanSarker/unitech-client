@@ -21,6 +21,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { getOrderById } from "@/lib/api/order";
+import { parseDeliveryAddress } from "@/lib/order-address";
 
 const demoOrders = [
   {
@@ -358,17 +359,6 @@ function OrderTimeline({ order }) {
         })}
       </div>
     </SectionCard>
-  );
-}
-
-function parseDeliveryAddress(value = "") {
-  return Object.fromEntries(
-    value.split("\n").map((line) => {
-      const separator = line.indexOf(":");
-      return separator < 0
-        ? ["Address", line]
-        : [line.slice(0, separator).trim(), line.slice(separator + 1).trim()];
-    }),
   );
 }
 
