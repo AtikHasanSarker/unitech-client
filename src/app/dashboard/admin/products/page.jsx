@@ -250,7 +250,7 @@ export default function AdminProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50/70 py-6">
       <div className="mx-auto container px-5 space-y-6">
         {(isLoading || loadError) && (
           <div

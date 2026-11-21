@@ -7,7 +7,6 @@ import { getAllDistricts } from "bangladesh-districts-upazilas";
 import {
   Search,
   Users,
-  UserRound,
   UserCheck,
   UserX,
   Mail,
@@ -15,7 +14,6 @@ import {
   MapPin,
   Eye,
   X,
-  ShoppingBag,
   CircleDollarSign,
   CalendarDays,
   ChevronDown,
@@ -28,86 +26,6 @@ import { parseDeliveryAddress } from "@/lib/order-address";
 const DISTRICT_NAMES = new Set(
   getAllDistricts().map((district) => district.name.toLowerCase()),
 );
-
-const INITIAL_CUSTOMERS = [
-  {
-    id: "CUS-1001",
-    name: "Nusrat Jahan",
-    email: "nusrat.jahan@example.com",
-    phone: "+880 1712-345678",
-    location: "Noakhali, Bangladesh",
-    joinedAt: "2026-08-15",
-    orders: 8,
-    spent: 18450,
-    status: "Active",
-  },
-  {
-    id: "CUS-1002",
-    name: "Rahim Uddin",
-    email: "rahim.uddin@example.com",
-    phone: "+880 1812-234567",
-    location: "Khulna, Bangladesh",
-    joinedAt: "2026-09-02",
-    orders: 5,
-    spent: 12300,
-    status: "Active",
-  },
-  {
-    id: "CUS-1003",
-    name: "Sadia Akter",
-    email: "sadia.akter@example.com",
-    phone: "+880 1912-456789",
-    location: "Dhaka, Bangladesh",
-    joinedAt: "2026-09-10",
-    orders: 3,
-    spent: 7560,
-    status: "Active",
-  },
-  {
-    id: "CUS-1004",
-    name: "Tanvir Hasan",
-    email: "tanvir.hasan@example.com",
-    phone: "+880 1612-567890",
-    location: "Chattogram, Bangladesh",
-    joinedAt: "2026-09-21",
-    orders: 1,
-    spent: 2030,
-    status: "Inactive",
-  },
-  {
-    id: "CUS-1005",
-    name: "Mehedi Hasan",
-    email: "mehedi.hasan@example.com",
-    phone: "+880 1512-678901",
-    location: "Sylhet, Bangladesh",
-    joinedAt: "2026-10-01",
-    orders: 6,
-    spent: 15680,
-    status: "Active",
-  },
-  {
-    id: "CUS-1006",
-    name: "Ayesha Rahman",
-    email: "ayesha.rahman@example.com",
-    phone: "+880 1312-789012",
-    location: "Cumilla, Bangladesh",
-    joinedAt: "2026-10-12",
-    orders: 2,
-    spent: 4820,
-    status: "Active",
-  },
-  {
-    id: "CUS-1007",
-    name: "Fahim Ahmed",
-    email: "fahim.ahmed@example.com",
-    phone: "+880 1412-890123",
-    location: "Rajshahi, Bangladesh",
-    joinedAt: "2026-10-15",
-    orders: 0,
-    spent: 0,
-    status: "Inactive",
-  },
-];
 
 const STATUS_OPTIONS = ["All Statuses", "Active", "Inactive"];
 
@@ -337,7 +255,7 @@ export default function AdminCustomersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50/70 py-6">
       <div className="mx-auto container px-5 space-y-6">
         {(isLoading || loadError) && (
           <div className={`rounded-xl border px-4 py-3 text-sm ${loadError ? "border-amber-200 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600"}`}>
@@ -469,16 +387,16 @@ export default function AdminCustomersPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] border-collapse text-left">
+            <table className="w-full border-collapse text-center">
               <thead>
                 <tr className="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500">
-                  <th className="px-5 py-3.5 font-semibold">Customer</th>
-                  <th className="px-5 py-3.5 font-semibold">Location</th>
-                  <th className="px-5 py-3.5 font-semibold">Joined</th>
-                  <th className="px-5 py-3.5 font-semibold">Orders</th>
-                  <th className="px-5 py-3.5 font-semibold">Total Spent</th>
-                  <th className="px-5 py-3.5 font-semibold">Status</th>
-                  <th className="px-5 py-3.5 text-right font-semibold">
+                  <th className="px-4 py-3 font-semibold">Customer</th>
+                  <th className="px-4 py-3 font-semibold">Location</th>
+                  <th className="px-4 py-3 font-semibold">Joined</th>
+                  <th className="px-4 py-3 font-semibold">Orders</th>
+                  <th className="px-4 py-3 font-semibold">Total Spent</th>
+                  <th className="px-4 py-3 font-semibold">Status</th>
+                  <th className="px-4 py-3 font-semibold">
                     Actions
                   </th>
                 </tr>
@@ -489,40 +407,34 @@ export default function AdminCustomersPage() {
                     key={customer.id}
                     className="transition hover:bg-slate-50/70"
                   >
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <Avatar name={customer.name} image={customer.image} />
                         <div>
                           <p className="font-semibold text-slate-800">
-                            {customer.name}
-                          </p>
-                          <p className="mt-1 text-xs text-slate-500">
-                            {customer.email}
-                          </p>
-                          <p className="mt-1 text-xs text-slate-400">
-                            {customer.id}
+                            {customer.name.split(" ")[0]}
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-600">
+                    <td className="px-4 py-3 text-sm text-slate-600">
                       {customer.location}
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-600">
+                    <td className="px-4 py-3 text-sm text-slate-600">
                       {formatDate(customer.joinedAt)}
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-3">
                       <span className="inline-flex rounded-lg bg-slate-100 px-2.5 py-1 text-sm font-semibold text-slate-700">
                         {customer.orders}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-800">
+                    <td className="px-4 py-3 text-sm font-semibold text-slate-800">
                       {formatPrice(customer.spent)}
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-3">
                       <StatusBadge status={customer.status} />
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"

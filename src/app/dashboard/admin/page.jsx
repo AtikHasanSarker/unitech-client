@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowDownRight,
@@ -8,6 +8,7 @@ import {
   ArrowUpRight,
   Bell,
   CalendarDays,
+  CheckCheck,
   ChevronDown,
   ChevronRight,
   Clock3,
@@ -233,6 +234,11 @@ export default function AdminDashboardPage() {
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [loadError, setLoadError] = useState("");
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notificationTab, setNotificationTab] = useState("all");
+  const [readNotificationIds, setReadNotificationIds] = useState([]);
+  const [notificationsLoaded, setNotificationsLoaded] = useState(false);
+  const notificationsRef = useRef(null);
 
   useEffect(() => {
     let active = true;
@@ -254,6 +260,139 @@ export default function AdminDashboardPage() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    const timeoutId = window.setTimeout(() => {
+      if (!active) return;
+      try {
+        const savedIds = JSON.parse(
+          window.localStorage.getItem("unitech-admin-read-notifications") || "[]",
+        );
+        if (Array.isArray(savedIds)) {
+          setReadNotificationIds(
+            savedIds.filter((id) => typeof id === "string"),
+          );
+        }
+      } catch (storageError) {
+        console.error("Could not load saved notification state.", storageError);
+        toast.error("Could not load saved notification state.");
+      } finally {
+        setNotificationsLoaded(true);
+      }
+    }, 0);
+
+    return () => {
+      active = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!notificationsOpen) return;
+
+    function handleOutsideClick(event) {
+      if (!notificationsRef.current?.contains(event.target)) {
+        setNotificationsOpen(false);
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") setNotificationsOpen(false);
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [notificationsOpen]);
+
+  const notifications = useMemo(() => {
+    const orderNotifications = orders
+      .filter((order) => String(order.status).toLowerCase() === "pending")
+      .map((order) => {
+        const orderId = String(order._id || order.id);
+        const customer = order.userEmail || order.userId || "Customer";
+        const createdAt = order.createdAt ? new Date(order.createdAt) : null;
+
+        return {
+          id: `order:${orderId}`,
+          type: "order",
+          title: "New order needs review",
+          detail: `${order.orderNumber || orderId} · ${customer}`,
+          href: "/dashboard/admin/orders",
+          sortTime: createdAt && !Number.isNaN(createdAt.getTime())
+            ? createdAt.getTime()
+            : 0,
+          time: createdAt && !Number.isNaN(createdAt.getTime())
+            ? createdAt.toLocaleString("en-BD", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })
+            : "",
+        };
+      });
+
+    const stockNotifications = products.flatMap((product) => {
+      const stock = Number(product.stock) || 0;
+      const rawThreshold = Number(product.lowStockThreshold ?? 5);
+      const threshold = Number.isFinite(rawThreshold) ? rawThreshold : 5;
+      if (stock > threshold) return [];
+
+      const productId = String(product._id || product.id || product.name);
+      const isOutOfStock = stock <= 0;
+      return [{
+        id: `stock:${productId}:${isOutOfStock ? "out" : "low"}`,
+        type: "stock",
+        title: isOutOfStock
+          ? `${product.name || "Product"} is out of stock`
+          : `${product.name || "Product"} is running low`,
+        detail: isOutOfStock
+          ? "No units left · Restock this product"
+          : `${stock} unit${stock === 1 ? "" : "s"} left · Threshold ${threshold}`,
+        href: "/dashboard/admin/products",
+        sortTime: 0,
+        time: "",
+      }];
+    });
+
+    return [...orderNotifications, ...stockNotifications].sort(
+      (first, second) => second.sortTime - first.sortTime,
+    );
+  }, [orders, products]);
+
+  const unreadNotificationCount = notifications.filter(
+    (notification) => !readNotificationIds.includes(notification.id),
+  ).length;
+  const visibleNotifications = notifications.filter((notification) => {
+    const isRead = readNotificationIds.includes(notification.id);
+    if (notificationTab === "unread") return !isRead;
+    if (notificationTab === "read") return isRead;
+    return true;
+  });
+
+  function saveReadNotificationIds(ids) {
+    setReadNotificationIds(ids);
+    try {
+      window.localStorage.setItem(
+        "unitech-admin-read-notifications",
+        JSON.stringify(ids),
+      );
+    } catch (storageError) {
+      console.error("Could not save notification state.", storageError);
+      toast.error("Could not save notification state.");
+    }
+  }
+
+  function openNotification(notification) {
+    if (!readNotificationIds.includes(notification.id)) {
+      saveReadNotificationIds([...readNotificationIds, notification.id]);
+    }
+    setNotificationsOpen(false);
+    router.push(notification.href);
+  }
 
   const dashboardCards = overviewCards.map((card, index) => ({
     ...card,
@@ -408,14 +547,165 @@ export default function AdminDashboardPage() {
               />
             </div>
 
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="relative rounded-xl border border-slate-200 p-2.5 text-slate-600 transition hover:bg-slate-50"
-            >
-              <Bell size={19} />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
-            </button>
+            <div className="relative" ref={notificationsRef}>
+              <button
+                type="button"
+                aria-label={`Notifications${unreadNotificationCount ? `, ${unreadNotificationCount} unread` : ""}`}
+                aria-expanded={notificationsOpen}
+                aria-controls="admin-notifications-panel"
+                onClick={() => setNotificationsOpen((open) => !open)}
+                className="relative rounded-xl border border-slate-200 p-2.5 text-slate-600 transition hover:bg-slate-50"
+              >
+                <Bell size={19} />
+                {unreadNotificationCount > 0 && (
+                  <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
+                )}
+              </button>
+
+              {notificationsOpen && (
+                <div
+                  id="admin-notifications-panel"
+                  className="absolute right-0 top-full z-50 mt-3 w-[min(92vw,24rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10"
+                >
+                  <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4">
+                    <div>
+                      <h2 className="font-bold text-slate-900">
+                        Notifications
+                      </h2>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        {unreadNotificationCount
+                          ? `${unreadNotificationCount} unread alert${unreadNotificationCount === 1 ? "" : "s"}`
+                          : "You're all caught up"}
+                      </p>
+                    </div>
+                    {unreadNotificationCount > 0 && (
+                      <button
+                        type="button"
+                        disabled={!notificationsLoaded}
+                        onClick={() =>
+                          saveReadNotificationIds(
+                            notifications.map((notification) => notification.id),
+                          )
+                        }
+                        className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <CheckCheck size={15} />
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div
+                    className="flex gap-1 border-b border-slate-100 px-3 pt-2"
+                    role="tablist"
+                    aria-label="Filter notifications"
+                  >
+                    {[
+                      ["all", "All", notifications.length],
+                      ["unread", "Unread", unreadNotificationCount],
+                      ["read", "Read", notifications.length - unreadNotificationCount],
+                    ].map(([tab, label, count]) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        role="tab"
+                        aria-selected={notificationTab === tab}
+                        onClick={() => setNotificationTab(tab)}
+                        className={`rounded-t-lg border-b-2 px-3 py-2 text-xs font-semibold transition ${
+                          notificationTab === tab
+                            ? "border-blue-600 text-blue-700"
+                            : "border-transparent text-slate-500 hover:text-slate-800"
+                        }`}
+                      >
+                        {label}
+                        <span className="ml-1.5 text-[10px] opacity-70">
+                          {count}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div
+                    className="max-h-[min(60vh,26rem)] overflow-y-auto p-2"
+                    role="tabpanel"
+                  >
+                    {!notificationsLoaded ? (
+                      <p className="px-4 py-8 text-center text-sm text-slate-500">
+                        Loading notifications...
+                      </p>
+                    ) : visibleNotifications.length === 0 ? (
+                      <p className="px-4 py-8 text-center text-sm text-slate-500">
+                        {notificationTab === "unread"
+                          ? "No unread notifications."
+                          : notificationTab === "read"
+                            ? "No read notifications yet."
+                            : "No order or stock alerts right now."}
+                      </p>
+                    ) : (
+                      <ul className="space-y-1">
+                        {visibleNotifications.map((notification) => {
+                          const isRead = readNotificationIds.includes(
+                            notification.id,
+                          );
+                          const NotificationIcon =
+                            notification.type === "order"
+                              ? ShoppingBag
+                              : Package;
+
+                          return (
+                            <li key={notification.id}>
+                              <button
+                                type="button"
+                                onClick={() => openNotification(notification)}
+                                className={`flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left transition ${
+                                  isRead
+                                    ? "border-transparent bg-white hover:bg-slate-50"
+                                    : "border-blue-100 bg-blue-50/80 hover:bg-blue-100/80"
+                                }`}
+                              >
+                                <span
+                                  className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                                    notification.type === "order"
+                                      ? "bg-violet-100 text-violet-700"
+                                      : "bg-amber-100 text-amber-700"
+                                  }`}
+                                >
+                                  <NotificationIcon size={17} />
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                  <span className="flex items-start justify-between gap-2">
+                                    <span
+                                      className={`text-sm ${
+                                        isRead
+                                          ? "font-medium text-slate-700"
+                                          : "font-bold text-slate-900"
+                                      }`}
+                                    >
+                                      {notification.title}
+                                    </span>
+                                    {!isRead && (
+                                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-600" />
+                                    )}
+                                  </span>
+                                  <span className="mt-1 block text-xs leading-5 text-slate-500">
+                                    {notification.detail}
+                                  </span>
+                                  {notification.time && (
+                                    <span className="mt-1 block text-[11px] text-slate-400">
+                                      {notification.time}
+                                    </span>
+                                  )}
+                                </span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="hidden h-9 w-px bg-slate-200 sm:block" />
 

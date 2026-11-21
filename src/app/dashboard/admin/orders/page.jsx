@@ -236,7 +236,7 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50/70 py-6">
       <div className="mx-auto container px-5 space-y-6">
         {(isLoading || loadError) && (
           <div className={`rounded-xl border px-4 py-3 text-sm ${loadError ? "border-amber-200 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600"}`}>
@@ -371,18 +371,16 @@ export default function AdminOrdersPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] border-collapse text-left">
+            <table className="w-full border-collapse text-center">
               <thead>
                 <tr className="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500">
-                  <th className="px-5 py-3.5 font-semibold">Order</th>
-                  <th className="px-5 py-3.5 font-semibold">Customer</th>
-                  <th className="px-5 py-3.5 font-semibold">Date</th>
-                  <th className="px-5 py-3.5 font-semibold">Total</th>
-                  <th className="px-5 py-3.5 font-semibold">Payment</th>
-                  <th className="px-5 py-3.5 font-semibold">Order Status</th>
-                  <th className="px-5 py-3.5 text-right font-semibold">
-                    Actions
-                  </th>
+                  <th className="px-4 py-3.5 font-semibold">Order</th>
+                  <th className="px-4 py-3.5 font-semibold">Customer</th>
+                  <th className="px-4 py-3.5 font-semibold">Date</th>
+                  <th className="px-4 py-3.5 font-semibold">Total</th>
+                  <th className="px-4 py-3.5 font-semibold">Order Status</th>
+                  <th className="px-4 py-3.5 font-semibold">Actions</th>
+                  {/* <th className="px-5 py-3.5 font-semibold">Payment</th> */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -391,8 +389,8 @@ export default function AdminOrdersPage() {
                     key={order.id}
                     className="transition hover:bg-slate-50/70"
                   >
-                    <td className="px-5 py-4">
-                      <p className="font-semibold text-slate-800">{order.id}</p>
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-[10px] text-slate-800">{order.id}</p>
                       <p className="mt-1 text-xs text-slate-400">
                         {order.items.reduce(
                           (sum, item) => sum + item.quantity,
@@ -401,7 +399,7 @@ export default function AdminOrdersPage() {
                         items
                       </p>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-3">
                       <p className="font-medium text-slate-800">
                         {order.customer}
                       </p>
@@ -409,13 +407,13 @@ export default function AdminOrdersPage() {
                         {order.email}
                       </p>
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-600">
+                    <td className="px-4 py-3 text-sm text-slate-600">
                       {formatDate(order.date)}
                     </td>
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-800">
+                    <td className="px-4 py-3 text-sm font-semibold text-slate-800">
                       {formatPrice(order.total)}
                     </td>
-                    <td className="px-5 py-4">
+                    {/* <td className="px-4 py-3">
                       <div className="space-y-1.5">
                         <span
                           className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${statusClasses(order.paymentStatus)}`}
@@ -426,15 +424,15 @@ export default function AdminOrdersPage() {
                           {order.paymentMethod}
                         </p>
                       </div>
-                    </td>
-                    <td className="px-5 py-4">
+                    </td> */}
+                    <td className="px-4 py-3">
                       <select
                         value={order.status}
                         onChange={(event) =>
                           updateOrderStatus(order.id, event.target.value)
                         }
                         aria-label={`Update status for order ${order.id}`}
-                        className={`max-w-36 cursor-pointer rounded-full border-0 py-1.5 pl-3 pr-8 text-xs font-semibold outline-none ring-1 ring-inset focus:ring-2 focus:ring-blue-300 ${statusClasses(order.status)}`}
+                        className={`max-w-36 cursor-pointer rounded-full border-0 py-1.5 pl-2 pr-1 text-xs font-semibold outline-none ring-1 ring-inset focus:ring-2 focus:ring-blue-300 ${statusClasses(order.status)}`}
                       >
                         {ORDER_STATUSES.map((status) => (
                           <option key={status} value={status}>
@@ -443,7 +441,7 @@ export default function AdminOrdersPage() {
                         ))}
                       </select>
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-3">
                       <div className="flex items-center justify-end">
                         <Link
                           href={`/dashboard/admin/orders/${encodeURIComponent(order.id)}`}
