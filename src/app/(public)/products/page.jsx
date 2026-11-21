@@ -15,7 +15,7 @@ function ProductsPageClientFallback() {
   return (
     <main className="min-h-screen bg-[#f8fafc] text-slate-900">
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto container px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
+        <div className="mx-auto container px-5 py-8 sm:py-10">
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
             The UniTech Collection
           </p>

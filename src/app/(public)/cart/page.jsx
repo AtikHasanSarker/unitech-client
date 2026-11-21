@@ -124,7 +124,7 @@ export default function CartPage() {
       <main className="min-h-screen bg-[#f8fafc] text-slate-900">
         {/* Header */}
         <section className="border-b border-slate-200 bg-white">
-          <div className="mx-auto container px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
+          <div className="mx-auto container px-5 py-8 sm:py-10">
             <nav className="mb-5 flex items-center gap-2 text-xs text-slate-400">
               <Link href="/" className="hover:text-blue-600">
                 Home
@@ -156,7 +156,7 @@ export default function CartPage() {
           </div>
         </section>
 
-        <section className="mx-auto container px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+        <section className="mx-auto container px-5 py-8 lg:py-10">
           {isLoading ? (
             <div className="flex min-h-[420px] items-center justify-center rounded-3xl border border-slate-200 bg-white text-sm font-medium text-slate-500">
               Loading your cart...

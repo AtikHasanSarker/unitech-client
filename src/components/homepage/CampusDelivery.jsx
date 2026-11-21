@@ -5,7 +5,7 @@ import { ArrowRight, GraduationCap, Truck } from "lucide-react";
 export default function CampusDelivery() {
   return (
     <section className="bg-white py-10 sm:py-14">
-      <div className="mx-auto container px-5 sm:px-8 lg:px-10">
+      <div className="mx-auto container px-5">
         <article className="grid overflow-hidden rounded-3xl border border-sky-100 bg-gradient-to-br from-sky-50 via-white to-emerald-50 shadow-sm lg:grid-cols-[1.1fr_0.9fr]">
           <div className="flex flex-col items-start justify-center p-6 sm:p-10 lg:p-12">
             <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white/80 px-3.5 py-2 text-xs font-semibold text-blue-700 shadow-sm sm:text-sm">

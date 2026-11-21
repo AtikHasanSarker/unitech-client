@@ -56,7 +56,7 @@ const brands = [
 
 export default function BrandsPage() {
   return (
-    <section className="mx-auto min-h-full w-full container py-8 px-5 sm:px-8 lg:px-10">
+    <section className="mx-auto min-h-full w-full container px-5 py-8">
       {/* Breadcrumb */}
       <nav
         aria-label="Breadcrumb"

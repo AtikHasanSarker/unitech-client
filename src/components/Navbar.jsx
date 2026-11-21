@@ -337,7 +337,7 @@ export default function Navbar() {
     <>
       {/* TOP INFORMATION BAR */}
       <div className="hidden border-b border bg-white text-black lg:block">
-        <div className="mx-auto flex h-7 container items-center justify-between px-5 sm:px-10">
+        <div className="mx-auto flex h-7 container items-center justify-between px-5">
           {/* Location */}
           <div className="flex items-center gap-2 text-xs font-bold">
             Welcome to Your Trusted Mobile Accessories Store!
@@ -366,7 +366,7 @@ export default function Navbar() {
           MAIN NAVBAR
       ======================================== */}
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#07111e] text-white shadow-xl shadow-black/10">
-        <div className="mx-auto container px-4 backdrop-blur-xl sm:px-6 xl:px-10">
+        <div className="mx-auto container px-5 backdrop-blur-xl">
           <div className="flex h-14 sm:h-16 items-center justify-between gap-4 lg:gap-6">
             {/* Logo */}
             <Link

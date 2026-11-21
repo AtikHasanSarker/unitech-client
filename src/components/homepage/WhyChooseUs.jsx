@@ -76,7 +76,7 @@ const benefits = [
 export default function WhyChooseUs() {
   return (
     <section className="relative overflow-hidden bg-white py-16 sm:py-20">
-      <div className="mx-auto container px-5 sm:px-8 lg:px-10">
+      <div className="mx-auto container px-5">
         {/* Section Heading */}
         <div className="mx-auto mb-12 max-w-2xl text-center sm:mb-14">
           <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-bold tracking-wide text-blue-700">

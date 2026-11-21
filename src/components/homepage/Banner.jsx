@@ -49,7 +49,7 @@ export default function HeroBanner() {
 
   return (
     <section className="relative overflow-hidden bg-white my-6">
-      <div className="mx-auto container px-4 sm:px-8 lg:px-10">
+      <div className="mx-auto container px-5">
         <div
           aria-label="Featured product banners"
           aria-roledescription="carousel"

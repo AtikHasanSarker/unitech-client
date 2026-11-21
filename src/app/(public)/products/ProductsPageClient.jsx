@@ -25,18 +25,11 @@ import { getCachedProducts } from "@/lib/api/product";
 import ProductCard from "@/components/ui/ProductCard";
 import { useWishlist } from "@/components/wishlist/useWishlist";
 
-// ---------------------------------------------
-// Section Title
-// ---------------------------------------------
-
 function SectionTitle({ children }) {
   return <h3 className="mb-4 text-sm font-bold text-slate-800">{children}</h3>;
 }
 
-// ---------------------------------------------
 // Filter Sidebar
-// ---------------------------------------------
-
 function FilterSidebar({
   categoryOptions,
   category,
@@ -365,10 +358,6 @@ export default function ProductsPageClient({
     };
   }, [initialCategoriesLoaded]);
 
-  // -------------------------------------------
-  // Filter and Sort Products Locally
-  // -------------------------------------------
-
   const filteredProducts = useMemo(() => {
     let result = products.filter((product) => {
       const matchesPrice = product.price <= maxPrice;
@@ -441,7 +430,7 @@ export default function ProductsPageClient({
       {/* Page Heading */}
 
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto container px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
+        <div className="mx-auto container px-5 py-6">
           <nav className="mb-5 flex items-center gap-2 text-xs text-slate-400">
             <Link href="/" className="transition hover:text-blue-600">
               Home
@@ -458,11 +447,11 @@ export default function ProductsPageClient({
                 The UniTech Collection
               </p>
 
-              <h1 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-[42px]">
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
                 All Products
               </h1>
 
-              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-500 sm:text-base">
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500 sm:text-base">
                 Discover quality mobile accessories for your everyday campus
                 life.
               </p>
@@ -505,9 +494,9 @@ export default function ProductsPageClient({
 
       <section
         ref={productListingRef}
-        className="mx-auto container scroll-mt-36 px-5 py-8 sm:px-8 lg:px-10 lg:py-10"
+        className="mx-auto container scroll-mt-36 px-5 py-6"
       >
-        <div className="grid grid-cols-1 gap-7 lg:grid-cols-[245px_minmax(0,1fr)] lg:gap-8">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[245px_minmax(0,1fr)]">
           {/* Desktop Sidebar */}
 
           <aside className="hidden lg:block">
@@ -620,7 +609,7 @@ export default function ProductsPageClient({
                 </p>
               </div>
             ) : visibleProducts.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {visibleProducts.map((product) => (
                   <ProductCard
                     key={product.id}

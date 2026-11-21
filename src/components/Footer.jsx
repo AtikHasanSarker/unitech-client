@@ -58,7 +58,7 @@ export default function Footer() {
       {/* Background Glow */}
       <div className="pointer-events-none absolute -top-40 left-1/4 h-80 w-80 rounded-full bg-blue-600/0.08 blur-[120px]" />
 
-      <div className="relative mx-auto container px-5 sm:px-8 lg:px-10">
+      <div className="relative mx-auto container px-5">
         {/* Main Footer */}
         <div className="grid grid-cols-2 gap-8 sm:gap-12 py-6 sm:py-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-10">
           {/* Brand Information */}

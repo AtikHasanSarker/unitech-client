@@ -222,7 +222,7 @@ export default function ProductDetailsPage() {
       <main className="min-h-screen bg-[#f8fafc] text-slate-900">
         {/* Breadcrumb */}
         <div className="border-b border-slate-200 bg-white">
-          <div className="mx-auto container px-5 py-4 sm:px-8 lg:px-10">
+          <div className="mx-auto container px-5 py-4">
             <nav className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <Link href="/" className="hover:text-blue-600">
                 Home
@@ -247,7 +247,7 @@ export default function ProductDetailsPage() {
         </div>
 
         {/* Main Product */}
-        <section className="mx-auto container px-5 py-7 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+        <section className="mx-auto container px-5 py-7 sm:py-10 lg:py-12">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-14">
             {/* Gallery */}
             <div>
