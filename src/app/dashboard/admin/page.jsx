@@ -520,7 +520,7 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen bg-[#F6F8FC] text-slate-800">
       {/* Page Header */}
       <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
-        <div className="flex min-h-[76px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="flex min-h-[76px] items-center justify-between gap-4 px-5">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-xs text-slate-400">
               <span>Admin</span>
@@ -770,7 +770,7 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <main className="mx-auto max-w-[1600px] px-5 py-6">
         {loadError && (
           <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             {loadError}
@@ -1081,11 +1081,10 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[850px] text-left">
+            <table className="w-full text-center">
               <thead>
                 <tr className="border-y border-slate-100 bg-slate-50/80">
                   {[
-                    "Order ID",
                     "Customer",
                     "Product",
                     "Date",
@@ -1108,11 +1107,6 @@ export default function AdminDashboardPage() {
                     key={order.id}
                     className="transition hover:bg-slate-50/70"
                   >
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-semibold text-blue-600">
-                        {order.id}
-                      </span>
-                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div

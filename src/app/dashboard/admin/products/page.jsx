@@ -380,15 +380,15 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[850px] border-collapse text-left">
+            <table className="w-full border-collapse text-center">
               <thead>
                 <tr className="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500">
-                  <th className="px-5 py-3.5 font-semibold">Product</th>
-                  <th className="px-5 py-3.5 font-semibold">Category</th>
-                  <th className="px-5 py-3.5 font-semibold">Price</th>
-                  <th className="px-5 py-3.5 font-semibold">Stock</th>
-                  <th className="px-5 py-3.5 font-semibold">Status</th>
-                  <th className="px-5 py-3.5 text-right font-semibold">
+                  <th className="px-4 py-3 font-semibold">Product</th>
+                  <th className="px-4 py-3 font-semibold">Category</th>
+                  <th className="px-4 py-3 font-semibold">Price</th>
+                  <th className="px-4 py-3 font-semibold">Stock</th>
+                  <th className="px-4 py-3 font-semibold">Status</th>
+                  <th className="px-4 py-3 font-semibold">
                     Actions
                   </th>
                 </tr>
@@ -403,11 +403,11 @@ export default function AdminProductsPage() {
                       key={product.id}
                       className="transition hover:bg-slate-50/70"
                     >
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <ProductThumbnail product={product} />
                           <div>
-                            <p className="max-w-56 font-semibold text-slate-800">
+                            <p className="max-w-50 text-sm font-semibold text-slate-800">
                               {product.name}
                             </p>
                             <p className="mt-1 text-xs text-slate-400">
@@ -416,13 +416,13 @@ export default function AdminProductsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-sm text-slate-600">
+                      <td className="px-4 py-3 text-sm text-slate-600">
                         {product.category || "—"}
                       </td>
-                      <td className="px-5 py-4 text-sm font-semibold text-slate-800">
+                      <td className="px-4 py-3 text-sm font-semibold text-slate-800">
                         {formatPrice(product.price)}
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-3">
                         <div className="space-y-1.5">
                           <p className="text-sm font-semibold text-slate-800">
                             {product.stock} units
@@ -437,10 +437,10 @@ export default function AdminProductsPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-3">
                         <StatusBadge status={product.status} />
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
