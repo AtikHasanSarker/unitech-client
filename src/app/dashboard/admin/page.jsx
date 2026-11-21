@@ -1135,7 +1135,7 @@ export default function AdminDashboardPage() {
                     </td>
                     <td className="px-6 py-4">
                       <Link
-                        href={`/my-orders/${order.id}`}
+                        href={`/dashboard/admin/orders/${encodeURIComponent(order.id)}`}
                         aria-label={`View order ${order.id}`}
                         className="inline-flex rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                       >
