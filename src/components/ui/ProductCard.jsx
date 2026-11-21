@@ -68,7 +68,7 @@ const ProductCard = ({ product, isWishListed, onWishlist }) => {
         </p>
 
         <Link href={`/products/${product.id}`}>
-          <h3 className="min-h-[40px] text-[13px] font-semibold leading-5 text-slate-800 transition-colors hover:text-blue-600 sm:min-h-[44px] sm:text-sm">
+          <h3 className="truncate whitespace-nowrap text-[13px] font-semibold leading-5 text-slate-800 transition-colors hover:text-blue-600 sm:text-sm" title={product.name}>
             {product.name}
           </h3>
         </Link>

@@ -1,6 +1,6 @@
 'use client';
 import { Button } from '@heroui/react';
-import { ShoppingCart } from 'lucide-react';
+import { Check, ShoppingCart } from 'lucide-react';
 import React, { useState } from 'react';
 import { useCart } from '@/components/cart/CartProvider';
 
@@ -24,8 +24,10 @@ const ActionButton = ({ product }) => {
   return (
     <div>
       <Button
+        type="button"
         onClick={handleAdd}
         isDisabled={!product.stock || isAdded || isAdding}
+        aria-pressed={isAdded}
         aria-label={
           !product.stock
             ? "Unavailable"
@@ -33,11 +35,15 @@ const ActionButton = ({ product }) => {
               ? "Product Added"
               : `Add ${product.name} to cart`
         }
-        className="group/cart relative mt-4 cursor-pointer flex h-11 w-full items-center justify-center overflow-hidden rounded-full bg-blue-600 px-3 text-xs font-semibold text-white transition-colors duration-400 hover:bg-gray-200 hover:text-gray-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 sm:text-sm"
+        className={`group/cart relative mt-4 flex h-11 w-full items-center justify-center overflow-hidden rounded-full px-3 text-xs font-semibold transition-colors duration-300 sm:text-sm ${
+          isAdded
+            ? "cursor-not-allowed bg-[#e5e5e5] text-slate-700"
+            : "cursor-pointer bg-blue-600 text-white hover:bg-gray-200 hover:text-gray-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+        }`}
       >
         {product.stock ? (
           isAdded ? (
-            <span>Product Added</span>
+            <Check size={25} strokeWidth={2} aria-hidden="true" />
           ) : isAdding ? (
             <span>Adding...</span>
           ) : (

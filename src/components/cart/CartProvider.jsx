@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   createContext,
   useContext,
   useEffect,
@@ -9,6 +10,7 @@ import {
 } from "react";
 import toast from "react-hot-toast";
 import { useSession } from "@/lib/auth-client";
+import CartDrawer from "./CartDrawer";
 import {
   addCartItem,
   clearCart as clearUserCart,
@@ -219,7 +221,9 @@ export function CartProvider({ children }) {
   const [storedItems, setStoredItems] = useState([]);
   const [cartOwnerKey, setCartOwnerKey] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const initializationRef = useRef(new Map());
+  const closeCartDrawer = useCallback(() => setIsCartDrawerOpen(false), []);
 
   useEffect(() => {
     if (sessionPending) return;
@@ -295,7 +299,7 @@ export function CartProvider({ children }) {
   const items = isReady ? storedItems : [];
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);
 
-  async function addItem(productId, quantity = 1) {
+  async function addItem(productId, quantity = 1, { openDrawer = true } = {}) {
     if (!isReady) {
       toast.error("Your cart is still loading. Please try again.");
       return false;
@@ -313,6 +317,7 @@ export function CartProvider({ children }) {
           return false;
         }
         setStoredItems(normalizeCartResponse(result.data));
+        if (openDrawer) setIsCartDrawerOpen(true);
         toast.success("Product added to your cart.");
         return true;
       } catch {
@@ -358,6 +363,7 @@ export function CartProvider({ children }) {
           ? current.map((item) => (item.id === productId ? cartItem : item))
           : [...current, cartItem];
       });
+      if (openDrawer) setIsCartDrawerOpen(true);
       toast.success("Product added to your cart.");
       return true;
     } catch {
@@ -491,6 +497,7 @@ export function CartProvider({ children }) {
     setStoredItems([]);
     setCartOwnerKey(null);
     setIsLoading(true);
+    setIsCartDrawerOpen(false);
   }
 
   async function refreshCart() {
@@ -516,6 +523,16 @@ export function CartProvider({ children }) {
       value={{ items, itemCount, isLoading: !isReady, isReady, addItem, setQuantity, removeItem, clearCart, refreshCart, resetAfterLogout }}
     >
       {children}
+      <CartDrawer
+        isOpen={isCartDrawerOpen}
+        onClose={closeCartDrawer}
+        items={items}
+        subtotal={items.reduce(
+          (subtotal, item) => subtotal + item.price * item.quantity,
+          0,
+        )}
+        onRemove={removeItem}
+      />
     </CartContext.Provider>
   );
 }

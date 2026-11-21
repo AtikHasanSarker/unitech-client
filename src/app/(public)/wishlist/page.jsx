@@ -74,7 +74,7 @@ function ProductCard({ product, onRemove, onAddToCart, isAdded }) {
         </p>
 
         <Link href={`/products/${product.id}`}>
-          <h3 className="mt-2 line-clamp-2 min-h-10 text-sm font-bold leading-5 text-slate-800 transition hover:text-blue-600 sm:text-base">
+          <h3 className="mt-2 truncate whitespace-nowrap text-sm font-bold leading-5 text-slate-800 transition hover:text-blue-600 sm:text-base" title={product.name}>
             {product.name}
           </h3>
         </Link>
@@ -110,14 +110,19 @@ function ProductCard({ product, onRemove, onAddToCart, isAdded }) {
           type="button"
           onClick={() => onAddToCart(product)}
           disabled={product.stock !== "In Stock" || isAdded}
+          aria-label={
+            isAdded
+              ? `${product.name} added to cart`
+              : `Add ${product.name} to cart`
+          }
           className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-bold transition ${
             isAdded
-              ? "bg-emerald-50 text-emerald-700"
+              ? "cursor-not-allowed bg-[#e5e5e5] text-slate-700"
               : "bg-blue-600 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           }`}
         >
           {isAdded ? <Check size={17} /> : <ShoppingCart size={17} />}
-          {isAdded ? "Added to Cart" : "Add to Cart"}
+          {!isAdded && "Add to Cart"}
         </button>
       </div>
     </article>
@@ -125,7 +130,7 @@ function ProductCard({ product, onRemove, onAddToCart, isAdded }) {
 }
 
 export default function WishlistPage() {
-  const { addItem } = useCart();
+  const { addItem, items: cartItems } = useCart();
   const {
     productIds,
     isLoading: isWishlistLoading,
@@ -434,7 +439,10 @@ export default function WishlistPage() {
                     product={product}
                     onRemove={removeFromWishlist}
                     onAddToCart={addToCart}
-                    isAdded={addedItems.includes(product.id)}
+                    isAdded={
+                      addedItems.includes(product.id) ||
+                      cartItems.some((item) => item.id === product.id)
+                    }
                   />
                 ))}
               </div>

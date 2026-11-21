@@ -81,7 +81,7 @@ const normalizeSpecifications = (specifications, product) => {
 };
 
 export default function ProductDetailsPage() {
-  const { addItem } = useCart();
+  const { addItem, items: cartItems } = useCart();
   const { productIds: wishlistedProductIds, toggleProduct: toggleWishlist } =
     useWishlist();
   const params = useParams();
@@ -95,6 +95,9 @@ export default function ProductDetailsPage() {
   const [activeTab, setActiveTab] = useState("description");
   const [productError, setProductError] = useState("");
   const isWishlisted = wishlistedProductIds.includes(String(productId));
+  const isAddedToCart = cartItems.some(
+    (item) => String(item.id || item.productId) === String(productId),
+  );
 
   useEffect(() => {
     let active = true;
@@ -159,7 +162,9 @@ export default function ProductDetailsPage() {
   };
 
   const buyNow = async () => {
-    if (await addToCart()) router.push("/cart");
+    if (await addItem(productId, quantity, { openDrawer: false })) {
+      router.push("/cart");
+    }
   };
 
   if (isLoading) {
@@ -439,11 +444,22 @@ export default function ProductDetailsPage() {
               <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <button
                   onClick={addToCart}
-                  disabled={product.stock <= 0}
+                  disabled={product.stock <= 0 || isAddedToCart}
+                  aria-label={
+                    isAddedToCart
+                      ? `${product.name} added to cart`
+                      : `Add ${product.name} to cart`
+                  }
                   className="flex h-13 min-h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
                 >
-                  <ShoppingCart size={18} />
-                  Add to Cart
+                  {isAddedToCart ? (
+                    <Check size={21} />
+                  ) : (
+                    <>
+                      <ShoppingCart size={18} />
+                      Add to Cart
+                    </>
+                  )}
                 </button>
 
                 <button

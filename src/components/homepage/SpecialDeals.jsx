@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
+  Check,
   Clock3,
   Heart,
   ShoppingCart,
@@ -233,14 +234,15 @@ export default function SpecialDeals() {
                           ? `${product.name} added to cart`
                           : `Add ${product.name} to cart`
                       }
+                      isDisabled={isAdded || !product.stock}
                       onPress={() => addToCart(product)}
                       className={`h-9 w-9 min-w-9 shrink-0 rounded-xl text-white transition-colors ${
                         isAdded
-                          ? "bg-emerald-600 hover:bg-emerald-500"
+                          ? "bg-slate-200 text-slate-700"
                           : "bg-blue-600 hover:bg-blue-500"
                       }`}
                     >
-                      <ShoppingCart size={17} />
+                      {isAdded ? <Check size={17} /> : <ShoppingCart size={17} />}
                     </Button>
                   </div>
                 </div>
