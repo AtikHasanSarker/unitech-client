@@ -19,7 +19,7 @@ import {
   GraduationCapIcon,
 } from "lucide-react";
 
-import { getCategories } from "@/lib/api/category";
+// import removed: categories are fetched server‑side
 import { getCachedProducts } from "@/lib/api/product";
 
 import ProductCard from "@/components/ui/ProductCard";
@@ -187,7 +187,7 @@ export default function ProductsPageClient({
   initialPagination,
   initialProductsLoaded = false,
   initialCategories = [],
-  initialCategoriesLoaded = false,
+  initialCategoriesLoaded = true,
 }) {
   const router = useRouter();
   const productListingRef = useRef(null);
@@ -324,39 +324,7 @@ export default function ProductsPageClient({
     };
   }, [search, category, debouncedMaxPrice, sort, currentPage]);
 
-  useEffect(() => {
-    if (initialCategoriesLoaded) return;
-
-    let active = true;
-
-    const fetchInitialData = async () => {
-      try {
-        const categoryResult = await getCategories();
-
-        if (!active) return;
-
-        if (categoryResult?.success && Array.isArray(categoryResult.data)) {
-          setCategoryOptions([
-            { name: "All Products", slug: "all" },
-            ...categoryResult.data.map((item) => ({
-              _id: item._id,
-              name: item.name,
-              slug: item.slug,
-            })),
-          ]);
-        }
-
-      } catch (error) {
-        console.error("Failed to load categories or wishlist:", error);
-      }
-    };
-
-    fetchInitialData();
-
-    return () => {
-      active = false;
-    };
-  }, [initialCategoriesLoaded]);
+  // Category data is now fetched in the server component (ProductsContent). No client‑side fetch needed.
 
   const filteredProducts = useMemo(() => {
     let result = products.filter((product) => {
