@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, GraduationCap, Truck } from "lucide-react";
+import { ArrowRight, ArrowUpRight, GraduationCap, Truck } from "lucide-react";
 
 export default function CampusDelivery() {
   return (
@@ -36,10 +36,10 @@ export default function CampusDelivery() {
               <Link
                 href="/https://www.facebook.com/unitechfa"
                 target="_blank"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-colors hover:bg-blue-700"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-indigo-950 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-colors hover:bg-blue-700"
               >
                 Follow Us On Facebook
-                <ArrowRight size={17} />
+                <ArrowUpRight size={17} />
               </Link>
             </div>
           </div>

@@ -493,36 +493,6 @@ export default function WishlistPage() {
             </Link>
           </div>
         )}
-
-        {/* Student Deal Banner */}
-        <div className="relative mt-10 overflow-hidden rounded-2xl bg-slate-900 p-6 sm:p-8 lg:p-10">
-          <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full bg-blue-600/20 blur-3xl" />
-
-          <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
-            <div className="max-w-xl">
-              <span className="inline-flex rounded-full border border-blue-400/30 bg-blue-400/10 px-3 py-1 text-xs font-bold text-blue-300">
-                EXCLUSIVE NSTU OFFER
-              </span>
-
-              <h2 className="mt-4 text-2xl font-extrabold text-white sm:text-3xl">
-                Better Deals for NSTU Students
-              </h2>
-
-              <p className="mt-3 text-sm leading-6 text-slate-300 sm:text-base">
-                Discover special offers on mobile accessories made for
-                the NSTU campus community.
-              </p>
-            </div>
-
-            <Link
-              href="/deals"
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-blue-500"
-            >
-              Explore Student Deals
-              <ArrowRight size={18} />
-            </Link>
-          </div>
-        </div>
       </section>
     </main>
   );

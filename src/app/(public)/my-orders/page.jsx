@@ -587,27 +587,6 @@ export default function MyOrdersPage() {
             </div>
           )}
         </div>
-
-        {/* Bottom Support */}
-        <div className="mt-10 flex flex-col items-start justify-between gap-4 rounded-2xl bg-slate-900 p-6 sm:flex-row sm:items-center sm:p-8">
-          <div>
-            <h3 className="text-lg font-bold text-white">
-              Need help with your order?
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-slate-300">
-              Contact our support team if you have questions about delivery or
-              order status.
-            </p>
-          </div>
-
-          <Link
-            href="/contact"
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-blue-50"
-          >
-            Contact Support
-            <ArrowRight size={16} />
-          </Link>
-        </div>
           </>
         )}
       </section>

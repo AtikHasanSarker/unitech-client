@@ -202,54 +202,6 @@ export default function TrackOrderPage() {
           </div>
         </div>
 
-        {/* Delivery Information */}
-        <div className="mt-10 grid gap-4 sm:grid-cols-3">
-          {/* Order Updates */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-1 hover:border-blue-200 hover:shadow-md">
-            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600">
-              <Clock3 size={23} />
-            </div>
-
-            <h3 className="mb-1 text-sm font-semibold text-slate-900">
-              Order Updates
-            </h3>
-
-            <p className="text-xs leading-5 text-slate-500">
-              Check your order progress whenever you need.
-            </p>
-          </div>
-
-          {/* Delivery Tracking */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-1 hover:border-blue-200 hover:shadow-md">
-            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600">
-              <Truck size={23} />
-            </div>
-
-            <h3 className="mb-1 text-sm font-semibold text-slate-900">
-              Delivery Tracking
-            </h3>
-
-            <p className="text-xs leading-5 text-slate-500">
-              Follow your package from processing to delivery.
-            </p>
-          </div>
-
-          {/* Customer Support */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-1 hover:border-blue-200 hover:shadow-md">
-            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600">
-              <CircleHelp size={23} />
-            </div>
-
-            <h3 className="mb-1 text-sm font-semibold text-slate-900">
-              Need Help?
-            </h3>
-
-            <p className="text-xs leading-5 text-slate-500">
-              Contact our support team if you need assistance.
-            </p>
-          </div>
-        </div>
-
         {/* Bottom Support */}
         <div className="mt-10 text-center">
           <p className="text-sm text-slate-500">
