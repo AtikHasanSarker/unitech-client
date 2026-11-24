@@ -34,7 +34,7 @@ export default function CampusDelivery() {
               </Link>
 
               <Link
-                href="/https://www.facebook.com/unitechfa"
+                href="https://www.facebook.com/unitechfa"
                 target="_blank"
                 className="mt-6 inline-flex items-center gap-2 rounded-full bg-indigo-950 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-colors hover:bg-blue-700"
               >
