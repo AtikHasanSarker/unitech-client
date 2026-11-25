@@ -37,7 +37,7 @@ export default function NewArrivals() {
             badge: "NEW",
           })));
         } else {
-          toast.error(productResult?.message || "Could not load new products.");
+          toast.error("Could not load new products.");
         }
       })
       .catch(() => {
@@ -52,7 +52,7 @@ export default function NewArrivals() {
   }, []);
 
   return (
-    <section className="bg-white py-10 text-slate-900 sm:py-16">
+    <section className="bg-white py-8 text-slate-900 sm:py-16">
       <div className="mx-auto container px-5">
         {/* Section Heading */}
         <div className="mb-8 flex items-end justify-between gap-4 sm:mb-10">
