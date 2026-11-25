@@ -19,13 +19,16 @@ import {
 import { useCart } from "@/components/cart/CartProvider";
 import { getProductById } from "@/lib/api/product";
 import { useWishlist } from "@/components/wishlist/useWishlist";
+import {
+  getDiscountPercentage,
+  getEffectivePrice,
+  hasValidDiscountPrice,
+} from "@/lib/product-price";
 
 function ProductCard({ product, onRemove, onAddToCart, isAdded }) {
-  const discount = product.oldPrice
-    ? Math.round(
-        ((product.oldPrice - product.price) / product.oldPrice) * 100
-      )
-    : 0;
+  const effectivePrice = getEffectivePrice(product);
+  const hasDiscount = hasValidDiscountPrice(product);
+  const discount = getDiscountPercentage(product);
 
   return (
     <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-200/50">
@@ -81,12 +84,12 @@ function ProductCard({ product, onRemove, onAddToCart, isAdded }) {
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="text-lg font-extrabold text-slate-900">
-            ৳{product.price.toLocaleString("en-BD")}
+            ৳{effectivePrice.toLocaleString("en-BD")}
           </span>
 
-          {product.oldPrice && (
+          {hasDiscount && (
             <span className="text-xs text-slate-400 line-through">
-              ৳{product.oldPrice.toLocaleString("en-BD")}
+              ৳{Number(product.price).toLocaleString("en-BD")}
             </span>
           )}
         </div>
@@ -162,7 +165,7 @@ export default function WishlistPage() {
               ? product.category
               : product.category?.name || "Products",
           price: Number(product.price) || 0,
-          oldPrice: product.oldPrice,
+          discountPrice: product.discountPrice,
           rating: product.rating,
           reviews: product.reviews,
           image: product.images?.[0] || "/images/product-placeholder.png",
@@ -197,7 +200,9 @@ export default function WishlistPage() {
   const totalSavings = wishlist.reduce(
     (total, product) =>
       total +
-      Math.max(0, (product.oldPrice || product.price) - product.price),
+      (hasValidDiscountPrice(product)
+        ? Math.max(0, Number(product.price) - getEffectivePrice(product))
+        : 0),
     0
   );
 

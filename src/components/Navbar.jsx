@@ -28,6 +28,7 @@ import {
   Van,
   Laptop,
 } from "lucide-react";
+import { getEffectivePrice } from "@/lib/product-price";
 import { Button } from "@heroui/react";
 import { FaFacebook, FaYoutube } from "react-icons/fa";
 import { BsInstagram } from "react-icons/bs";
@@ -303,7 +304,7 @@ export default function Navbar() {
                 </span>
                 <span className="mt-0.5 block text-xs text-slate-500">
                   {product.brand ? `${product.brand} · ` : ""}৳
-                  {Number(product.price || 0).toLocaleString("en-BD")}
+                  {getEffectivePrice(product).toLocaleString("en-BD")}
                 </span>
               </span>
             </button>

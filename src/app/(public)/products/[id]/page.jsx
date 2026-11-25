@@ -24,6 +24,11 @@ import {
 import { useCart } from "@/components/cart/CartProvider";
 import { getProductById, getProducts } from "@/lib/api/product";
 import { useWishlist } from "@/components/wishlist/useWishlist";
+import {
+  getDiscountPercentage,
+  getEffectivePrice,
+  hasValidDiscountPrice,
+} from "@/lib/product-price";
 
 const formatPrice = (price) => `৳${price.toLocaleString("en-BD")}`;
 
@@ -213,9 +218,9 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const discount = product.oldPrice
-    ? Math.round((1 - product.price / product.oldPrice) * 100)
-    : 0;
+  const effectivePrice = getEffectivePrice(product);
+  const hasDiscount = hasValidDiscountPrice(product);
+  const discount = getDiscountPercentage(product);
 
   return (
     <>
@@ -362,13 +367,13 @@ export default function ProductDetailsPage() {
               {/* Price */}
               <div className="flex flex-wrap items-end gap-3">
                 <span className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
-                  {formatPrice(product.price)}
+                  {formatPrice(effectivePrice)}
                 </span>
 
-                {product.oldPrice > product.price && (
+                {hasDiscount && (
                   <>
                     <span className="pb-1 text-base text-slate-400 line-through">
-                      {formatPrice(product.oldPrice)}
+                      {formatPrice(product.price)}
                     </span>
                     <span className="mb-1 rounded-md bg-red-50 px-2 py-1 text-xs font-bold text-red-600">
                       {discount}% OFF
@@ -434,7 +439,7 @@ export default function ProductDetailsPage() {
                   <p className="text-xs text-slate-400">
                     Subtotal:{" "}
                     <span className="font-bold text-slate-800">
-                      {formatPrice(product.price * quantity)}
+                      {formatPrice(effectivePrice * quantity)}
                     </span>
                   </p>
                 </div>
@@ -728,11 +733,11 @@ export default function ProductDetailsPage() {
 
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <span className="font-bold text-slate-900">
-                          {formatPrice(item.price)}
+                          {formatPrice(getEffectivePrice(item))}
                         </span>
-                        {item.oldPrice > item.price && (
+                        {hasValidDiscountPrice(item) && (
                           <span className="text-xs text-slate-400 line-through">
-                            {formatPrice(item.oldPrice)}
+                            {formatPrice(item.price)}
                           </span>
                         )}
                       </div>

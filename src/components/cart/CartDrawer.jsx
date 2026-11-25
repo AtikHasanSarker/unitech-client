@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ShoppingBag, X } from "lucide-react";
+import { getEffectivePrice } from "@/lib/product-price";
 
 const formatPrice = (price) => `৳${Number(price || 0).toLocaleString("en-BD")}`;
 
@@ -97,7 +98,7 @@ export default function CartDrawer({
                     <p className="mt-1 text-xs text-slate-500">
                       {item.quantity} ×{" "}
                       <span className="font-semibold text-blue-600">
-                        {formatPrice(item.price)}
+                        {formatPrice(getEffectivePrice(item))}
                       </span>
                     </p>
                   </div>

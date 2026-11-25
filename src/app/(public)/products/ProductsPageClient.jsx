@@ -24,6 +24,7 @@ import { getCachedProducts } from "@/lib/api/product";
 
 import ProductCard from "@/components/ui/ProductCard";
 import { useWishlist } from "@/components/wishlist/useWishlist";
+import { getEffectivePrice } from "@/lib/product-price";
 
 function SectionTitle({ children }) {
   return <h3 className="mb-4 text-sm font-bold text-slate-800">{children}</h3>;
@@ -328,7 +329,7 @@ export default function ProductsPageClient({
 
   const filteredProducts = useMemo(() => {
     let result = products.filter((product) => {
-      const matchesPrice = product.price <= maxPrice;
+      const matchesPrice = getEffectivePrice(product) <= maxPrice;
       const matchesStock = !inStockOnly || product.inStock;
       const matchesRating =
         minRating === 0 || (product.rating || 0) >= minRating;
@@ -337,9 +338,9 @@ export default function ProductsPageClient({
     });
 
     if (sort === "price-low") {
-      result.sort((a, b) => a.price - b.price);
+      result.sort((a, b) => getEffectivePrice(a) - getEffectivePrice(b));
     } else if (sort === "price-high") {
-      result.sort((a, b) => b.price - a.price);
+      result.sort((a, b) => getEffectivePrice(b) - getEffectivePrice(a));
     } else if (sort === "rating") {
       result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     } else if (sort === "newest") {

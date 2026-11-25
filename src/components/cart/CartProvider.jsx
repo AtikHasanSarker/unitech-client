@@ -20,6 +20,7 @@ import {
   updateCartItem,
 } from "@/lib/api/cart";
 import { getProductById } from "@/lib/api/product";
+import { getEffectivePrice, hasSellablePrice } from "@/lib/product-price";
 import {
   clearGuestCart,
   GUEST_CART_STORAGE_KEY,
@@ -33,6 +34,7 @@ function normalizeCartResponse(cart) {
   return (Array.isArray(cart?.items) ? cart.items : []).map((item) => ({
     ...item,
     id: item.productId,
+    price: getEffectivePrice(item),
     brand: item.brand || "",
     category: item.category || "",
     image: item.image || "/images/product-placeholder.png",
@@ -44,7 +46,7 @@ function isAvailableProduct(product) {
   return (
     product &&
     product.status !== "Draft" &&
-    Number.isFinite(Number(item.discountPrice || item.price)) &&
+    hasSellablePrice(product) &&
     Number.isInteger(Number(product.stock)) &&
     Number(product.stock) > 0
   );
@@ -55,7 +57,7 @@ function createCartItem(product, quantity) {
     ...product,
     id: String(product._id),
     productId: String(product._id),
-    price: Number(product.discountPrice || product.price),
+    price: getEffectivePrice(product),
     stock: Number(product.stock),
     image:
       product.images?.[0] || product.image || "/images/product-placeholder.png",
@@ -540,7 +542,7 @@ export function CartProvider({ children }) {
         items={items}
         subtotal={items.reduce(
           (subtotal, item) =>
-            subtotal + (item.discountPrice || item.price) * item.quantity,
+            subtotal + getEffectivePrice(item) * item.quantity,
           0,
         )}
         onRemove={removeItem}

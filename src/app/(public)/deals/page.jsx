@@ -9,6 +9,11 @@ import {
 } from "lucide-react";
 import { getProducts } from "@/lib/api/product";
 import ActionButton from "@/components/ui/ActionButton";
+import {
+  getEffectivePrice,
+  hasSellablePrice,
+  hasValidDiscountPrice,
+} from "@/lib/product-price";
 
 const MAX_PRODUCTS = 20;
 const formatPrice = (value) =>
@@ -112,13 +117,12 @@ async function DealsProducts() {
     { next: { revalidate: 60 } },
   );
 
-  const products = fetchProducts?.data
+  const products = (Array.isArray(fetchProducts?.data) ? fetchProducts.data : [])
     .filter(
       (product) =>
         product?._id &&
         product.name &&
-        Number.isFinite(Number(product.price)) &&
-        Number(product.price) >= 0,
+        hasSellablePrice(product),
     )
     .slice(0, MAX_PRODUCTS);
 
@@ -147,7 +151,8 @@ async function DealsProducts() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
       {products.map((product) => {
-        const originalPrice = Number(product.price);
+        const effectivePrice = getEffectivePrice(product);
+        const hasDiscount = hasValidDiscountPrice(product);
         const imageUrl = Array.isArray(product.images)
           ? product.images[0]
           : null;
@@ -185,7 +190,7 @@ async function DealsProducts() {
                 )}
               </div>
 
-              <div className="p-3 sm:p-4">
+              <div className="px-3 pt-3 sm:px-4 sm:pt-4">
                 {product.brand && (
                   <p className="mb-1.5 truncate text-[10px] font-semibold uppercase text-slate-400 sm:text-xs">
                     {product.brand}
@@ -195,13 +200,20 @@ async function DealsProducts() {
                   {product.name}
                 </h3>
                 <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                  {hasDiscount && (
+                    <span className="text-xs text-slate-400 line-through">
+                      {formatPrice(product.price)}
+                    </span>
+                  )}
                   <span className="text-base font-bold text-blue-700 sm:text-lg">
-                    {formatPrice(originalPrice)}
+                    {formatPrice(effectivePrice)}
                   </span>
                 </div>
-                <ActionButton product={product} />
               </div>
             </Link>
+            <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+              <ActionButton product={product} />
+            </div>
           </article>
         );
       })}

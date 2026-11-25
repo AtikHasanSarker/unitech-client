@@ -17,12 +17,9 @@ import {
 } from "lucide-react";
 import OrderPlacementModal from "./OrderPlacementModal";
 import { useCart } from "@/components/cart/CartProvider";
+import { getEffectivePrice } from "@/lib/product-price";
 
 const formatPrice = (price) => `৳${Number(price || 0).toLocaleString("en-BD")}`;
-
-function getProductPrice(item) {
-  return Number(item.discountPrice || item.price || 0);
-}
 
 export default function CartPage() {
   const {
@@ -38,7 +35,7 @@ export default function CartPage() {
 
   // discountPrice is the only price used for cart calculation
   const subtotal = cart.reduce(
-    (total, item) => total + getProductPrice(item) * Number(item.quantity || 0),
+    (total, item) => total + getEffectivePrice(item) * Number(item.quantity || 0),
     0,
   );
 
@@ -166,7 +163,7 @@ export default function CartPage() {
 
                   <div className="divide-y divide-slate-100">
                     {cart.map((item) => {
-                      const productPrice = getProductPrice(item);
+                      const productPrice = getEffectivePrice(item);
 
                       return (
                         <article

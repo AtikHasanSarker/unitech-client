@@ -16,6 +16,11 @@ import toast from "react-hot-toast";
 import { useCart } from "@/components/cart/CartProvider";
 import { getProducts } from "@/lib/api/product";
 import { useWishlist } from "@/components/wishlist/useWishlist";
+import {
+  getDiscountPercentage,
+  getEffectivePrice,
+  hasValidDiscountPrice,
+} from "@/lib/product-price";
 
 function formatPrice(price) {
   return `৳${price.toLocaleString("en-US")}`;
@@ -32,7 +37,7 @@ export default function SpecialDeals() {
       .then((result) => {
         if (!active) return;
         if (!result?.success) {
-          toast.error(result?.message || "Could not load featured products.");
+          toast.error("Could not load featured products.");
           return;
         }
 
@@ -40,18 +45,18 @@ export default function SpecialDeals() {
           (result.data || [])
             .filter((product) => product?._id && product.name)
             .map((product) => {
-              const price = Number(product.price);
-              const oldPrice = Number(product.oldPrice) || price;
+              const price = Number(product.price) || 0;
+              const effectivePrice = getEffectivePrice(product);
+              const hasDiscount = hasValidDiscountPrice(product);
               return {
                 ...product,
                 id: String(product._id),
                 slug: String(product._id),
                 image: product.images?.[0] || "/images/product-placeholder.png",
                 price,
-                oldPrice,
-                discount: oldPrice > price
-                  ? Math.round((1 - price / oldPrice) * 100)
-                  : 0,
+                effectivePrice,
+                hasDiscount,
+                discount: getDiscountPercentage(product),
                 rating: Number(product.rating) || 0,
                 reviews: Number(product.reviews) || 0,
                 stock: Number(product.stock) || 0,
@@ -217,12 +222,12 @@ export default function SpecialDeals() {
                   <div className="mt-3 flex items-end justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-red-600 sm:text-base">
-                        {formatPrice(product.price)}
+                        {formatPrice(product.effectivePrice)}
                       </p>
 
-                      {product.oldPrice > product.price && (
+                      {product.hasDiscount && (
                         <p className="mt-0.5 text-[10px] text-slate-400 line-through sm:text-xs">
-                          {formatPrice(product.oldPrice)}
+                          {formatPrice(product.price)}
                         </p>
                       )}
                     </div>

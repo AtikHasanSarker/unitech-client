@@ -23,6 +23,7 @@ import {
 import { clearCart } from "@/lib/api/cart";
 import { createOrder } from "@/lib/api/order";
 import { useSession } from "@/lib/auth-client";
+import { getEffectivePrice } from "@/lib/product-price";
 
 const DELIVERY_OPTIONS = [
   {
@@ -44,16 +45,6 @@ const DELIVERY_OPTIONS = [
 const DISTRICT_OPTIONS = getAllDistricts().sort((left, right) =>
   left.name.localeCompare(right.name),
 );
-
-/**
- * discountPrice is now the actual/current selling price.
- * The old `price` field is intentionally not used anywhere.
- */
-function getProductPrice(item) {
-  const price = Number(item?.discountPrice);
-
-  return Number.isFinite(price) && price >= 0 ? price : 0;
-}
 
 export default function OrderPlacementModal({
   isOpen,
@@ -99,7 +90,7 @@ export default function OrderPlacementModal({
   const subtotal = useMemo(
     () =>
       cartItems.reduce(
-        (sum, item) => sum + getProductPrice(item) * Number(item.quantity || 1),
+        (sum, item) => sum + getEffectivePrice(item) * Number(item.quantity || 1),
         0,
       ),
     [cartItems],
@@ -887,7 +878,7 @@ export default function OrderPlacementModal({
                   {/* Cart Items */}
                   <div className="max-h-64 space-y-4 overflow-y-auto pr-1">
                     {cartItems.map((item, index) => {
-                      const productPrice = getProductPrice(item);
+                      const productPrice = getEffectivePrice(item);
 
                       const quantity = Number(item.quantity || 1);
 
