@@ -4,12 +4,23 @@ import ActionButton from "./ActionButton";
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, Star } from "lucide-react";
-const formatPrice = (price) => `৳${price.toLocaleString("en-BD")}`;
+const formatPrice = (price) => `৳${Number(price).toLocaleString("en-BD")}`;
 
 const ProductCard = ({ product, isWishListed, onWishlist }) => {
-     const discount = product.oldPrice
-       ? Math.round((1 - product.price / product.oldPrice) * 100)
-       : 0;
+  const price = Number(product.price);
+  const discountPrice = Number(product.discountPrice);
+  const hasDiscount =
+    product.discountPrice !== null &&
+    product.discountPrice !== undefined &&
+    product.discountPrice !== "" &&
+    Number.isFinite(price) &&
+    Number.isFinite(discountPrice) &&
+    discountPrice >= 0 &&
+    discountPrice < price;
+  const discount = hasDiscount
+    ? Math.round(((price - discountPrice) / price) * 100)
+    : 0;
+
   return <article className="group min-w-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]">
       <div
         className={`relative aspect-square overflow-hidden ${product.color}`}
@@ -29,16 +40,20 @@ const ProductCard = ({ product, isWishListed, onWishlist }) => {
           />
         </Link>
 
-        {product.badge && (
-          <span className="absolute left-3 top-3 rounded-md bg-slate-900 px-2 py-1 text-[9px] font-bold tracking-wider text-white sm:text-[10px]">
-            {product.badge}
-          </span>
-        )}
+        {(product.badge || discount > 0) && (
+          <div className="absolute left-3 top-3 flex flex-col items-start gap-1">
+            {product.badge && (
+              <span className="rounded-md bg-slate-900 px-2 py-1 text-[9px] font-bold tracking-wider text-white sm:text-[10px]">
+                {product.badge}
+              </span>
+            )}
 
-        {discount > 0 && (
-          <span className="absolute bottom-3 left-3 rounded-md bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600">
-            -{discount}%
-          </span>
+            {discount > 0 && (
+              <span className="rounded-md bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600">
+                -{discount}%
+              </span>
+            )}
+          </div>
         )}
 
         <button
@@ -88,13 +103,18 @@ const ProductCard = ({ product, isWishListed, onWishlist }) => {
         )}
 
         <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <span className="text-base font-extrabold tracking-tight text-slate-900 sm:text-lg">
-            {formatPrice(product.price)}
-          </span>
-
-          {product.oldPrice > product.price && (
-            <span className="text-xs text-slate-400 line-through">
-              {formatPrice(product.oldPrice)}
+          {hasDiscount ? (
+            <>
+              <span className="text-base font-extrabold tracking-tight text-slate-900 sm:text-lg">
+                {formatPrice(discountPrice)}
+              </span>
+              <span className="text-xs text-slate-400 line-through">
+                {formatPrice(price)}
+              </span>
+            </>
+          ) : (
+            <span className="text-base font-extrabold tracking-tight text-slate-900 sm:text-lg">
+              {formatPrice(price)}
             </span>
           )}
         </div>

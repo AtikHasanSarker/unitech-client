@@ -119,7 +119,12 @@ async function TrendingProducts() {
           product.images?.[0] || "/images/product-placeholder.png",
         ],
         price: Number(product.price),
-        oldPrice: Number(product.oldPrice) || 0,
+        discountPrice:
+          product.discountPrice === null ||
+          product.discountPrice === undefined ||
+          product.discountPrice === ""
+            ? null
+            : Number(product.discountPrice),
         stock: Number(product.stock) || 0,
         color: "bg-slate-50",
       }))}
