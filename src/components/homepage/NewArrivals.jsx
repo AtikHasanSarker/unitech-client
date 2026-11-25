@@ -16,7 +16,7 @@ import ActionButton from "@/components/ui/ActionButton";
 import { useWishlist } from "@/components/wishlist/useWishlist";
 
 function formatPrice(price) {
-  return `৳${price.toLocaleString("en-US")}`;
+  return `৳${Number(price).toLocaleString("en-US")}`;
 }
 
 export default function NewArrivals() {
@@ -52,7 +52,7 @@ export default function NewArrivals() {
   }, []);
 
   return (
-    <section className="bg-white py-8 text-slate-900 sm:py-16">
+    <section className="bg-white py-8 text-slate-900 sm:py-14">
       <div className="mx-auto container px-5">
         {/* Section Heading */}
         <div className="mb-8 flex items-end justify-between gap-4 sm:mb-10">
@@ -98,6 +98,19 @@ export default function NewArrivals() {
               ))
             : products.map((product) => {
                 const isWishlisted = wishlist.includes(product.id);
+                const price = Number(product.price);
+                const discountPrice = Number(product.discountPrice);
+                const hasDiscount =
+                  product.discountPrice !== null &&
+                  product.discountPrice !== undefined &&
+                  product.discountPrice !== "" &&
+                  Number.isFinite(price) &&
+                  Number.isFinite(discountPrice) &&
+                  discountPrice >= 0 &&
+                  discountPrice < price;
+                const discount = hasDiscount
+                  ? Math.round(((price - discountPrice) / price) * 100)
+                  : 0;
 
                 return (
                   <article
@@ -121,16 +134,26 @@ export default function NewArrivals() {
                       </Link>
 
                       {/* Product Badge */}
-                      {product.badge && (
-                        <span
-                          className={`absolute left-2 top-2 rounded-lg px-2 py-1 text-[10px] font-bold text-white sm:left-3 sm:top-3 sm:text-xs ${
-                            product.badge === "TRENDING"
-                              ? "bg-violet-600"
-                              : "bg-emerald-500"
-                          }`}
-                        >
-                          {product.badge}
-                        </span>
+                      {(product.badge || discount > 0) && (
+                        <div className="absolute left-2 top-2 flex items-center gap-2 sm:left-3 sm:top-3">
+                          {product.badge && (
+                            <span
+                              className={`rounded-full px-3 py-1.25 text-[10px] font-bold text-white sm:text-xs ${
+                                product.badge === "TRENDING"
+                                  ? "bg-violet-600"
+                                  : "bg-emerald-600"
+                              }`}
+                            >
+                              {product.badge}
+                            </span>
+                          )}
+
+                          {discount > 0 && (
+                            <span className="rounded-full bg-[#242424] px-3 py-1.25 text-[10px] font-bold text-white sm:text-xs">
+                              -{discount}%
+                            </span>
+                          )}
+                        </div>
                       )}
 
                       {/* Wishlist Button */}
@@ -190,15 +213,22 @@ export default function NewArrivals() {
 
                       {/* Price & Cart */}
                       <div className="mt-3">
-                        <p className="text-sm font-bold text-slate-900 sm:text-base">
-                          {formatPrice(product.price)}
-                        </p>
-
-                        {product.oldPrice && (
-                          <p className="mt-0.5 text-[10px] text-slate-400 line-through sm:text-xs">
-                            {formatPrice(product.oldPrice)}
-                          </p>
-                        )}
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                          {hasDiscount ? (
+                            <>
+                              <span className="text-[10px] text-slate-400 line-through sm:text-xs">
+                                {formatPrice(price)}
+                              </span>
+                              <span className="text-sm font-bold text-blue-600 sm:text-base">
+                                {formatPrice(discountPrice)}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-sm font-bold text-slate-900 sm:text-base">
+                              {formatPrice(price)}
+                            </span>
+                          )}
+                        </div>
 
                         <ActionButton product={product} />
                       </div>

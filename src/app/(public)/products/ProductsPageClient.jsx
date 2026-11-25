@@ -285,7 +285,7 @@ export default function ProductsPageClient({
           setProducts([]);
           setPagination({ totalPages: 0 });
 
-          toast.error(result?.message || "Could not load products.");
+          toast.error("Could not load products.");
 
           return;
         }
@@ -309,7 +309,7 @@ export default function ProductsPageClient({
         setProducts([]);
         setPagination({ totalPages: 0 });
 
-        toast.error(error?.message || "Could not load products.");
+        toast.error("Could not load products.");
       } finally {
         if (active) {
           setLoading(false);

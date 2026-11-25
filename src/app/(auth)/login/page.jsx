@@ -29,14 +29,10 @@ export default function LoginPage() {
       });
 
       if (error) {
-        toast.error(error.message || "Could not continue with Google.");
+        toast.error("Could not continue with Google.");
       }
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Could not continue with Google.",
-      );
+      toast.error("Could not continue with Google.");
     } finally {
       setIsGoogleSubmitting(false);
     }
@@ -59,7 +55,7 @@ export default function LoginPage() {
       });
 
       if (error || !data) {
-        toast.error(error?.message || "Email or password is incorrect.");
+        toast.error("Email or password is incorrect.");
         return;
       }
 

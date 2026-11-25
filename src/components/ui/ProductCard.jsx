@@ -50,7 +50,7 @@ const ProductCard = ({ product, isWishListed, onWishlist }) => {
             )}
 
             {discount > 0 && (
-              <span className="rounded-full bg-[#242424] px-3 py-1.25 text-[10px] font-bold text-white">
+              <span className="rounded-full bg-[#242424] px-3 py-1.25 text-[10px] font-bold text-white sm:text-xs">
                 -{discount}%
               </span>
             )}

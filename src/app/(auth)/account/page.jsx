@@ -340,7 +340,7 @@ function ProfilePage({ user }) {
       const { data, error } = await authClient.updateUser({ name: updatedName });
 
       if (error || !data?.status) {
-        toast.error(error?.message || "Could not update your profile.");
+        toast.error("Could not update your profile.");
         return;
       }
 
@@ -363,16 +363,14 @@ function ProfilePage({ user }) {
     try {
       const { error } = await signOut();
       if (error) {
-        toast.error(error.message || "Could not sign out.");
+        toast.error("Could not sign out.");
         return;
       }
 
       router.replace("/");
       router.refresh();
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Could not sign out.",
-      );
+      toast.error("Could not sign out.");
     } finally {
       setIsSigningOut(false);
     }

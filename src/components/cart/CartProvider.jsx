@@ -318,7 +318,6 @@ export function CartProvider({ children }) {
         }
         setStoredItems(normalizeCartResponse(result.data));
         if (openDrawer) setIsCartDrawerOpen(true);
-        toast.success("Product added to your cart.");
         return true;
       } catch {
         toast.error("Could not add this product to your cart.");
@@ -364,7 +363,7 @@ export function CartProvider({ children }) {
           : [...current, cartItem];
       });
       if (openDrawer) setIsCartDrawerOpen(true);
-      toast.success("Product added to your cart.");
+
       return true;
     } catch {
       toast.error("Could not add this product to your cart.");

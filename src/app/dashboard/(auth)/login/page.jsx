@@ -42,7 +42,7 @@ export default function LoginPage() {
         toast.success("Sign in successful. Redirecting...");
         router.replace("/dashboard/admin");
       } else {
-        toast.error(error?.message || "Email or password is incorrect.");
+        toast.error("Email or password is incorrect.");
       }
     } catch {
       toast.error("Sign in failed. Please try again.");

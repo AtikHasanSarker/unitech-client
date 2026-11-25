@@ -211,7 +211,7 @@ export default function AdminCustomersPage() {
     try {
       const result = await updateUserStatus(customerId, nextStatus);
       if (!result?.success) {
-        toast.error(result?.message || "Customer status could not be saved.");
+        toast.error("Customer status could not be saved.");
         return;
       }
 
@@ -235,7 +235,7 @@ export default function AdminCustomersPage() {
     try {
       const result = await updateUserRole(customerId, role);
       if (!result?.success) {
-        toast.error(result?.message || "Customer role could not be saved.");
+        toast.error("Customer role could not be saved.");
         return;
       }
       setCustomers((current) => current.map((customer) =>
