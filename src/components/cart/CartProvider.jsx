@@ -44,7 +44,7 @@ function isAvailableProduct(product) {
   return (
     product &&
     product.status !== "Draft" &&
-    Number.isFinite(Number(product.price)) &&
+    Number.isFinite(Number(item.discountPrice || item.price)) &&
     Number.isInteger(Number(product.stock)) &&
     Number(product.stock) > 0
   );
@@ -55,9 +55,10 @@ function createCartItem(product, quantity) {
     ...product,
     id: String(product._id),
     productId: String(product._id),
-    price: Number(product.price),
+    price: Number(product.discountPrice || product.price),
     stock: Number(product.stock),
-    image: product.images?.[0] || product.image || "/images/product-placeholder.png",
+    image:
+      product.images?.[0] || product.image || "/images/product-placeholder.png",
     brand: product.brand || "",
     category: product.category || "",
     quantity,
@@ -519,7 +520,18 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider
-      value={{ items, itemCount, isLoading: !isReady, isReady, addItem, setQuantity, removeItem, clearCart, refreshCart, resetAfterLogout }}
+      value={{
+        items,
+        itemCount,
+        isLoading: !isReady,
+        isReady,
+        addItem,
+        setQuantity,
+        removeItem,
+        clearCart,
+        refreshCart,
+        resetAfterLogout,
+      }}
     >
       {children}
       <CartDrawer
@@ -527,7 +539,8 @@ export function CartProvider({ children }) {
         onClose={closeCartDrawer}
         items={items}
         subtotal={items.reduce(
-          (subtotal, item) => subtotal + item.price * item.quantity,
+          (subtotal, item) =>
+            subtotal + (item.discountPrice || item.price) * item.quantity,
           0,
         )}
         onRemove={removeItem}

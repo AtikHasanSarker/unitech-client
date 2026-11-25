@@ -13,23 +13,16 @@ import {
   ArrowLeft,
   ArrowRight,
   Truck,
-  ShieldCheck,
-  PackageCheck,
-  TicketPercent,
-  X,
-  Check,
   ShoppingBasket,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
 import OrderPlacementModal from "./OrderPlacementModal";
 import { useCart } from "@/components/cart/CartProvider";
 
-const formatPrice = (price) => `৳${price.toLocaleString("en-BD")}`;
+const formatPrice = (price) => `৳${Number(price || 0).toLocaleString("en-BD")}`;
 
-const DEMO_COUPONS = {
-  NSTU10: { discount: 0.1, label: "10% off" },
-  SAVE50: { discount: 0, flat: 50, label: "৳50 off" },
-};
+function getProductPrice(item) {
+  return Number(item.discountPrice || item.price || 0);
+}
 
 export default function CartPage() {
   const {
@@ -40,84 +33,38 @@ export default function CartPage() {
     clearCart: clearProviderCart,
     refreshCart,
   } = useCart();
+
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [couponInput, setCouponInput] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [couponMessage, setCouponMessage] = useState("");
 
+  // discountPrice is the only price used for cart calculation
   const subtotal = cart.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) => total + getProductPrice(item) * Number(item.quantity || 0),
     0,
   );
 
-  const originalTotal = cart.reduce(
-    (total, item) => total + (item.oldPrice || item.price) * item.quantity,
+  // No coupon / additional discount
+  const total = subtotal;
+
+  const totalQuantity = cart.reduce(
+    (total, item) => total + Number(item.quantity || 0),
     0,
   );
-
-  const productSavings = originalTotal - subtotal;
-
-  const couponDiscount = appliedCoupon
-    ? appliedCoupon.discount
-      ? Math.round(subtotal * appliedCoupon.discount)
-      : Math.min(appliedCoupon.flat || 0, subtotal)
-    : 0;
-
-  const effectiveCouponDiscount = Math.min(couponDiscount, subtotal);
-  const total = Math.max(0, subtotal - effectiveCouponDiscount);
-
-  const totalQuantity = cart.reduce((total, item) => total + item.quantity, 0);
 
   const updateQuantity = async (id, amount) => {
     const item = cart.find((product) => product.id === id);
+
     if (!item) return;
-    await setQuantity(id, Math.max(1, item.quantity + amount));
+
+    await setQuantity(id, Math.max(1, Number(item.quantity || 0) + amount));
   };
 
   const handleRemoveItem = async (id) => {
-    if (await removeItem(id)) {
-      setAppliedCoupon(null);
-      setCouponMessage("");
-    }
-  };
-
-  const applyCoupon = (event) => {
-    event.preventDefault();
-
-    const code = couponInput.trim().toUpperCase();
-    const coupon = DEMO_COUPONS[code];
-
-    if (subtotal === 0) {
-      setCouponMessage("Add a product before applying a coupon.");
-      setAppliedCoupon(null);
-      return;
-    }
-
-    if (!coupon) {
-      setCouponMessage("Invalid demo coupon code.");
-      setAppliedCoupon(null);
-      return;
-    }
-
-    setAppliedCoupon({ ...coupon, code });
-    setCouponMessage(`${code} applied successfully.`);
-  };
-
-  const removeCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponInput("");
-    setCouponMessage("");
+    await removeItem(id);
   };
 
   const handleClearCart = async () => {
-    if (await clearProviderCart()) {
-      setAppliedCoupon(null);
-      setCouponInput("");
-      setCouponMessage("");
-    }
+    await clearProviderCart();
   };
-
-
 
   return (
     <>
@@ -129,7 +76,9 @@ export default function CartPage() {
               <Link href="/" className="hover:text-blue-600">
                 Home
               </Link>
+
               <span>/</span>
+
               <span className="font-medium text-slate-700">Shopping Cart</span>
             </nav>
 
@@ -138,9 +87,11 @@ export default function CartPage() {
                 <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
                   Your Selection
                 </p>
+
                 <h1 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">
                   Shopping Cart
                 </h1>
+
                 <p className="mt-3 text-sm text-slate-500">
                   Review your items before proceeding to checkout.
                 </p>
@@ -148,6 +99,7 @@ export default function CartPage() {
 
               <div className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <ShoppingBag size={18} className="text-blue-600" />
+
                 <span className="text-sm font-semibold text-slate-700">
                   {totalQuantity} {totalQuantity === 1 ? "item" : "items"}
                 </span>
@@ -196,6 +148,7 @@ export default function CartPage() {
                       <h2 className="text-base font-bold text-slate-900">
                         Cart Items
                       </h2>
+
                       <p className="mt-1 text-xs text-slate-500">
                         {cart.length} unique{" "}
                         {cart.length === 1 ? "product" : "products"}
@@ -212,100 +165,103 @@ export default function CartPage() {
                   </div>
 
                   <div className="divide-y divide-slate-100">
-                    {cart.map((item) => (
-                      <article
-                        key={item.id}
-                        className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:gap-5 sm:p-6"
-                      >
-                        {/* Product image */}
-                        <Link
-                          href={`/products/${item.id}`}
-                          className="relative h-24 w-24 shrink-0 self-start overflow-hidden rounded-xl border border-slate-100 bg-white sm:h-28 sm:w-28"
+                    {cart.map((item) => {
+                      const productPrice = getProductPrice(item);
+
+                      return (
+                        <article
+                          key={item.id}
+                          className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:gap-5 sm:p-6"
                         >
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fill
-                            sizes="112px"
-                            className="object-contain p-2"
-                          />
-                        </Link>
-
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                            {item.brand} · {item.category}
-                          </p>
-
+                          {/* Product image */}
                           <Link
                             href={`/products/${item.id}`}
-                            className="mt-1.5 block text-sm font-bold leading-5 text-slate-800 transition hover:text-blue-600 sm:text-base"
+                            className="relative h-24 w-24 shrink-0 self-start overflow-hidden rounded-xl border border-slate-100 bg-white sm:h-28 sm:w-28"
                           >
-                            {item.name}
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              sizes="112px"
+                              className="object-contain p-2"
+                            />
                           </Link>
 
-                          <div className="mt-2 flex flex-wrap items-baseline gap-2">
-                            <span className="text-base font-extrabold text-slate-900">
-                              {formatPrice(item.price)}
-                            </span>
-                            {item.oldPrice > item.price && (
-                              <span className="text-xs text-slate-400 line-through">
-                                {formatPrice(item.oldPrice)}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              {item.brand} · {item.category}
+                            </p>
+
+                            <Link
+                              href={`/products/${item.id}`}
+                              className="mt-1.5 block text-sm font-bold leading-5 text-slate-800 transition hover:text-blue-600 sm:text-base"
+                            >
+                              {item.name}
+                            </Link>
+
+                            {/* Actual Product Price */}
+                            <div className="mt-2 flex flex-wrap items-baseline gap-2">
+                              <span className="text-base font-extrabold text-slate-900">
+                                {formatPrice(productPrice)}
                               </span>
-                            )}
-                          </div>
-
-                          <p className="mt-2 text-xs text-emerald-700">
-                            <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            Stock is checked when you update or order
-                          </p>
-
-                          {/* Quantity and remove */}
-                          <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-                            <div className="flex h-9 items-center rounded-lg border border-slate-200">
-                              <button
-                                onClick={() => updateQuantity(item.id, -1)}
-                                disabled={item.quantity <= 1}
-                                aria-label={`Decrease ${item.name} quantity`}
-                                className="flex h-8 w-9 items-center justify-center text-slate-500 transition hover:text-blue-600 disabled:opacity-30"
-                              >
-                                <Minus size={14} />
-                              </button>
-
-                              <span className="min-w-7 text-center text-xs font-bold">
-                                {item.quantity}
-                              </span>
-
-                              <button
-                                onClick={() => updateQuantity(item.id, 1)}
-                                disabled={item.quantity >= item.stock}
-                                aria-label={`Increase ${item.name} quantity`}
-                                className="flex h-8 w-9 items-center justify-center text-slate-500 transition hover:text-blue-600 disabled:opacity-30"
-                              >
-                                <Plus size={14} />
-                              </button>
                             </div>
 
-                            <button
-                              onClick={() => handleRemoveItem(item.id)}
-                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 transition hover:text-red-600"
-                            >
-                              <Trash2 size={14} />
-                              Remove
-                            </button>
-                          </div>
-                        </div>
+                            <p className="mt-2 text-xs text-emerald-700">
+                              <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                              Stock is checked when you update or order
+                            </p>
 
-                        {/* Item subtotal */}
-                        <div className="border-t border-slate-100 pt-3 text-left sm:min-w-[100px] sm:self-stretch sm:border-0 sm:pt-0 sm:text-right">
-                          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
-                            Subtotal
-                          </p>
-                          <p className="mt-1 text-base font-extrabold text-slate-900">
-                            {formatPrice(item.price * item.quantity)}
-                          </p>
-                        </div>
-                      </article>
-                    ))}
+                            {/* Quantity and remove */}
+                            <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+                              <div className="flex h-9 items-center rounded-lg border border-slate-200">
+                                <button
+                                  onClick={() => updateQuantity(item.id, -1)}
+                                  disabled={item.quantity <= 1}
+                                  aria-label={`Decrease ${item.name} quantity`}
+                                  className="flex h-8 w-9 items-center justify-center text-slate-500 transition hover:text-blue-600 disabled:opacity-30"
+                                >
+                                  <Minus size={14} />
+                                </button>
+
+                                <span className="min-w-7 text-center text-xs font-bold">
+                                  {item.quantity}
+                                </span>
+
+                                <button
+                                  onClick={() => updateQuantity(item.id, 1)}
+                                  disabled={item.quantity >= item.stock}
+                                  aria-label={`Increase ${item.name} quantity`}
+                                  className="flex h-8 w-9 items-center justify-center text-slate-500 transition hover:text-blue-600 disabled:opacity-30"
+                                >
+                                  <Plus size={14} />
+                                </button>
+                              </div>
+
+                              <button
+                                onClick={() => handleRemoveItem(item.id)}
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 transition hover:text-red-600"
+                              >
+                                <Trash2 size={14} />
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Item subtotal */}
+                          <div className="border-t border-slate-100 pt-3 text-left sm:min-w-[100px] sm:self-stretch sm:border-0 sm:pt-0 sm:text-right">
+                            <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
+                              Subtotal
+                            </p>
+
+                            <p className="mt-1 text-base font-extrabold text-slate-900">
+                              {formatPrice(
+                                productPrice * Number(item.quantity || 0),
+                              )}
+                            </p>
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
 
                   <div className="border-t border-slate-200 bg-slate-50/70 px-5 py-4 sm:px-6">
@@ -318,51 +274,6 @@ export default function CartPage() {
                     </Link>
                   </div>
                 </div>
-
-                {/* Shopping benefits */}
-                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                      <Truck size={19} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-800">
-                        Campus Convenience
-                      </p>
-                      <p className="mt-1 text-[10px] text-slate-500">
-                        Delivery options at checkout
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-                      <ShieldCheck size={19} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-800">
-                        Secure Checkout
-                      </p>
-                      <p className="mt-1 text-[10px] text-slate-500">
-                        Payment integration pending
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
-                      <PackageCheck size={19} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-800">
-                        Order Support
-                      </p>
-                      <p className="mt-1 text-[10px] text-slate-500">
-                        Check policies before ordering
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Order Summary */}
@@ -372,122 +283,32 @@ export default function CartPage() {
                     <h2 className="text-base font-bold text-slate-900">
                       Order Summary
                     </h2>
+
                     <p className="mt-1 text-xs text-slate-500">
                       Review your estimated total.
                     </p>
                   </div>
 
                   <div className="space-y-4 p-5 sm:p-6">
-                    {/* Coupon */}
-                    <div>
-                      <label
-                        htmlFor="coupon"
-                        className="mb-2 block text-xs font-bold text-slate-700"
-                      >
-                        Have a promo code?
-                      </label>
-
-                      {appliedCoupon ? (
-                        <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-                          <div className="flex min-w-0 items-center gap-2">
-                            <TicketPercent
-                              size={18}
-                              className="shrink-0 text-emerald-600"
-                            />
-                            <div className="min-w-0">
-                              <p className="truncate text-xs font-bold text-emerald-800">
-                                {appliedCoupon.code}
-                              </p>
-                              <p className="mt-0.5 text-[10px] text-emerald-700">
-                                {appliedCoupon.label}
-                              </p>
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={removeCoupon}
-                            aria-label="Remove coupon"
-                            className="text-emerald-700 hover:text-red-600"
-                          >
-                            <X size={17} />
-                          </button>
-                        </div>
-                      ) : (
-                        <form onSubmit={applyCoupon} className="flex gap-2">
-                          <input
-                            id="coupon"
-                            value={couponInput}
-                            onChange={(e) => setCouponInput(e.target.value)}
-                            placeholder="Enter coupon code"
-                            className="h-11 min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs uppercase outline-none transition placeholder:normal-case placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
-                          />
-                          <button
-                            type="submit"
-                            className="rounded-xl border border-blue-200 bg-blue-50 px-3 text-xs font-bold text-blue-700 transition hover:bg-blue-100"
-                          >
-                            Apply
-                          </button>
-                        </form>
-                      )}
-
-                      {couponMessage && (
-                        <p
-                          className={`mt-2 text-xs ${
-                            appliedCoupon ? "text-emerald-600" : "text-red-500"
-                          }`}
-                        >
-                          {couponMessage}
-                        </p>
-                      )}
-
-                      {!appliedCoupon && (
-                        <p className="mt-2 text-[10px] leading-5 text-slate-400">
-                          Demo codes: NSTU10 or SAVE50
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="border-t border-dashed border-slate-200" />
-
                     {/* Cost breakdown */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between gap-3 text-sm">
                         <span className="text-slate-500">
                           Subtotal ({totalQuantity} items)
                         </span>
+
                         <span className="font-semibold text-slate-800">
                           {formatPrice(subtotal)}
                         </span>
                       </div>
 
-                      {productSavings > 0 && (
-                        <div className="flex items-center justify-between gap-3 text-sm">
-                          <span className="text-slate-500">
-                            Product savings
-                          </span>
-                          <span className="font-semibold text-emerald-600">
-                            -{formatPrice(productSavings)}
-                          </span>
-                        </div>
-                      )}
-
                       <div className="flex items-center justify-between gap-3 text-sm">
                         <span className="text-slate-500">Delivery charge</span>
+
                         <span className="font-semibold text-slate-800">
                           Based on delivery location
                         </span>
                       </div>
-
-                      {effectiveCouponDiscount > 0 && (
-                        <div className="flex items-center justify-between gap-3 text-sm">
-                          <span className="text-slate-500">
-                            Coupon discount
-                          </span>
-                          <span className="font-semibold text-emerald-600">
-                            -{formatPrice(effectiveCouponDiscount)}
-                          </span>
-                        </div>
-                      )}
                     </div>
 
                     {subtotal > 0 && (
@@ -497,6 +318,7 @@ export default function CartPage() {
                             size={17}
                             className="mt-0.5 shrink-0 text-blue-600"
                           />
+
                           <p className="text-xs leading-5 text-slate-600">
                             Campus delivery is free; outside-campus delivery
                             costs ৳60.
@@ -511,6 +333,7 @@ export default function CartPage() {
                       <span className="text-base font-bold text-slate-900">
                         Estimated total
                       </span>
+
                       <span className="text-2xl font-extrabold tracking-tight text-slate-950">
                         {formatPrice(total)}
                       </span>
@@ -529,32 +352,22 @@ export default function CartPage() {
                     >
                       Place Order
                     </button>
-
-                    <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400">
-                      <ShieldCheck size={14} />
-                      Checkout is not connected yet
-                    </div>
                   </div>
                 </div>
-
               </aside>
             </div>
           )}
         </section>
       </main>
 
-      {/* Order placement modal  */}
+      {/* Order placement modal */}
       <OrderPlacementModal
         isOpen={isOrderModalOpen}
         onClose={() => setIsOrderModalOpen(false)}
         cartItems={cart}
-        subtotal={subtotal}
-                    couponCode={appliedCoupon?.code}
         onOrderPlaced={(order) => {
-                      refreshCart();
-          setAppliedCoupon(null);
-          setCouponInput("");
-          setCouponMessage("");
+          refreshCart();
+
           toast.success(`Order ${order._id} placed successfully.`);
         }}
       />

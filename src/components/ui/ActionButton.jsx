@@ -26,25 +26,18 @@ const ActionButton = ({ product }) => {
       <Button
         type="button"
         onClick={handleAdd}
-        isDisabled={!product.stock || isAdded || isAdding}
-        aria-pressed={isAdded}
+        isDisabled={!product.stock || isAdding}
         aria-label={
           !product.stock
             ? "Unavailable"
             : isAdded
-              ? "Product Added"
+              ? `Add another ${product.name} to cart`
               : `Add ${product.name} to cart`
         }
-        className={`group/cart relative mt-4 flex h-11 w-full items-center justify-center overflow-hidden rounded-full px-3 text-xs font-semibold transition-colors duration-300 sm:text-sm ${
-          isAdded
-            ? "cursor-not-allowed bg-[#e5e5e5] text-slate-700"
-            : "cursor-pointer bg-blue-600 text-white hover:bg-gray-200 hover:text-gray-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
-        }`}
+        className="group/cart relative mt-4 flex h-11 w-full cursor-pointer items-center justify-center overflow-hidden rounded-full bg-blue-600 px-3 text-xs font-semibold text-white transition-colors duration-300 hover:bg-gray-200 hover:text-gray-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 sm:text-sm"
       >
         {product.stock ? (
-          isAdded ? (
-            <Check size={25} strokeWidth={2} aria-hidden="true" />
-          ) : isAdding ? (
+          isAdding ? (
             <span>Adding...</span>
           ) : (
             <>
@@ -55,7 +48,11 @@ const ActionButton = ({ product }) => {
 
             {/* Sliding Cart Icon */}
             <span className="absolute inset-0 flex translate-y-full items-center justify-center transition-transform duration-400 ease-out group-hover/cart:translate-y-0">
-              <ShoppingCart size={20} strokeWidth={2.2} />
+              {isAdded ? (
+                <Check size={20} strokeWidth={2.2} />
+              ) : (
+                <ShoppingCart size={20} strokeWidth={2.2} />
+              )}
             </span>
             </>
           )

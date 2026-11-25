@@ -45,12 +45,20 @@ const DISTRICT_OPTIONS = getAllDistricts().sort((left, right) =>
   left.name.localeCompare(right.name),
 );
 
+/**
+ * discountPrice is now the actual/current selling price.
+ * The old `price` field is intentionally not used anywhere.
+ */
+function getProductPrice(item) {
+  const price = Number(item?.discountPrice);
+
+  return Number.isFinite(price) && price >= 0 ? price : 0;
+}
+
 export default function OrderPlacementModal({
   isOpen,
   onClose,
   cartItems = [],
-  subtotal = 0,
-  couponCode = "",
   onOrderPlaced,
 }) {
   const [formData, setFormData] = useState({
@@ -67,27 +75,42 @@ export default function OrderPlacementModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
+
   const { data: session, isPending: isSessionPending } = useSession();
 
   const selectedDelivery = DELIVERY_OPTIONS.find(
     (option) => option.id === formData.deliveryOption,
   );
+
   const upazilaOptions = useMemo(
     () =>
-      formData.district
-        ? getUpazilasByDistrict(formData.district) || []
-        : [],
+      formData.district ? getUpazilasByDistrict(formData.district) || [] : [],
     [formData.district],
   );
 
   const deliveryFee = selectedDelivery?.fee ?? 0;
-  const requestedCouponDiscount = couponCode === "NSTU10"
-    ? Math.round(subtotal * 0.1)
-    : couponCode === "SAVE50"
-      ? Math.min(subtotal, 50)
-      : 0;
-  const couponDiscount = Math.min(requestedCouponDiscount, subtotal);
-  const total = Math.max(0, subtotal - couponDiscount + deliveryFee);
+
+  /*
+   * IMPORTANT:
+   * Subtotal is calculated ONLY from discountPrice.
+   *
+   * subtotal = discountPrice × quantity
+   */
+  const subtotal = useMemo(
+    () =>
+      cartItems.reduce(
+        (sum, item) => sum + getProductPrice(item) * Number(item.quantity || 1),
+        0,
+      ),
+    [cartItems],
+  );
+
+  /*
+   * No coupon / additional discount.
+   *
+   * total = subtotal + deliveryFee
+   */
+  const total = Math.max(0, subtotal + deliveryFee);
 
   const itemCount = useMemo(
     () =>
@@ -109,11 +132,13 @@ export default function OrderPlacementModal({
         district: value,
         upazila: "",
       }));
+
       setErrors((previous) => ({
         ...previous,
         district: "",
         upazila: "",
       }));
+
       return;
     }
 
@@ -126,7 +151,11 @@ export default function OrderPlacementModal({
       ...previous,
       [name]: "",
       ...(name === "deliveryOption"
-        ? { address: "", district: "", upazila: "" }
+        ? {
+            address: "",
+            district: "",
+            upazila: "",
+          }
         : {}),
     }));
   };
@@ -140,6 +169,7 @@ export default function OrderPlacementModal({
 
     // Bangladesh mobile number validation
     const normalizedPhone = formData.phone.replace(/[\s-]/g, "");
+
     const phoneRegex = /^(?:\+8801|8801|01)[3-9]\d{8}$/;
 
     if (!normalizedPhone) {
@@ -148,17 +178,11 @@ export default function OrderPlacementModal({
       newErrors.phone = "Enter a valid Bangladeshi mobile number.";
     }
 
-    if (
-      formData.deliveryOption === "outside" &&
-      !formData.district
-    ) {
+    if (formData.deliveryOption === "outside" && !formData.district) {
       newErrors.district = "Please select a district.";
     }
 
-    if (
-      formData.deliveryOption === "outside" &&
-      !formData.upazila
-    ) {
+    if (formData.deliveryOption === "outside" && !formData.upazila) {
       newErrors.upazila = "Please select a thana or upazila.";
     }
 
@@ -179,7 +203,10 @@ export default function OrderPlacementModal({
     event.preventDefault();
 
     if (isSessionPending || !session?.user) {
-      setErrors({ submit: "Sign in before placing your order." });
+      setErrors({
+        submit: "Sign in before placing your order.",
+      });
+
       return;
     }
 
@@ -187,31 +214,40 @@ export default function OrderPlacementModal({
 
     const fullAddress =
       formData.deliveryOption === "outside"
-        ? [
-            formData.district,
-            formData.upazila,
-            formData.address.trim(),
-          ].join(", ")
+        ? [formData.district, formData.upazila, formData.address.trim()].join(
+            ", ",
+          )
         : formData.address.trim();
 
     setIsSubmitting(true);
 
     try {
+      /*
+       * IMPORTANT:
+       * Coupon code is no longer sent.
+       *
+       * Backend should calculate product price from
+       * the product's discountPrice.
+       */
       const result = await createOrder({
         items: cartItems.map((item) => ({
           productId: item.id,
           quantity: Number(item.quantity || 1),
         })),
+
         shippingFee: deliveryFee,
+
         paymentMethod: "Cash on Delivery",
+
         deliveryAddress: [
           `Name: ${formData.name.trim()}`,
           `Phone: ${formData.phone.trim()}`,
           `Address: ${fullAddress}`,
           `Delivery: ${selectedDelivery.title}`,
           formData.note.trim() ? `Note: ${formData.note.trim()}` : "",
-        ].filter(Boolean).join("\n"),
-        couponCode,
+        ]
+          .filter(Boolean)
+          .join("\n"),
       });
 
       if (!result?.success || !result.data?._id) {
@@ -223,34 +259,50 @@ export default function OrderPlacementModal({
       }
 
       await clearCart();
+
       const savedOrder = result.data;
+
+      /*
+       * No couponDiscount here.
+       */
       const order = {
         orderId: savedOrder._id,
+
         customer: {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
           address: fullAddress,
         },
+
         items: savedOrder.items,
+
         delivery: {
           option: formData.deliveryOption,
           fee: savedOrder.shippingFee,
           estimatedTime: selectedDelivery.estimatedTime,
         },
+
         paymentMethod: savedOrder.paymentMethod,
+
         subtotal: savedOrder.subtotal,
-        couponDiscount,
+
         total: savedOrder.total,
+
         note: formData.note.trim(),
+
         status: savedOrder.status,
+
         createdAt: savedOrder.createdAt,
+
         emailStatus: result.emailStatus,
       };
 
       setConfirmedOrder(order);
+
       onOrderPlaced?.(savedOrder);
     } catch (error) {
       console.error("Order placement failed:", error);
+
       setErrors({
         submit:
           error instanceof Error
@@ -267,7 +319,9 @@ export default function OrderPlacementModal({
 
     try {
       await navigator.clipboard.writeText(confirmedOrder.orderId);
+
       setCopySuccess(true);
+
       setTimeout(() => setCopySuccess(false), 2000);
     } catch {
       setCopySuccess(false);
@@ -290,6 +344,7 @@ export default function OrderPlacementModal({
     setErrors({});
     setConfirmedOrder(null);
     setCopySuccess(false);
+
     onClose();
   };
 
@@ -302,7 +357,9 @@ export default function OrderPlacementModal({
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-3 backdrop-blur-sm sm:p-5"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) handleClose();
+        if (event.target === event.currentTarget) {
+          handleClose();
+        }
       }}
     >
       <div
@@ -360,13 +417,16 @@ export default function OrderPlacementModal({
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
                 <User size={30} />
               </div>
+
               <h3 className="mt-5 text-lg font-bold text-slate-900">
                 Sign in before placing your order
               </h3>
+
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
                 Orders are connected to your account so you can view their
                 status and details later.
               </p>
+
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Link
                   href="/login?next=%2Fcart"
@@ -374,6 +434,7 @@ export default function OrderPlacementModal({
                 >
                   Sign In
                 </Link>
+
                 <Link
                   href="/account?next=%2Fcart"
                   className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
@@ -397,6 +458,7 @@ export default function OrderPlacementModal({
                 <p className="mt-2 text-sm leading-6 text-slate-500">
                   Your order has been saved successfully.
                 </p>
+
                 <p
                   className={`mt-2 text-sm leading-6 ${
                     confirmedOrder.emailStatus?.admin &&
@@ -406,13 +468,16 @@ export default function OrderPlacementModal({
                   }`}
                 >
                   {confirmedOrder.emailStatus?.customer
-                    ? `The email provider accepted a confirmation for ${session?.user?.email || "your account email"}.`
+                    ? `The email provider accepted a confirmation for ${
+                        session?.user?.email || "your account email"
+                      }.`
                     : "The email provider did not accept the customer confirmation."}{" "}
                   {confirmedOrder.emailStatus?.admin &&
                     confirmedOrder.emailStatus?.customer &&
                     "If it is not in your inbox, check Spam or Promotions."}
                 </p>
 
+                {/* Order ID */}
                 <div className="mt-7 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-left">
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                     Order ID
@@ -436,6 +501,7 @@ export default function OrderPlacementModal({
                   <div className="mt-5 space-y-3 border-t border-slate-200 pt-4 text-sm">
                     <div className="flex justify-between gap-4">
                       <span className="text-slate-500">Customer</span>
+
                       <span className="text-right font-medium text-slate-900">
                         {confirmedOrder.customer.name}
                       </span>
@@ -443,6 +509,7 @@ export default function OrderPlacementModal({
 
                     <div className="flex justify-between gap-4">
                       <span className="text-slate-500">Phone</span>
+
                       <span className="text-right font-medium text-slate-900">
                         {confirmedOrder.customer.phone}
                       </span>
@@ -450,6 +517,7 @@ export default function OrderPlacementModal({
 
                     <div className="flex justify-between gap-4">
                       <span className="text-slate-500">Payment</span>
+
                       <span className="text-right font-medium text-emerald-700">
                         Cash on Delivery
                       </span>
@@ -457,36 +525,36 @@ export default function OrderPlacementModal({
 
                     <div className="flex justify-between gap-4">
                       <span className="text-slate-500">Delivery</span>
+
                       <span className="text-right font-medium text-slate-900">
                         {selectedDelivery.title} ·{" "}
                         {deliveryFee === 0 ? "Free" : `৳${deliveryFee}`}
                       </span>
                     </div>
 
-                    {confirmedOrder.couponDiscount > 0 && (
-                      <div className="flex justify-between gap-4">
-                        <span className="text-slate-500">Coupon discount</span>
-                        <span className="text-right font-medium text-emerald-700">
-                          -৳{confirmedOrder.couponDiscount.toLocaleString("en-BD")}
-                        </span>
-                      </div>
-                    )}
-
+                    {/* Total */}
                     <div className="flex justify-between gap-4 border-t border-slate-200 pt-3">
                       <span className="font-semibold text-slate-700">
                         Total Amount
                       </span>
+
                       <span className="text-lg font-bold text-blue-600">
-                        ৳{confirmedOrder.total.toLocaleString("en-BD")}
+                        ৳
+                        {Number(confirmedOrder.total || 0).toLocaleString(
+                          "en-BD",
+                        )}
                       </span>
                     </div>
                   </div>
                 </div>
 
+                {/* COD confirmation */}
                 <div className="mt-6 rounded-xl bg-blue-50 p-4 text-left text-sm leading-6 text-blue-800">
                   <p className="font-semibold">Cash on Delivery</p>
+
                   <p className="mt-1">
-                    Please pay ৳{confirmedOrder.total.toLocaleString("en-BD")}{" "}
+                    Please pay ৳
+                    {Number(confirmedOrder.total || 0).toLocaleString("en-BD")}{" "}
                     when your order is delivered.
                   </p>
                 </div>
@@ -516,6 +584,7 @@ export default function OrderPlacementModal({
                         <h3 className="font-bold text-slate-900">
                           Customer Information
                         </h3>
+
                         <p className="text-xs text-slate-500">
                           Enter your contact details
                         </p>
@@ -523,6 +592,7 @@ export default function OrderPlacementModal({
                     </div>
 
                     <div className="space-y-4">
+                      {/* Name */}
                       <div>
                         <label htmlFor="customer-name" className={labelClass}>
                           Full Name <span className="text-red-500">*</span>
@@ -546,6 +616,7 @@ export default function OrderPlacementModal({
                         )}
                       </div>
 
+                      {/* Phone */}
                       <div>
                         <label htmlFor="customer-phone" className={labelClass}>
                           Mobile Number <span className="text-red-500">*</span>
@@ -590,6 +661,7 @@ export default function OrderPlacementModal({
                         <h3 className="font-bold text-slate-900">
                           Delivery Option
                         </h3>
+
                         <p className="text-xs text-slate-500">
                           Choose your preferred delivery location
                         </p>
@@ -654,12 +726,14 @@ export default function OrderPlacementModal({
                         <h3 className="font-bold text-slate-900">
                           Delivery Address
                         </h3>
+
                         <p className="text-xs text-slate-500">
                           Where should we deliver your order?
                         </p>
                       </div>
                     </div>
 
+                    {/* District + Upazila */}
                     {formData.deliveryOption === "outside" && (
                       <div className="mb-4 grid gap-4 sm:grid-cols-2">
                         <div>
@@ -669,6 +743,7 @@ export default function OrderPlacementModal({
                           >
                             District <span className="text-red-500">*</span>
                           </label>
+
                           <select
                             id="delivery-district"
                             name="district"
@@ -679,12 +754,14 @@ export default function OrderPlacementModal({
                             className={inputClass}
                           >
                             <option value="">Select a district</option>
+
                             {DISTRICT_OPTIONS.map((district) => (
                               <option key={district.id} value={district.name}>
                                 {district.name}
                               </option>
                             ))}
                           </select>
+
                           {errors.district && (
                             <p className="mt-1.5 text-xs text-red-500">
                               {errors.district}
@@ -700,6 +777,7 @@ export default function OrderPlacementModal({
                             Thana - Upazila{" "}
                             <span className="text-red-500">*</span>
                           </label>
+
                           <select
                             id="delivery-upazila"
                             name="upazila"
@@ -711,12 +789,14 @@ export default function OrderPlacementModal({
                             className={`${inputClass} disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400`}
                           >
                             <option value="">Select an upazila</option>
+
                             {upazilaOptions.map((upazila) => (
                               <option key={upazila.id} value={upazila.name}>
                                 {upazila.name}
                               </option>
                             ))}
                           </select>
+
                           {errors.upazila && (
                             <p className="mt-1.5 text-xs text-red-500">
                               {errors.upazila}
@@ -726,6 +806,7 @@ export default function OrderPlacementModal({
                       </div>
                     )}
 
+                    {/* Address */}
                     <label htmlFor="delivery-address" className={labelClass}>
                       {formData.deliveryOption === "outside"
                         ? "Full Address"
@@ -789,6 +870,7 @@ export default function OrderPlacementModal({
                       <h3 className="font-bold text-slate-900">
                         Order Summary
                       </h3>
+
                       <p className="text-xs text-slate-500">
                         {itemCount} {itemCount === 1 ? "item" : "items"} in your
                         cart
@@ -802,67 +884,72 @@ export default function OrderPlacementModal({
                     </p>
                   )}
 
+                  {/* Cart Items */}
                   <div className="max-h-64 space-y-4 overflow-y-auto pr-1">
-                    {cartItems.map((item, index) => (
-                      <div
-                        key={item.id ?? item.productId ?? index}
-                        className="flex gap-3"
-                      >
-                        <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white">
-                          {item.image ? (
-                            <Image
-                              src={item.image}
-                              alt={item.name}
-                              width={64}
-                              height={64}
-                              className="h-full w-full object-contain p-1"
-                            />
-                          ) : (
-                            <Package className="text-slate-300" size={24} />
-                          )}
+                    {cartItems.map((item, index) => {
+                      const productPrice = getProductPrice(item);
+
+                      const quantity = Number(item.quantity || 1);
+
+                      const itemTotal = productPrice * quantity;
+
+                      return (
+                        <div
+                          key={item.id ?? item.productId ?? index}
+                          className="flex gap-3"
+                        >
+                          {/* Image */}
+                          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white">
+                            {item.image ? (
+                              <Image
+                                src={item.image}
+                                alt={item.name}
+                                width={64}
+                                height={64}
+                                className="h-full w-full object-contain p-1"
+                              />
+                            ) : (
+                              <Package className="text-slate-300" size={24} />
+                            )}
+                          </div>
+
+                          {/* Product info */}
+                          <div className="min-w-0 flex-1">
+                            <p className="line-clamp-2 text-sm font-semibold text-slate-800">
+                              {item.name}
+                            </p>
+
+                            <p className="mt-1 text-xs text-slate-500">
+                              Qty: {quantity}
+                            </p>
+
+                            {/* ONLY discountPrice */}
+                            <div className="mt-1">
+                              <p className="text-sm font-bold text-blue-600">
+                                ৳{itemTotal.toLocaleString("en-BD")}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-
-                        <div className="min-w-0 flex-1">
-                          <p className="line-clamp-2 text-sm font-semibold text-slate-800">
-                            {item.name}
-                          </p>
-
-                          <p className="mt-1 text-xs text-slate-500">
-                            Qty: {item.quantity || 1}
-                          </p>
-
-                          <p className="mt-1 text-sm font-bold text-slate-900">
-                            ৳
-                            {(
-                              Number(item.price) * Number(item.quantity || 1)
-                            ).toLocaleString("en-BD")}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <div className="my-6 border-t border-dashed border-slate-300" />
 
+                  {/* Pricing */}
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between gap-3">
                       <span className="text-slate-500">Subtotal</span>
+
                       <span className="font-medium text-slate-900">
                         ৳{subtotal.toLocaleString("en-BD")}
                       </span>
                     </div>
 
-                    {couponDiscount > 0 && (
-                      <div className="flex justify-between gap-3">
-                        <span className="text-slate-500">Coupon discount</span>
-                        <span className="font-medium text-emerald-700">
-                          -৳{couponDiscount.toLocaleString("en-BD")}
-                        </span>
-                      </div>
-                    )}
-
                     <div className="flex justify-between gap-3">
                       <span className="text-slate-500">Delivery Fee</span>
+
                       <span className="font-medium text-slate-900">
                         {deliveryFee === 0
                           ? "Free"
@@ -870,6 +957,7 @@ export default function OrderPlacementModal({
                       </span>
                     </div>
 
+                    {/* Final Total */}
                     <div className="border-t border-slate-200 pt-4">
                       <div className="flex items-center justify-between gap-3">
                         <span className="font-bold text-slate-900">
@@ -907,6 +995,7 @@ export default function OrderPlacementModal({
                     <p className="mt-4 text-sm text-red-600">{errors.submit}</p>
                   )}
 
+                  {/* Submit */}
                   <button
                     type="submit"
                     disabled={isSubmitting || cartItems.length === 0}
