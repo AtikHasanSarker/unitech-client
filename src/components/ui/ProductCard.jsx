@@ -21,7 +21,8 @@ const ProductCard = ({ product, isWishListed, onWishlist }) => {
     ? Math.round(((price - discountPrice) / price) * 100)
     : 0;
 
-  return <article className="group min-w-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]">
+  return (
+    <article className="group min-w-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)]">
       <div
         className={`relative aspect-square overflow-hidden ${product.color}`}
       >
@@ -33,7 +34,7 @@ const ProductCard = ({ product, isWishListed, onWishlist }) => {
           <Image
             width={100}
             height={200}
-            src={product.images?.[0] }
+            src={product.images?.[0]}
             alt={product.name}
             loading="lazy"
             className="h-full mx-auto w-auto p-2 transition-transform duration-500 group-hover:scale-[1.04]"
@@ -41,7 +42,7 @@ const ProductCard = ({ product, isWishListed, onWishlist }) => {
         </Link>
 
         {(product.badge || discount > 0) && (
-          <div className="absolute left-3 top-3 flex flex-col items-start gap-1">
+          <div className="absolute left-5 top-5 flex flex-col items-start gap-1">
             {product.badge && (
               <span className="rounded-md bg-slate-900 px-2 py-1 text-[9px] font-bold tracking-wider text-white sm:text-[10px]">
                 {product.badge}
@@ -49,7 +50,7 @@ const ProductCard = ({ product, isWishListed, onWishlist }) => {
             )}
 
             {discount > 0 && (
-              <span className="rounded-md bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600">
+              <span className="rounded-full bg-[#242424] px-3 py-1.25 text-[10px] font-bold text-white">
                 -{discount}%
               </span>
             )}
@@ -83,7 +84,10 @@ const ProductCard = ({ product, isWishListed, onWishlist }) => {
         </p>
 
         <Link href={`/products/${product.id}`}>
-          <h3 className="truncate whitespace-nowrap text-[13px] font-semibold leading-5 text-slate-800 transition-colors hover:text-blue-600 sm:text-sm" title={product.name}>
+          <h3
+            className="truncate whitespace-nowrap text-[13px] font-semibold leading-5 text-slate-800 transition-colors hover:text-blue-600 sm:text-sm"
+            title={product.name}
+          >
             {product.name}
           </h3>
         </Link>
@@ -105,11 +109,11 @@ const ProductCard = ({ product, isWishListed, onWishlist }) => {
         <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
           {hasDiscount ? (
             <>
-              <span className="text-base font-extrabold tracking-tight text-slate-900 sm:text-lg">
-                {formatPrice(discountPrice)}
-              </span>
               <span className="text-xs text-slate-400 line-through">
                 {formatPrice(price)}
+              </span>
+              <span className="text-base font-extrabold tracking-tight text-blue-600 sm:text-lg">
+                {formatPrice(discountPrice)}
               </span>
             </>
           ) : (
@@ -121,7 +125,8 @@ const ProductCard = ({ product, isWishListed, onWishlist }) => {
 
         <ActionButton product={product} />
       </div>
-    </article>;
+    </article>
+  );
 };
 
 export default ProductCard;
