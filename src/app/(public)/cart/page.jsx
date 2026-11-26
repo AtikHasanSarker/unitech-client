@@ -68,8 +68,8 @@ export default function CartPage() {
       <main className="min-h-screen bg-[#f8fafc] text-slate-900">
         {/* Header */}
         <section className="border-b border-slate-200 bg-white">
-          <div className="mx-auto container px-5 py-8 sm:py-10">
-            <nav className="mb-5 flex items-center gap-2 text-xs text-slate-400">
+          <div className="mx-auto container px-5 py-6">
+            <nav className="mb-3 flex items-center gap-2 text-xs text-slate-400">
               <Link href="/" className="hover:text-blue-600">
                 Home
               </Link>
@@ -81,7 +81,7 @@ export default function CartPage() {
 
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
+                <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
                   Your Selection
                 </p>
 
@@ -89,7 +89,7 @@ export default function CartPage() {
                   Shopping Cart
                 </h1>
 
-                <p className="mt-3 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-slate-500">
                   Review your items before proceeding to checkout.
                 </p>
               </div>
@@ -105,7 +105,7 @@ export default function CartPage() {
           </div>
         </section>
 
-        <section className="mx-auto container px-5 py-8 lg:py-10">
+        <section className="mx-auto container px-5 py-8">
           {isLoading ? (
             <div className="flex min-h-[420px] items-center justify-center rounded-3xl border border-slate-200 bg-white text-sm font-medium text-slate-500">
               Loading your cart...

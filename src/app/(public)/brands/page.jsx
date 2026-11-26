@@ -56,11 +56,11 @@ const brands = [
 
 export default function BrandsPage() {
   return (
-    <section className="mx-auto min-h-full w-full container px-5 py-8">
+    <section className="mx-auto min-h-full w-full container px-5 py-6">
       {/* Breadcrumb */}
       <nav
         aria-label="Breadcrumb"
-        className="mb-10 flex items-center gap-3 text-base sm:text-lg"
+        className="mb-8 flex items-center gap-3 text-sm"
       >
         <Link
           href="/"
@@ -77,7 +77,7 @@ export default function BrandsPage() {
       </nav>
 
       {/* Heading */}
-      <div className="mb-10">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
           ALL BRANDS
         </h1>

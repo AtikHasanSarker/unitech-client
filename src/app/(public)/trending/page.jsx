@@ -8,7 +8,7 @@ const MAX_PRODUCTS = 10;
 export default function TopTrendingPage() {
   return (
     <main className="min-h-screen bg-white text-slate-900">
-      <div className="mx-auto container px-5 pb-16 pt-8">
+      <div className="mx-auto container px-5 pb-16 pt-6">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
           <ol className="flex items-center gap-2">

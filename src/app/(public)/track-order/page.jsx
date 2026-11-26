@@ -5,13 +5,8 @@ import Link from "next/link";
 import {
   Package,
   Search,
-  ShoppingBag,
-  Truck,
-  Clock3,
   ArrowRight,
   ShieldCheck,
-  CircleHelp,
-  PackageCheck,
   ChevronRight,
   Mail,
 } from "lucide-react";
@@ -24,7 +19,6 @@ export default function TrackOrderPage() {
 
   const handleTrackOrder = async (e) => {
     e.preventDefault();
-
     setError("");
 
     if (!orderId.trim() || !contact.trim()) {
@@ -49,23 +43,6 @@ export default function TrackOrderPage() {
   return (
     <main className="min-h-screen bg-white px-4 py-10 text-slate-900 sm:px-6 lg:py-16">
       <div className="mx-auto max-w-5xl">
-        {/* Breadcrumb */}
-        <nav
-          aria-label="Breadcrumb"
-          className="mb-10 flex items-center gap-2 text-sm"
-        >
-          <Link
-            href="/"
-            className="text-slate-500 transition-colors hover:text-blue-600"
-          >
-            Home
-          </Link>
-
-          <ChevronRight size={14} className="text-slate-400" />
-
-          <span className="font-semibold text-slate-900">Track Order</span>
-        </nav>
-
         {/* Page Heading */}
         <div className="mx-auto mb-10 max-w-2xl text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-blue-600">

@@ -350,7 +350,7 @@ export default function MyOrdersPage() {
     <main className="min-h-screen bg-slate-50">
       {/* Page Heading */}
       <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto container px-5 py-8 sm:py-10">
+        <div className="mx-auto container px-5 py-6">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
             <div>
               <div className="mb-3 flex items-center gap-2 text-sm text-slate-500">
@@ -365,7 +365,7 @@ export default function MyOrdersPage() {
                 My Orders
               </h1>
 
-              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500 sm:text-base">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
                 Track your purchases, check order status, and review your
                 UniTech shopping history.
               </p>
