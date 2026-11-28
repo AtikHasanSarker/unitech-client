@@ -378,16 +378,54 @@ export default function ProductDetailsPage() {
                     <span className="mb-1 rounded-md bg-red-50 px-2 py-1 text-xs font-bold text-red-600">
                       {discount}% OFF
                     </span>
+                    <span className="mb-1 text-sm font-bold text-red-500">
+                      You Save {formatPrice(product.price - effectivePrice)}
+                    </span>
                   </>
                 )}
               </div>
 
               <p className="mt-3 text-xs leading-5 text-slate-500">
-                Price and availability are current as provided by the store.
+                {product.description}
               </p>
 
+              {/* Warranty Section */}
+              {product.warranty && (
+                <div className="mt-4 flex items-center gap-3 border border-blue-100 bg-blue-50/50 rounded-lg px-4 py-3">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-emerald-500">
+                    <svg
+                      className="w-5 h-5 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12l2 2 4-4"
+                      />
+                    </svg>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">
+                      Warranty
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {product.warranty} Months Official Warranty
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Stock */}
-              <div className="mt-6 flex items-center gap-2">
+              <div className="mt-5 flex items-center gap-2">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
@@ -400,7 +438,7 @@ export default function ProductDetailsPage() {
               </div>
 
               {/* Quantity */}
-              <div className="mt-7">
+              <div className="mt-5">
                 <p className="mb-3 text-sm font-semibold text-slate-800">
                   Quantity
                 </p>
@@ -446,7 +484,7 @@ export default function ProductDetailsPage() {
               </div>
 
               {/* Actions */}
-              <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <button
                   onClick={addToCart}
                   disabled={product.stock <= 0 || isAddedToCart}
@@ -489,7 +527,7 @@ export default function ProductDetailsPage() {
               </button>
 
               {/* Benefits */}
-              <div className="mt-7 grid grid-cols-1 gap-3 border-t border-slate-200 pt-6 sm:grid-cols-3">
+              <div className="mt-3 grid grid-cols-1 gap-3 border-t border-slate-200 pt-6 sm:grid-cols-3">
                 <div className="flex items-start gap-3 rounded-xl bg-white p-3">
                   <Truck size={20} className="mt-0.5 shrink-0 text-blue-600" />
                   <div>
@@ -543,7 +581,7 @@ export default function ProductDetailsPage() {
           </div>
 
           {/* Details Tabs */}
-          <section className="mt-14 overflow-hidden rounded-2xl border border-slate-200 bg-white sm:mt-20">
+          <section className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-white sm:mt-14">
             <div className="flex gap-6 overflow-x-auto border-b border-slate-200 px-5 sm:px-8">
               {[
                 { id: "description", label: "Description" },
@@ -576,20 +614,20 @@ export default function ProductDetailsPage() {
 
             <div className="p-5 sm:p-8">
               {activeTab === "description" && (
-                <div className="max-w-3xl">
+                <div className="max-w-full">
                   <h2 className="text-lg font-bold text-slate-900">
                     About this product
                   </h2>
 
-                  <p className="mt-4 text-sm leading-7 text-slate-600">
+                  <p className="mt-3 text-sm leading-7 text-slate-600">
                     {product.description}
                   </p>
 
-                  <h3 className="mt-7 text-sm font-bold text-slate-900">
+                  <h3 className="mt-5 text-sm font-bold text-slate-900">
                     Key features
                   </h3>
 
-                  <ul className="mt-4 space-y-3">
+                  <ul className="mt-3 space-y-3">
                     {product.features.length > 0 ? (
                       product.features.map((feature) => (
                         <li
@@ -621,26 +659,24 @@ export default function ProductDetailsPage() {
                   <div className="overflow-x-auto rounded-xl border border-slate-200">
                     <table className="w-full border-collapse text-left">
                       <tbody className="divide-y divide-slate-200">
-                        {product.specifications.map(
-                          ([label, value], index) => (
-                            <tr
-                              key={`${label}-${index}`}
-                              className={
-                                index % 2 === 0 ? "bg-slate-50" : "bg-white"
-                              }
+                        {product.specifications.map(([label, value], index) => (
+                          <tr
+                            key={`${label}-${index}`}
+                            className={
+                              index % 2 === 0 ? "bg-slate-50" : "bg-white"
+                            }
+                          >
+                            <th
+                              scope="row"
+                              className="w-[38%] px-4 py-3.5 text-xs font-semibold text-slate-500 sm:w-[220px] sm:px-5"
                             >
-                              <th
-                                scope="row"
-                                className="w-[38%] px-4 py-3.5 text-xs font-semibold text-slate-500 sm:w-[220px] sm:px-5"
-                              >
-                                {label}
-                              </th>
-                              <td className="px-4 py-3.5 text-sm text-slate-800 sm:px-5">
-                                {value}
-                              </td>
-                            </tr>
-                          ),
-                        )}
+                              {label}
+                            </th>
+                            <td className="px-4 py-3.5 text-sm text-slate-800 sm:px-5">
+                              {value}
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -688,7 +724,7 @@ export default function ProductDetailsPage() {
           </section>
 
           {/* Related Products */}
-          <section className="mt-14 sm:mt-20">
+          <section className="mt-10 sm:mt-14">
             <div className="mb-7 flex items-end justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600">
